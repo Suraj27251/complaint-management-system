@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Track Complaint</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 Track Your Complaint</h1>
+    <form method="POST">
+      <label>Enter Ticket ID:</label>
+      <input type="text" name="ticket_id" required />
+      <button type="submit">Track</button>
+    </form>
+
+    {% if complaint %}
+    <div class="result-box">
+      <h2>🎫 Ticket ID: {{ complaint['complaint_id'] }}</h2>
+      <p><strong>Name:</strong> {{ complaint['name'] }}</p>
+      <p><strong>Phone:</strong> {{ complaint['phone'] }}</p>
+      <p><strong>Issue:</strong> {{ complaint['issue'] }}</p>
+      <p><strong>Status:</strong> {{ complaint['status'] }}</p>
+      <p><strong>Submitted:</strong> {{ complaint['timestamp'] }}</p>
+    </div>
+    {% endif %}
+  </div>
+</body>
+</html>

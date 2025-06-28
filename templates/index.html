@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Submit Complaint</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+  <div class="container">
+    <h1>📋 Submit Your Complaint</h1>
+    <form action="/submit" method="POST">
+      <label>Name:</label>
+      <input type="text" name="name" required />
+
+      <label>Phone:</label>
+      <input type="text" name="phone" required />
+
+      <label>Issue:</label>
+      <textarea name="issue" required></textarea>
+
+      <button type="submit">Submit</button>
+    </form>
+
+    <p>🎫 Want to check your complaint? <a href="/track">Click here</a></p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+  <div class="container">
+    <h1>🧑‍💻 Admin Dashboard</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Ticket ID</th>
+          <th>Name</th>
+          <th>Phone</th>
+          <th>Issue</th>
+          <th>Status</th>
+          <th>Time</th>
+          <th>Update</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in complaints %}
+        <tr>
+          <td>{{ c['complaint_id'] }}</td>
+          <td>{{ c['name'] }}</td>
+          <td>{{ c['phone'] }}</td>
+          <td>{{ c['issue'] }}</td>
+          <td>{{ c['status'] }}</td>
+          <td>{{ c['timestamp'] }}</td>
+          <td>
+            <form method="POST" action="/update_status">
+              <input type="hidden" name="ticket_id" value="{{ c['complaint_id'] }}">
+              <select name="status">
+                <option value="Pending" {% if c['status']=='Pending' %}selected{% endif %}>Pending</option>
+                <option value="In Progress" {% if c['status']=='In Progress' %}selected{% endif %}>In Progress</option>
+                <option value="Resolved" {% if c['status']=='Resolved' %}selected{% endif %}>Resolved</option>
+              </select>
+              <button type="submit">Update</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
