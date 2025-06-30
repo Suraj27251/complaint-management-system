@@ -1,14 +1,14 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, request, jsonify, render_template, redirect, url_for
 import sqlite3
 from datetime import datetime
 
 app = Flask(__name__)
+DB_NAME = "complaints.db"
 
-# ✅ DB init
+# ✅ Initialize DB
 def init_db():
-    with sqlite3.connect("complaints.db") as conn:
-        cur = conn.cursor()
-        cur.execute("""
+    with sqlite3.connect(DB_NAME) as conn:
+        conn.execute("""
             CREATE TABLE IF NOT EXISTS complaints (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT,
@@ -20,116 +20,94 @@ def init_db():
                 comment TEXT
             )
         """)
-        conn.commit()
+init_db()
 
-# ✅ Admin dashboard
-@app.route('/')
+# ✅ Dashboard for Admin
+@app.route('/', methods=['GET', 'POST'])
 def dashboard():
-    conn = sqlite3.connect("complaints.db")
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM complaints")
-    complaints = cur.fetchall()
-    total = len(complaints)
-    unassigned = sum(1 for c in complaints if c[5] == "Unassigned")
-    in_progress = sum(1 for c in complaints if c[5] == "In Progress")
-    completed = sum(1 for c in complaints if c[5] == "Completed")
+    if request.method == 'POST':
+        complaint_id = request.form.get("id")
+        status = request.form.get("status")
+        assigned = request.form.get("assigned")
+        comment = request.form.get("comment")
 
-    return render_template(
-        'dashboard.html',
-        complaints=complaints,
-        total=total,
-        unassigned=unassigned,
-        in_progress=in_progress,
-        completed=completed
-    )
+        with sqlite3.connect(DB_NAME) as conn:
+            conn.execute("""
+                UPDATE complaints 
+                SET status=?, assigned=?, comment=?
+                WHERE id=?
+            """, (status, assigned, comment, complaint_id))
 
-# ✅ Update status
-@app.route('/update', methods=['POST'])
-def update():
-    comp_id = request.form['id']
-    status = request.form['status']
-    assigned = request.form['assigned']
-    comment = request.form['comment']
+        return redirect(url_for('dashboard'))
 
-    conn = sqlite3.connect("complaints.db")
-    cur = conn.cursor()
-    cur.execute("""
-        UPDATE complaints SET status=?, assigned=?, comment=? WHERE id=?
-    """, (status, assigned, comment, comp_id))
-    conn.commit()
-    return redirect(url_for('dashboard'))
+    with sqlite3.connect(DB_NAME) as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM complaints ORDER BY date DESC")
+        complaints = cur.fetchall()
 
-# ✅ Public-facing tracking
+        # Stats
+        cur.execute("SELECT COUNT(*) FROM complaints")
+        total = cur.fetchone()[0]
+
+        cur.execute("SELECT COUNT(*) FROM complaints WHERE status='Unassigned'")
+        unassigned = cur.fetchone()[0]
+
+        cur.execute("SELECT COUNT(*) FROM complaints WHERE status='In Progress'")
+        in_progress = cur.fetchone()[0]
+
+        cur.execute("SELECT COUNT(*) FROM complaints WHERE status='Completed'")
+        completed = cur.fetchone()[0]
+
+    return render_template("dashboard.html", total=total, unassigned=unassigned,
+                           in_progress=in_progress, completed=completed,
+                           complaints=complaints)
+
+# ✅ Complaint Tracking by Customer (only 10-digit mobile)
 @app.route('/track', methods=['GET', 'POST'])
 def track():
     result = []
-    mobile = ""
+    searched = False
+
     if request.method == 'POST':
-        mobile = request.form['mobile'].strip()[-10:]
-        conn = sqlite3.connect("complaints.db")
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM complaints WHERE mobile LIKE ?", ('%' + mobile,))
-        result = cur.fetchall()
-    return render_template("track.html", complaints=result, mobile=mobile)
+        mobile = request.form.get("mobile", "").strip()[-10:]
+        if mobile:
+            with sqlite3.connect(DB_NAME) as conn:
+                cur = conn.cursor()
+                cur.execute("SELECT * FROM complaints WHERE mobile=? ORDER BY date DESC", (mobile,))
+                result = cur.fetchall()
+            searched = True
 
-# ✅ Web form (optional)
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    message = ''
-    if request.method == 'POST':
-        name = request.form['name']
-        issue = request.form['issue']
-        mobile = request.form['mobile'].strip()[-10:]
-        now = datetime.now().strftime("%Y-%m-%d %H:%M")
-        conn = sqlite3.connect("complaints.db")
-        cur = conn.cursor()
-        cur.execute("""
-            INSERT INTO complaints (name, issue, mobile, date, status, assigned, comment)
-            VALUES (?, ?, ?, ?, 'Unassigned', '', '')
-        """, (name, issue, mobile, now))
-        conn.commit()
-        message = "Complaint submitted successfully!"
-    return render_template("register.html", message=message)
+    return render_template("track.html", complaints=result, searched=searched)
 
-# ✅ API: Register complaint (Postman/JSON)
-@app.route('/api/register', methods=['POST'])
-def api_register():
-    data = request.get_json()
-    name = data.get('name')
-    issue = data.get('issue')
-    mobile = data.get('mobile', '').strip()[-10:]
-    now = datetime.now().strftime("%Y-%m-%d %H:%M")
+# ✅ WhatsApp Flow Endpoint (POST complaint)
+@app.route('/flow-endpoint', methods=['POST'])
+def flow_endpoint():
+    try:
+        data = request.get_json(force=True)
+        name = data.get('name')
+        issue = data.get('issue')
+        mobile = data.get('mobile', '').strip()[-10:]
+        date = datetime.now().strftime('%Y-%m-%d %H:%M')
 
-    conn = sqlite3.connect("complaints.db")
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO complaints (name, issue, mobile, date, status, assigned, comment)
-        VALUES (?, ?, ?, ?, 'Unassigned', '', '')
-    """, (name, issue, mobile, now))
-    conn.commit()
-    return jsonify({'message': 'Complaint registered successfully!'}), 201
+        if not (name and issue and mobile):
+            return jsonify({"error": "Missing required fields"}), 400
 
-# ✅ API: Track complaint via mobile
-@app.route('/api/status/<mobile>', methods=['GET'])
-def api_status(mobile):
-    mobile = mobile.strip()[-10:]
-    conn = sqlite3.connect("complaints.db")
-    cur = conn.cursor()
-    cur.execute("SELECT id, issue, date, status, comment FROM complaints WHERE mobile LIKE ?", ('%' + mobile,))
-    complaints = cur.fetchall()
-    result = [
-        {
-            'id': c[0],
-            'issue': c[1],
-            'date': c[2],
-            'status': c[3],
-            'comment': c[4]
-        } for c in complaints
-    ]
-    return jsonify({'complaints': result})
+        with sqlite3.connect(DB_NAME) as conn:
+            conn.execute("""
+                INSERT INTO complaints (name, issue, mobile, date, status, assigned, comment)
+                VALUES (?, ?, ?, ?, 'Unassigned', '', '')
+            """, (name, issue, mobile, date))
 
-# ✅ Initialize DB
-init_db()
+        return jsonify({"message": "Complaint received successfully."}), 201
 
-if __name__ == "__main__":
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ✅ Health check route
+@app.route('/api/ping', methods=['GET'])
+def ping():
+    return jsonify({"message": "API is working"}), 200
+
+# ✅ Run app (locally)
+if __name__ == '__main__':
     app.run(debug=True)
