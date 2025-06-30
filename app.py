@@ -4,120 +4,74 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# ✅ Initialize the database and add 'mobile' column if needed
-def init_db():
-    conn = sqlite3.connect('complaints.db')
-    cursor = conn.cursor()
-
-    # Create table if it doesn't exist
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS complaints (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        issue TEXT,
-        mobile TEXT,
-        date TEXT,
-        status TEXT,
-        assigned_to TEXT,
-        comment TEXT
-    )
-    """)
-
-    # Ensure 'mobile' column exists (for older DBs)
-    cursor.execute("PRAGMA table_info(complaints)")
-    columns = [col[1] for col in cursor.fetchall()]
-    if 'mobile' not in columns:
-        cursor.execute("ALTER TABLE complaints ADD COLUMN mobile TEXT")
-
-    conn.commit()
-    conn.close()
-
-# Call the initializer on app startup
-init_db()
-
-
-# ✅ Admin Dashboard
-@app.route('/')
+# Home route - Admin dashboard
+@app.route("/", methods=["GET", "POST"])
 def dashboard():
-    conn = sqlite3.connect('complaints.db')
-    cursor = conn.cursor()
+    with sqlite3.connect("complaints.db") as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM complaints")
+        complaints = cur.fetchall()
 
-    cursor.execute("SELECT COUNT(*) FROM complaints")
-    total = cursor.fetchone()[0]
+        # Counts for dashboard summary
+        total = len(complaints)
+        unassigned = sum(1 for c in complaints if c[5] == "Unassigned")
+        in_progress = sum(1 for c in complaints if c[5] == "In Progress")
+        completed = sum(1 for c in complaints if c[5] == "Completed")
 
-    cursor.execute("SELECT COUNT(*) FROM complaints WHERE status = 'Unassigned'")
-    unassigned = cursor.fetchone()[0]
+    return render_template("dashboard.html", complaints=complaints,
+                           total=total, unassigned=unassigned,
+                           in_progress=in_progress, completed=completed)
 
-    cursor.execute("SELECT COUNT(*) FROM complaints WHERE status = 'In Progress'")
-    in_progress = cursor.fetchone()[0]
+# Complaint status update
+@app.route("/update/<int:id>", methods=["POST"])
+def update(id):
+    status = request.form["status"]
+    assigned = request.form["assigned"]
+    comment = request.form["comment"]
 
-    cursor.execute("SELECT COUNT(*) FROM complaints WHERE status = 'Completed'")
-    completed = cursor.fetchone()[0]
+    with sqlite3.connect("complaints.db") as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE complaints
+            SET status=?, assigned=?, comment=?
+            WHERE id=?
+        """, (status, assigned, comment, id))
+        conn.commit()
 
-    cursor.execute("SELECT * FROM complaints ORDER BY id DESC")
-    complaints = cursor.fetchall()
+    return redirect(url_for("dashboard"))
 
-    conn.close()
-    return render_template("dashboard.html", total=total, unassigned=unassigned,
-                           in_progress=in_progress, completed=completed,
-                           complaints=complaints)
-
-
-# ✅ WhatsApp Flow Endpoint
-@app.route('/flow-endpoint', methods=['POST'])
-def flow_endpoint():
-    data = request.get_json()
-
-    name = data.get("name")
-    issue = data.get("issue")
-    mobile = data.get("mobile")
-    date = datetime.now().strftime("%Y-%m-%d %H:%M")
-
-    conn = sqlite3.connect('complaints.db')
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO complaints (name, issue, mobile, date, status, assigned_to, comment)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (name, issue, mobile, date, "Unassigned", "", ""))
-    conn.commit()
-    conn.close()
-
-    return {"status": "received"}, 200
-
-
-# ✅ Admin: Update Complaint
-@app.route('/update/<int:complaint_id>', methods=['POST'])
-def update_complaint(complaint_id):
-    status = request.form.get('status')
-    assigned_to = request.form.get('assigned_to')
-    comment = request.form.get('comment')
-
-    conn = sqlite3.connect('complaints.db')
-    cursor = conn.cursor()
-    cursor.execute("""
-        UPDATE complaints
-        SET status = ?, assigned_to = ?, comment = ?
-        WHERE id = ?
-    """, (status, assigned_to, comment, complaint_id))
-    conn.commit()
-    conn.close()
-
-    return redirect(url_for('dashboard'))
-
-
-# ✅ Customer: Track Complaint using Mobile
-@app.route('/track', methods=['GET', 'POST'])
+# Track complaint for customer
+@app.route("/track", methods=["GET", "POST"])
 def track():
     complaints = []
-    if request.method == 'POST':
-        mobile = request.form.get("mobile")
-        conn = sqlite3.connect('complaints.db')
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM complaints WHERE mobile = ?", (mobile,))
-        complaints = cursor.fetchall()
-        conn.close()
-    return render_template('track.html', complaints=complaints)
+    searched = False
+    if request.method == "POST":
+        mobile = request.form["mobile"].strip()
+        searched = True
+        if mobile.isdigit() and len(mobile) == 10:
+            with sqlite3.connect("complaints.db") as conn:
+                cur = conn.cursor()
+                cur.execute("SELECT * FROM complaints WHERE mobile=?", (mobile,))
+                complaints = cur.fetchall()
+    return render_template("track.html", complaints=complaints, searched=searched)
 
+# Complaint submission (optional route if using a public form)
+@app.route("/submit", methods=["POST"])
+def submit_complaint():
+    name = request.form["name"]
+    issue = request.form["issue"]
+    mobile = request.form["mobile"]
+    date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-if __name__ == '__main__':
+    with sqlite3.connect("complaints.db") as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO complaints (name, issue, mobile, date, status, assigned, comment)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (name, issue, mobile, date, "Unassigned", "", ""))
+        conn.commit()
+
+    return redirect(url_for("track"))
+
+if __name__ == "__main__":
     app.run(debug=True)
