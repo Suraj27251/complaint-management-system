@@ -1,97 +1,99 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 import sqlite3
-import os
-from datetime import datetime
 
 app = Flask(__name__)
 
-# Ensure database and complaints table exist
+# Initialize the database
 def init_db():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS complaints (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT,
-                    mobile TEXT,
-                    address TEXT,
-                    description TEXT,
-                    status TEXT DEFAULT 'Pending',
-                    created_at TEXT DEFAULT CURRENT_TIMESTAMP
-                )''')
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS complaints (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            mobile TEXT NOT NULL,
+            complaint TEXT NOT NULL,
+            status TEXT DEFAULT 'Pending'
+        )
+    ''')
     conn.commit()
     conn.close()
 
-init_db()
+@app.before_request
+def before_request():
+    init_db()
 
 @app.route('/')
 def dashboard():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
     c.execute('SELECT COUNT(*) FROM complaints')
-    total_complaints = c.fetchone()[0]
+    total = c.fetchone()[0]
 
     c.execute("SELECT COUNT(*) FROM complaints WHERE status = 'Pending'")
-    pending_complaints = c.fetchone()[0]
-
-    c.execute("SELECT COUNT(*) FROM complaints WHERE status = 'In Progress'")
-    inprogress_complaints = c.fetchone()[0]
+    pending = c.fetchone()[0]
 
     c.execute("SELECT COUNT(*) FROM complaints WHERE status = 'Resolved'")
-    resolved_complaints = c.fetchone()[0]
+    resolved = c.fetchone()[0]
 
-    c.execute("SELECT * FROM complaints ORDER BY created_at DESC LIMIT 10")
+    c.execute("SELECT * FROM complaints ORDER BY id DESC LIMIT 10")
     recent_complaints = c.fetchall()
 
     conn.close()
-
-    return render_template('dashboard.html',
-                           total=total_complaints,
-                           pending=pending_complaints,
-                           inprogress=inprogress_complaints,
-                           resolved=resolved_complaints,
-                           recent_complaints=recent_complaints)
+    return render_template('dashboard.html', total=total, pending=pending, resolved=resolved, recent_complaints=recent_complaints)
 
 @app.route('/submit', methods=['POST'])
 def submit():
     name = request.form['name']
     mobile = request.form['mobile']
-    address = request.form['address']
-    description = request.form['description']
+    complaint = request.form['complaint']
 
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
-    c.execute("INSERT INTO complaints (name, mobile, address, description) VALUES (?, ?, ?, ?)",
-              (name, mobile, address, description))
+    c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)", (name, mobile, complaint))
     conn.commit()
     conn.close()
     return redirect(url_for('dashboard'))
 
-@app.route('/track', methods=['GET', 'POST'])
+@app.route('/track', methods=['POST'])
 def track():
-    result = None
-    if request.method == 'POST':
-        mobile = request.form['mobile']
-        conn = sqlite3.connect('complaints.db')
-        c = conn.cursor()
-        c.execute("SELECT * FROM complaints WHERE mobile = ?", (mobile,))
-        result = c.fetchall()
-        conn.close()
-    return render_template('track.html', result=result)
+    mobile = request.form['mobile']
 
-@app.route('/update/<int:id>', methods=['POST'])
-def update(id):
-    status = request.form['status']
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
-    c.execute("UPDATE complaints SET status = ? WHERE id = ?", (status, id))
+    c.execute("SELECT * FROM complaints WHERE mobile = ?", (mobile,))
+    complaints = c.fetchall()
+    conn.close()
+    return render_template('track.html', complaints=complaints)
+
+@app.route('/update_status/<int:complaint_id>/<status>')
+def update_status(complaint_id, status):
+    conn = sqlite3.connect('complaints.db')
+    c = conn.cursor()
+    c.execute("UPDATE complaints SET status = ? WHERE id = ?", (status, complaint_id))
     conn.commit()
     conn.close()
     return redirect(url_for('dashboard'))
 
-# ✅ Custom 404 error handler
-@app.errorhandler(404)
-def page_not_found(e):
-    return render_template('404.html'), 404
+# ✅ Updated endpoint with area removed
+@app.route('/flow-endpoint', methods=['POST'])
+def flow_endpoint():
+    data = request.get_json()
+
+    name = data.get("name")
+    mobile = data.get("mobile")
+    complaint = data.get("complaint")
+
+    if not all([name, mobile, complaint]):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    conn = sqlite3.connect('complaints.db')
+    c = conn.cursor()
+    c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)", (name, mobile, complaint))
+    conn.commit()
+    conn.close()
+
+    return jsonify({"status": "received"}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
