@@ -1,64 +1,49 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Complaint Management Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
-    <div class="container py-4">
-        <h1 class="mb-4 text-center">Complaint Management Dashboard</h1>
+    <h1>Complaint Dashboard</h1>
 
-        <div class="row text-center mb-4">
-            <div class="col-md-3"><div class="stat-box bg-primary text-white">Total: {{ total }}</div></div>
-            <div class="col-md-3"><div class="stat-box bg-secondary text-white">Unassigned: {{ unassigned }}</div></div>
-            <div class="col-md-3"><div class="stat-box bg-warning text-dark">In Progress: {{ in_progress }}</div></div>
-            <div class="col-md-3"><div class="stat-box bg-success text-white">Completed: {{ completed }}</div></div>
-        </div>
-
-        <h3 class="mb-3">All Complaints</h3>
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped align-middle">
-                <thead class="table-dark">
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Mobile</th>
-                        <th>Message</th>
-                        <th>Location</th>
-                        <th>Status</th>
-                        <th>Update</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for comp in complaints %}
-                    <tr>
-                        <td>{{ comp[0] }}</td>
-                        <td>{{ comp[1] }}</td>
-                        <td>{{ comp[2] }}</td>
-                        <td>{{ comp[3] }}</td>
-                        <td>{{ comp[4] }}</td>
-                        <td>{{ comp[5] }}</td>
-                        <td>
-                            <form method="POST" action="{{ url_for('update_complaint', complaint_id=comp[0]) }}">
-                                <select name="status" class="form-select mb-1">
-                                    <option value="unassigned" {% if comp[5] == 'unassigned' %}selected{% endif %}>Unassigned</option>
-                                    <option value="in progress" {% if comp[5] == 'in progress' %}selected{% endif %}>In Progress</option>
-                                    <option value="completed" {% if comp[5] == 'completed' %}selected{% endif %}>Completed</option>
-                                </select>
-                                <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="7" class="text-center">No complaints found.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+    <div class="stats">
+        <div>Total Complaints: {{ total }}</div>
+        <div>Unassigned: {{ unassigned }}</div>
+        <div>In Progress: {{ in_progress }}</div>
+        <div>Completed: {{ completed }}</div>
     </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th><th>Name</th><th>Email</th><th>Mobile</th><th>Message</th><th>Status</th><th>Remarks</th><th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for comp in complaints %}
+            <tr>
+                <td>{{ comp[0] }}</td>
+                <td>{{ comp[1] }}</td>
+                <td>{{ comp[2] }}</td>
+                <td>{{ comp[3] }}</td>
+                <td>{{ comp[4] }}</td>
+                <td>{{ comp[5] }}</td>
+                <td>{{ comp[6] }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('update_complaint', complaint_id=comp[0]) }}">
+                        <select name="status">
+                            <option {% if comp[5] == 'Unassigned' %}selected{% endif %}>Unassigned</option>
+                            <option {% if comp[5] == 'In Progress' %}selected{% endif %}>In Progress</option>
+                            <option {% if comp[5] == 'Completed' %}selected{% endif %}>Completed</option>
+                        </select>
+                        <input type="text" name="remarks" placeholder="Remarks" value="{{ comp[6] }}">
+                        <button type="submit">Update</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </body>
 </html>
