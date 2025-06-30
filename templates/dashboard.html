@@ -9,37 +9,26 @@
 
     <div class="stats">
         <div>Total Complaints: {{ total }}</div>
-        <div>Unassigned: {{ unassigned }}</div>
-        <div>In Progress: {{ in_progress }}</div>
-        <div>Completed: {{ completed }}</div>
+        <div>Pending: {{ pending }}</div>
+        <div>Resolved: {{ resolved }}</div>
     </div>
 
     <table>
         <thead>
             <tr>
-                <th>ID</th><th>Name</th><th>Email</th><th>Mobile</th><th>Message</th><th>Status</th><th>Remarks</th><th>Action</th>
+                <th>ID</th><th>Name</th><th>Mobile</th><th>Complaint</th><th>Status</th><th>Action</th>
             </tr>
         </thead>
         <tbody>
-            {% for comp in complaints %}
+            {% for comp in recent_complaints %}
             <tr>
                 <td>{{ comp[0] }}</td>
                 <td>{{ comp[1] }}</td>
                 <td>{{ comp[2] }}</td>
                 <td>{{ comp[3] }}</td>
                 <td>{{ comp[4] }}</td>
-                <td>{{ comp[5] }}</td>
-                <td>{{ comp[6] }}</td>
                 <td>
-                    <form method="POST" action="{{ url_for('update_complaint', complaint_id=comp[0]) }}">
-                        <select name="status">
-                            <option {% if comp[5] == 'Unassigned' %}selected{% endif %}>Unassigned</option>
-                            <option {% if comp[5] == 'In Progress' %}selected{% endif %}>In Progress</option>
-                            <option {% if comp[5] == 'Completed' %}selected{% endif %}>Completed</option>
-                        </select>
-                        <input type="text" name="remarks" placeholder="Remarks" value="{{ comp[6] }}">
-                        <button type="submit">Update</button>
-                    </form>
+                    <a href="{{ url_for('update_status', complaint_id=comp[0], status='Resolved') }}">Mark Resolved</a>
                 </td>
             </tr>
             {% endfor %}
