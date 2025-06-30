@@ -36,7 +36,8 @@ def dashboard():
     c.execute("SELECT COUNT(*) FROM complaints WHERE status = 'Resolved'")
     resolved = c.fetchone()[0]
 
-    c.execute("SELECT * FROM complaints ORDER BY id DESC LIMIT 10")
+    # ✅ Updated to show last 50 complaints instead of 10
+    c.execute("SELECT * FROM complaints ORDER BY id DESC LIMIT 50")
     recent_complaints = c.fetchall()
 
     conn.close()
@@ -75,7 +76,6 @@ def update_status(complaint_id, status):
     conn.close()
     return redirect(url_for('dashboard'))
 
-# ✅ Updated endpoint with area removed
 @app.route('/flow-endpoint', methods=['POST'])
 def flow_endpoint():
     data = request.get_json()
