@@ -1,91 +1,108 @@
-from flask import Flask, request, render_template, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 import sqlite3
+import os
 
 app = Flask(__name__)
+DATABASE = 'database.db'
 
-# Home dashboard
+# ✅ Create the table if it doesn't exist
+def init_db():
+    with sqlite3.connect(DATABASE) as conn:
+        c = conn.cursor()
+        c.execute('''CREATE TABLE IF NOT EXISTS complaints (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            mobile TEXT NOT NULL,
+            message TEXT NOT NULL,
+            status TEXT DEFAULT 'Unassigned',
+            remarks TEXT
+        )''')
+        conn.commit()
+
+
+# ✅ Make sure DB is initialized before the first request
+@app.before_first_request
+def initialize():
+    init_db()
+
+
 @app.route('/')
 def dashboard():
-    conn = sqlite3.connect('complaints.db')
+    conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
-
-    # Get total complaints
-    c.execute('SELECT COUNT(*) FROM complaints')
+    c.execute("SELECT COUNT(*) FROM complaints")
     total = c.fetchone()[0]
 
-    # Get status counts
-    c.execute("SELECT COUNT(*) FROM complaints WHERE status = 'unassigned'")
+    c.execute("SELECT COUNT(*) FROM complaints WHERE status = 'Unassigned'")
     unassigned = c.fetchone()[0]
 
-    c.execute("SELECT COUNT(*) FROM complaints WHERE status = 'in progress'")
+    c.execute("SELECT COUNT(*) FROM complaints WHERE status = 'In Progress'")
     in_progress = c.fetchone()[0]
 
-    c.execute("SELECT COUNT(*) FROM complaints WHERE status = 'completed'")
+    c.execute("SELECT COUNT(*) FROM complaints WHERE status = 'Completed'")
     completed = c.fetchone()[0]
 
-    # Get all complaints for table
     c.execute("SELECT * FROM complaints ORDER BY id DESC")
     complaints = c.fetchall()
 
     conn.close()
-    return render_template(
-        'dashboard.html',
-        total=total,
-        unassigned=unassigned,
-        in_progress=in_progress,
-        completed=completed,
-        complaints=complaints
-    )
+
+    return render_template("dashboard.html", total=total, unassigned=unassigned,
+                           in_progress=in_progress, completed=completed, complaints=complaints)
 
 
-# Update complaint status
 @app.route('/update/<int:complaint_id>', methods=['POST'])
 def update_complaint(complaint_id):
-    new_status = request.form.get('status')
-    if new_status:
-        conn = sqlite3.connect('complaints.db')
-        c = conn.cursor()
-        c.execute("UPDATE complaints SET status = ? WHERE id = ?", (new_status, complaint_id))
-        conn.commit()
-        conn.close()
-    return redirect(url_for('dashboard'))
+    status = request.form.get("status")
+    remarks = request.form.get("remarks")
+
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("UPDATE complaints SET status = ?, remarks = ? WHERE id = ?",
+              (status, remarks, complaint_id))
+    conn.commit()
+    conn.close()
+    return redirect(url_for("dashboard"))
 
 
-# Track complaint
 @app.route('/track', methods=['GET', 'POST'])
 def track():
+    complaints = []
     if request.method == 'POST':
-        mobile = request.form.get('mobile')
-        conn = sqlite3.connect('complaints.db')
+        mobile = request.form.get("mobile")
+        conn = sqlite3.connect(DATABASE)
         c = conn.cursor()
         c.execute("SELECT * FROM complaints WHERE mobile = ?", (mobile,))
         complaints = c.fetchall()
         conn.close()
-        return render_template('track.html', complaints=complaints, mobile=mobile)
-    return render_template('track.html', complaints=None)
+    return render_template("track.html", complaints=complaints)
 
 
-# WhatsApp flow endpoint
 @app.route('/flow-endpoint', methods=['POST'])
 def flow_endpoint():
     data = request.json
     name = data.get('name')
+    email = data.get('email')
     mobile = data.get('mobile')
     message = data.get('message')
-    location = data.get('location')
 
-    conn = sqlite3.connect('complaints.db')
+    conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
-    c.execute('''
-        INSERT INTO complaints (name, mobile, message, location, status)
-        VALUES (?, ?, ?, ?, ?)
-    ''', (name, mobile, message, location, 'unassigned'))
+    c.execute("INSERT INTO complaints (name, email, mobile, message) VALUES (?, ?, ?, ?)",
+              (name, email, mobile, message))
     conn.commit()
     conn.close()
 
-    return jsonify({'message': 'Complaint received'}), 201
+    return jsonify({"message": "Complaint received"}), 201
 
 
-# Run the app (comment out if using gunicorn)
-# if __name__ == '__main__':
-#     app.run(debug=True)
+# Optional CLI route to force-create database if ever needed
+@app.route('/init-db')
+def manual_db_init():
+    init_db()
+    return "Database initialized!"
+
+if __name__ == '__main__':
+    init_db()
+    app.run(debug=True)
