@@ -2,154 +2,73 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Admin Dashboard - Complaint Management</title>
+  <title>Admin Dashboard</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      background: #f4f6f9;
-    }
-
-    nav {
-      background: #2c3e50;
-      padding: 10px 20px;
-      color: white;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .nav-brand {
-      font-size: 20px;
-      font-weight: bold;
-    }
-
-    .dashboard {
-      padding: 20px;
-    }
-
-    .card-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      margin-bottom: 25px;
-    }
-
-    .card {
-      background: white;
-      padding: 20px;
-      flex: 1;
-      min-width: 200px;
-      border-left: 5px solid #007bff;
-      border-radius: 6px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.05);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      border-radius: 6px;
-      overflow: hidden;
-    }
-
-    table th, table td {
-      padding: 12px;
-      border-bottom: 1px solid #eee;
-      text-align: left;
-    }
-
-    table th {
-      background: #007bff;
-      color: white;
-    }
-
-    .chart-container {
-      margin-top: 30px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-    }
-
-    canvas {
-      background: white;
-      border-radius: 6px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.05);
-      padding: 15px;
-    }
-
-    select, input[type="text"] {
-      padding: 5px;
-    }
-
-    button {
-      background: #28a745;
-      color: white;
-      padding: 6px 12px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-  </style>
 </head>
 <body>
-
-<nav>
-  <div class="nav-brand">Complaint Admin Dashboard</div>
-</nav>
+<nav><div class="nav-brand">Complaint Admin Dashboard</div></nav>
 
 <div class="dashboard">
   <div class="card-container">
-    <div class="card">
-      <h3>Total Complaints</h3>
-      <p>{{ total }}</p>
-    </div>
-    <div class="card">
-      <h3>Unassigned</h3>
-      <p>{{ unassigned }}</p>
-    </div>
-    <div class="card">
-      <h3>In Progress</h3>
-      <p>{{ in_progress }}</p>
-    </div>
-    <div class="card">
-      <h3>Completed</h3>
-      <p>{{ completed }}</p>
-    </div>
+    <div class="card"><h3>Total</h3><p>{{ total }}</p></div>
+    <div class="card"><h3>Unassigned</h3><p>{{ unassigned }}</p></div>
+    <div class="card"><h3>In Progress</h3><p>{{ in_progress }}</p></div>
+    <div class="card"><h3>Completed</h3><p>{{ completed }}</p></div>
   </div>
 
   <h2>All Complaints</h2>
   <table>
     <thead>
-      <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Issue</th>
-        <th>Mobile</th>
-        <th>Date</th>
-        <th>Status</th>
-        <th>Assigned</th>
-        <th>Comment</th>
-        <th>Update</th>
-      </tr>
+      <tr><th>ID</th><th>Name</th><th>Issue</th><th>Mobile</th><th>Date</th>
+          <th>Status</th><th>Assigned</th><th>Comment</th><th>Action</th></tr>
     </thead>
     <tbody>
-      {% for complaint in complaints %}
+      {% for comp in complaints %}
       <tr>
-        <form method="POST" action="{{ url_for('update_complaint', complaint_id=complaint[0]) }}">
-          <td>{{ complaint[0] }}</td>
-          <td>{{ complaint[1] }}</td>
-          <td>{{ complaint[2] }}</td>
-          <td>{{ complaint[3] }}</td>
-          <td>{{ complaint[4] }}</td>
+        <form method="POST" action="{{ url_for('update_complaint', complaint_id=comp[0]) }}">
+          <td>{{ comp[0] }}</td>
+          <td>{{ comp[1] }}</td>
+          <td>{{ comp[2] }}</td>
+          <td>{{ comp[3] }}</td>
+          <td>{{ comp[4] }}</td>
           <td>
             <select name="status">
-              <option value="Unassigned" {% if complaint[5] == 'Unassigned' %}selected{% endif %}>Unassigned</option>
-              <option value="In Progress" {% if complaint[5] == 'In Progress' %}selected{% endif %}>In Progress</option>
-              <option value="Completed" {% if complaint[5] == 'Completed' %}selected{% endif %}>Completed</option>
+              {% for st in ['Unassigned','In Progress','Completed'] %}
+                <option value="{{ st }}" {% if comp[5]==st %}selected{% endif %}>{{ st }}</option>
+              {% endfor %}
             </select>
           </td>
-          <td><input type="text" name="assigned_to" value="{{ complaint[6] }}"></td>
-          <td><input type="text" name="comment" value="{{ co
+          <td><input type="text" name="assigned_to" value="{{ comp[6] }}"></td>
+          <td><input type="text" name="comment" value="{{ comp[7] }}"></td>
+          <td><button type="submit">Update</button></td>
+        </form>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="chart-container">
+    <canvas id="barChart"></canvas>
+    <canvas id="pieChart"></canvas>
+  </div>
+</div>
+
+<script>
+  new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+      labels:['Unassigned','In Progress','Completed'],
+      datasets:[{ data:[{{unassigned}},{{in_progress}},{{completed}}], backgroundColor:['#ffc107','#17a2b8','#28a745'] }]
+    }
+  });
+  new Chart(document.getElementById('pieChart'), {
+    type: 'pie',
+    data: {
+      labels:['Unassigned','In Progress','Completed'],
+      datasets:[{ data:[{{unassigned}},{{in_progress}},{{completed}}], backgroundColor:['#ffc107','#17a2b8','#28a745'] }]
+    }
+  });
+</script>
+</body>
+</html>
