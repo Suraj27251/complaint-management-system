@@ -5,24 +5,24 @@ from datetime import datetime
 app = Flask(__name__)
 DB_NAME = "complaints.db"
 
-# ✅ Initialize DB
+# Initialize database if not exists
 def init_db():
     with sqlite3.connect(DB_NAME) as conn:
         conn.execute("""
             CREATE TABLE IF NOT EXISTS complaints (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT,
-                issue TEXT,
-                mobile TEXT,
-                date TEXT,
-                status TEXT,
-                assigned TEXT,
-                comment TEXT
+                name TEXT NOT NULL,
+                issue TEXT NOT NULL,
+                mobile TEXT NOT NULL,
+                date TEXT NOT NULL,
+                status TEXT DEFAULT 'Unassigned',
+                assigned TEXT DEFAULT '',
+                comment TEXT DEFAULT ''
             )
         """)
 init_db()
 
-# ✅ Dashboard for Admin
+# Admin dashboard
 @app.route('/', methods=['GET', 'POST'])
 def dashboard():
     if request.method == 'POST':
@@ -45,7 +45,6 @@ def dashboard():
         cur.execute("SELECT * FROM complaints ORDER BY date DESC")
         complaints = cur.fetchall()
 
-        # Stats
         cur.execute("SELECT COUNT(*) FROM complaints")
         total = cur.fetchone()[0]
 
@@ -62,15 +61,20 @@ def dashboard():
                            in_progress=in_progress, completed=completed,
                            complaints=complaints)
 
-# ✅ Complaint Tracking by Customer (only 10-digit mobile)
+# Track complaint (customer side)
 @app.route('/track', methods=['GET', 'POST'])
 def track():
     result = []
     searched = False
 
     if request.method == 'POST':
-        mobile = request.form.get("mobile", "").strip()[-10:]
-        if mobile:
+        mobile = request.form.get("mobile", "").strip()
+        if mobile.startswith("+91"):
+            mobile = mobile[3:]
+        elif mobile.startswith("91") and len(mobile) > 10:
+            mobile = mobile[2:]
+
+        if len(mobile) == 10:
             with sqlite3.connect(DB_NAME) as conn:
                 cur = conn.cursor()
                 cur.execute("SELECT * FROM complaints WHERE mobile=? ORDER BY date DESC", (mobile,))
@@ -79,23 +83,31 @@ def track():
 
     return render_template("track.html", complaints=result, searched=searched)
 
-# ✅ WhatsApp Flow Endpoint (POST complaint)
+# WhatsApp / API complaint submission endpoint
 @app.route('/flow-endpoint', methods=['POST'])
 def flow_endpoint():
     try:
         data = request.get_json(force=True)
-        name = data.get('name')
-        issue = data.get('issue')
-        mobile = data.get('mobile', '').strip()[-10:]
-        date = datetime.now().strftime('%Y-%m-%d %H:%M')
 
-        if not (name and issue and mobile):
-            return jsonify({"error": "Missing required fields"}), 400
+        name = str(data.get("name", "")).strip()
+        issue = str(data.get("issue", "")).strip()
+        mobile = str(data.get("mobile", "")).strip()
+
+        if mobile.startswith("+91"):
+            mobile = mobile[3:]
+        elif mobile.startswith("91") and len(mobile) > 10:
+            mobile = mobile[2:]
+        mobile = mobile[-10:]  # Ensure it's the last 10 digits
+
+        if not (name and issue and len(mobile) == 10 and mobile.isdigit()):
+            return jsonify({"error": "Missing or invalid fields"}), 400
+
+        date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         with sqlite3.connect(DB_NAME) as conn:
             conn.execute("""
-                INSERT INTO complaints (name, issue, mobile, date, status, assigned, comment)
-                VALUES (?, ?, ?, ?, 'Unassigned', '', '')
+                INSERT INTO complaints (name, issue, mobile, date)
+                VALUES (?, ?, ?, ?)
             """, (name, issue, mobile, date))
 
         return jsonify({"message": "Complaint received successfully."}), 201
@@ -103,11 +115,11 @@ def flow_endpoint():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# ✅ Health check route
+# Health check
 @app.route('/api/ping', methods=['GET'])
 def ping():
-    return jsonify({"message": "API is working"}), 200
+    return jsonify({"status": "UP"}), 200
 
-# ✅ Run app (locally)
+# Run server locally (for development)
 if __name__ == '__main__':
     app.run(debug=True)
