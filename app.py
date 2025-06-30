@@ -5,26 +5,25 @@ import os
 app = Flask(__name__)
 DATABASE = 'database.db'
 
-# ✅ Create the table if it doesn't exist
+# ✅ Ensure complaints table is created
 def init_db():
     with sqlite3.connect(DATABASE) as conn:
         c = conn.cursor()
-        c.execute('''CREATE TABLE IF NOT EXISTS complaints (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL,
-            mobile TEXT NOT NULL,
-            message TEXT NOT NULL,
-            status TEXT DEFAULT 'Unassigned',
-            remarks TEXT
-        )''')
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS complaints (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                email TEXT NOT NULL,
+                mobile TEXT NOT NULL,
+                message TEXT NOT NULL,
+                status TEXT DEFAULT 'Unassigned',
+                remarks TEXT
+            )
+        ''')
         conn.commit()
 
-
-# ✅ Make sure DB is initialized before the first request
-@app.before_first_request
-def initialize():
-    init_db()
+# ✅ Immediately initialize DB at import time
+init_db()
 
 
 @app.route('/')
@@ -45,7 +44,6 @@ def dashboard():
 
     c.execute("SELECT * FROM complaints ORDER BY id DESC")
     complaints = c.fetchall()
-
     conn.close()
 
     return render_template("dashboard.html", total=total, unassigned=unassigned,
@@ -97,12 +95,12 @@ def flow_endpoint():
     return jsonify({"message": "Complaint received"}), 201
 
 
-# Optional CLI route to force-create database if ever needed
+# Optional route to manually reset DB (⚠️ Don't use in production unless needed)
 @app.route('/init-db')
-def manual_db_init():
+def manual_init():
     init_db()
-    return "Database initialized!"
+    return "Database initialized successfully!"
+
 
 if __name__ == '__main__':
-    init_db()
     app.run(debug=True)
