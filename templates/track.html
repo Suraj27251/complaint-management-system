@@ -1,48 +1,34 @@
-<!-- templates/track.html -->
+<!-- track.html -->
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Track Complaint | Smart CMS</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body { background-color: #f8f9fa; }
-    .container { margin-top: 50px; max-width: 700px; }
-  </style>
+    <title>Track Complaint</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-<nav class="navbar navbar-dark bg-primary">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="/">Smart CMS</a>
-  </div>
-</nav>
+    <div class="container">
+        <h2>Track Your Complaint</h2>
+        <form method="POST">
+            <input type="text" name="mobile" placeholder="Enter your mobile number (without +91)" required>
+            <button type="submit">Track</button>
+        </form>
 
-<div class="container">
-  <h3 class="text-center my-4">🔎 Track Complaint</h3>
-
-  <form method="POST" class="mb-4">
-    <div class="input-group">
-      <input type="text" name="complaint_id" class="form-control" placeholder="Enter Complaint ID" required>
-      <button class="btn btn-primary" type="submit">Check</button>
+        {% if complaints %}
+            <h3>Complaint Status:</h3>
+            {% for c in complaints %}
+                <div class="card">
+                    <p><strong>ID:</strong> {{ c[0] }}</p>
+                    <p><strong>Name:</strong> {{ c[1] }}</p>
+                    <p><strong>Issue:</strong> {{ c[2] }}</p>
+                    <p><strong>Date:</strong> {{ c[4] }}</p>
+                    <p><strong>Status:</strong> {{ c[5] }}</p>
+                    <p><strong>Assigned To:</strong> {{ c[6] }}</p>
+                    <p><strong>Comment:</strong> {{ c[7] }}</p>
+                </div>
+            {% endfor %}
+        {% elif complaints is not none %}
+            <p>No complaints found for this mobile number.</p>
+        {% endif %}
     </div>
-  </form>
-
-  {% if complaint %}
-    <div class="card">
-      <div class="card-header">Complaint ID: {{ complaint['id'] }}</div>
-      <div class="card-body">
-        <p><strong>Name:</strong> {{ complaint['name'] }}</p>
-        <p><strong>Issue:</strong> {{ complaint['issue'] }}</p>
-        <p><strong>Date:</strong> {{ complaint['date'] }}</p>
-        <p><strong>Status:</strong> {{ complaint['status'] }}</p>
-        <p><strong>Assigned To:</strong> {{ complaint['assigned_to'] or "Not yet assigned" }}</p>
-        <p><strong>Admin Comment:</strong> {{ complaint['comment'] or "No comment yet" }}</p>
-      </div>
-    </div>
-  {% elif searched %}
-    <div class="alert alert-warning mt-3">Complaint ID not found.</div>
-  {% endif %}
-</div>
 </body>
 </html>
