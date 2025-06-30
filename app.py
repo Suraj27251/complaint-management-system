@@ -5,25 +5,28 @@ import os
 app = Flask(__name__)
 DB_PATH = "complaints.db"
 
-# ✅ Initialize DB
 def init_db():
-    if not os.path.exists(DB_PATH):
-        with sqlite3.connect(DB_PATH) as conn:
-            cursor = conn.cursor()
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS complaints (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT,
-                    phone TEXT,
-                    issue TEXT,
-                    location TEXT,
-                    status TEXT DEFAULT 'Unassigned',
-                    comment TEXT DEFAULT '',
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                );
-            """)
-            conn.commit()
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS complaints (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT,
+                phone TEXT,
+                issue TEXT,
+                location TEXT,
+                status TEXT DEFAULT 'Unassigned',
+                comment TEXT DEFAULT '',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
+        conn.commit()
 
+@app.before_first_request
+def initialize():
+    init_db()
+
+# 👇 Your routes continue here...
 # ✅ Save complaint
 def save_complaint(name, phone, issue, location):
     with sqlite3.connect(DB_PATH) as conn:
