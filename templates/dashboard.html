@@ -2,73 +2,97 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Admin Dashboard</title>
+  <title>Complaint Admin Dashboard</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<nav><div class="nav-brand">Complaint Admin Dashboard</div></nav>
 
-<div class="dashboard">
-  <div class="card-container">
-    <div class="card"><h3>Total</h3><p>{{ total }}</p></div>
-    <div class="card"><h3>Unassigned</h3><p>{{ unassigned }}</p></div>
-    <div class="card"><h3>In Progress</h3><p>{{ in_progress }}</p></div>
-    <div class="card"><h3>Completed</h3><p>{{ completed }}</p></div>
+<nav>
+  <div class="nav-brand">Smart CMS Admin Dashboard</div>
+</nav>
+
+<main class="container">
+  <h1>Complaint Summary</h1>
+  <div class="stats">
+    <div class="stat-box">Total<br><span>{{ total }}</span></div>
+    <div class="stat-box warning">Unassigned<br><span>{{ unassigned }}</span></div>
+    <div class="stat-box info">In Progress<br><span>{{ in_progress }}</span></div>
+    <div class="stat-box success">Completed<br><span>{{ completed }}</span></div>
   </div>
 
-  <h2>All Complaints</h2>
-  <table>
-    <thead>
-      <tr><th>ID</th><th>Name</th><th>Issue</th><th>Mobile</th><th>Date</th>
-          <th>Status</th><th>Assigned</th><th>Comment</th><th>Action</th></tr>
-    </thead>
-    <tbody>
-      {% for comp in complaints %}
-      <tr>
-        <form method="POST" action="{{ url_for('update_complaint', complaint_id=comp[0]) }}">
-          <td>{{ comp[0] }}</td>
-          <td>{{ comp[1] }}</td>
-          <td>{{ comp[2] }}</td>
-          <td>{{ comp[3] }}</td>
-          <td>{{ comp[4] }}</td>
-          <td>
-            <select name="status">
-              {% for st in ['Unassigned','In Progress','Completed'] %}
-                <option value="{{ st }}" {% if comp[5]==st %}selected{% endif %}>{{ st }}</option>
-              {% endfor %}
-            </select>
-          </td>
-          <td><input type="text" name="assigned_to" value="{{ comp[6] }}"></td>
-          <td><input type="text" name="comment" value="{{ comp[7] }}"></td>
-          <td><button type="submit">Update</button></td>
-        </form>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
-  <div class="chart-container">
+  <section class="charts">
     <canvas id="barChart"></canvas>
     <canvas id="pieChart"></canvas>
+  </section>
+
+  <h2>All Complaints</h2>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Issue</th>
+          <th>Mobile</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Assigned</th>
+          <th>Comment</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for comp in complaints %}
+        <tr>
+          <form method="POST" action="{{ url_for('update_complaint', complaint_id=comp[0]) }}">
+            <td>{{ comp[0] }}</td>
+            <td>{{ comp[1] }}</td>
+            <td>{{ comp[2] }}</td>
+            <td>{{ comp[3] }}</td>
+            <td>{{ comp[4] }}</td>
+            <td>
+              <select name="status">
+                {% for st in ['Unassigned','In Progress','Completed'] %}
+                  <option value="{{ st }}" {% if comp[5]==st %}selected{% endif %}>{{ st }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td><input type="text" name="assigned_to" value="{{ comp[6] or '' }}"></td>
+            <td><input type="text" name="comment" value="{{ comp[7] or '' }}"></td>
+            <td><button type="submit">Update</button></td>
+          </form>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
-</div>
+</main>
 
 <script>
   new Chart(document.getElementById('barChart'), {
     type: 'bar',
     data: {
-      labels:['Unassigned','In Progress','Completed'],
-      datasets:[{ data:[{{unassigned}},{{in_progress}},{{completed}}], backgroundColor:['#ffc107','#17a2b8','#28a745'] }]
+      labels: ['Unassigned', 'In Progress', 'Completed'],
+      datasets: [{
+        label: 'Complaints',
+        data: [{{ unassigned }}, {{ in_progress }}, {{ completed }}],
+        backgroundColor: ['#ffc107', '#17a2b8', '#28a745']
+      }]
     }
   });
+
   new Chart(document.getElementById('pieChart'), {
     type: 'pie',
     data: {
-      labels:['Unassigned','In Progress','Completed'],
-      datasets:[{ data:[{{unassigned}},{{in_progress}},{{completed}}], backgroundColor:['#ffc107','#17a2b8','#28a745'] }]
+      labels: ['Unassigned', 'In Progress', 'Completed'],
+      datasets: [{
+        data: [{{ unassigned }}, {{ in_progress }}, {{ completed }}],
+        backgroundColor: ['#ffc107', '#17a2b8', '#28a745']
+      }]
     }
   });
 </script>
+
 </body>
 </html>
