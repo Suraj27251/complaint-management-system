@@ -1,22 +1,124 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dashboard</title>
+    <title>Complaint Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            padding: 20px;
+            background: #f2f5f9;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+        }
+
+        .stats div {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            width: 30%;
+            text-align: center;
+        }
+
+        .chart-container {
+            width: 400px;
+            margin: 0 auto 40px auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        a.button {
+            padding: 5px 10px;
+            background-color: #2196F3;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+
+        a.button:hover {
+            background-color: #0b7dda;
+        }
+    </style>
 </head>
 <body>
+
     <h1>Complaint Dashboard</h1>
 
     <div class="stats">
-        <div>Total Complaints: {{ total }}</div>
+        <div>Total: {{ total }}</div>
         <div>Pending: {{ pending }}</div>
         <div>Resolved: {{ resolved }}</div>
     </div>
 
+    <div class="chart-container">
+        <canvas id="statusChart"></canvas>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('statusChart').getContext('2d');
+        const statusChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Pending', 'Resolved'],
+                datasets: [{
+                    label: 'Complaint Status',
+                    data: [{{ pending }}, {{ resolved }}],
+                    backgroundColor: ['#FF6384', '#36A2EB'],
+                    borderColor: ['#fff', '#fff'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true
+            }
+        });
+    </script>
+
+    <h2 style="margin-top: 50px;">Recent Complaints</h2>
     <table>
         <thead>
             <tr>
-                <th>ID</th><th>Name</th><th>Mobile</th><th>Complaint</th><th>Status</th><th>Action</th>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Mobile</th>
+                <th>Complaint</th>
+                <th>Status</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
@@ -28,11 +130,16 @@
                 <td>{{ comp[3] }}</td>
                 <td>{{ comp[4] }}</td>
                 <td>
-                    <a href="{{ url_for('update_status', complaint_id=comp[0], status='Resolved') }}">Mark Resolved</a>
+                    {% if comp[4] != 'Resolved' %}
+                        <a class="button" href="{{ url_for('update_status', complaint_id=comp[0], status='Resolved') }}">Mark Resolved</a>
+                    {% else %}
+                        <span style="color: green;">✔ Done</span>
+                    {% endif %}
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+
 </body>
 </html>
