@@ -1,101 +1,46 @@
-/* General layout and page background */
 body {
-    background-color: #f8f9fa;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 0;
+    font-family: Arial, sans-serif;
+    margin: 40px;
+    background-color: #f9f9f9;
 }
 
-/* Header styling */
-h1, h3 {
-    color: #343a40;
+h1 {
+    color: #333;
     text-align: center;
 }
 
-/* Stat box styling */
-.stat-box {
-    font-size: 1.2rem;
-    padding: 15px;
-    border-radius: 8px;
-    font-weight: bold;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+.stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
 }
 
-/* Table styling */
 table {
-    margin-top: 10px;
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: white;
 }
 
-.table th, .table td {
-    vertical-align: middle;
+th, td {
+    padding: 12px;
+    border: 1px solid #ddd;
     text-align: center;
 }
 
-/* Form inside table */
+th {
+    background-color: #f2f2f2;
+    color: #333;
+}
+
 form {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
 }
 
-/* Buttons */
-button {
-    min-width: 80px;
-}
-
-/* Track Page Styling */
-.track-container {
-    max-width: 700px;
-    margin: 50px auto;
-    background-color: #ffffff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
-}
-
-.track-container h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #0056b3;
-}
-
-.track-form label {
-    font-weight: 500;
-    margin-bottom: 5px;
-}
-
-.track-form input[type="text"] {
-    width: 100%;
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    margin-bottom: 15px;
-}
-
-.track-form button {
-    background-color: #007bff;
-    color: #fff;
-    padding: 10px 25px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: 0.3s ease;
-}
-
-.track-form button:hover {
-    background-color: #0056b3;
-}
-
-/* Complaint result card */
-.result-box {
-    background-color: #e9ecef;
-    padding: 15px;
-    border-radius: 8px;
-    margin-top: 20px;
-}
-
-@media (max-width: 576px) {
-    .stat-box {
-        margin-bottom: 15px;
-    }
+input, select, button {
+    margin: 5px 0;
+    padding: 5px;
+    font-size: 14px;
 }
