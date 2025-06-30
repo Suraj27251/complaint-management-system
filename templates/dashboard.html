@@ -1,50 +1,86 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Dashboard</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <meta charset="UTF-8">
+    <title>Complaint Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h1>🧑‍💻 Admin Dashboard</h1>
+<nav class="topbar">
+    <span>📡 Smart CMS</span>
+    <select class="language">
+        <option>EN</option>
+        <option>HI</option>
+    </select>
+</nav>
+
+<div class="sidebar">
+    <ul>
+        <li><a href="/">📊 Dashboard</a></li>
+        <li><a href="/track">📝 Track Complaints</a></li>
+    </ul>
+</div>
+
+<div class="main-content">
+    <h1>Complaint Dashboard</h1>
+    <div class="cards">
+        <div class="card">{{ total }}<br><span>Total</span></div>
+        <div class="card">{{ unassigned }}<br><span>Unassigned</span></div>
+        <div class="card">{{ in_progress }}<br><span>In Progress</span></div>
+        <div class="card">{{ completed }}<br><span>Completed</span></div>
+    </div>
+
+    <div class="charts">
+        <canvas id="barChart"></canvas>
+        <canvas id="pieChart"></canvas>
+    </div>
+
+    <h2>Recent Complaints</h2>
     <table>
-      <thead>
+        <thead>
         <tr>
-          <th>Ticket ID</th>
-          <th>Name</th>
-          <th>Phone</th>
-          <th>Issue</th>
-          <th>Status</th>
-          <th>Time</th>
-          <th>Update</th>
+            <th>ID</th><th>Name</th><th>Phone</th><th>Issue</th><th>Location</th><th>Status</th><th>Created</th>
         </tr>
-      </thead>
-      <tbody>
+        </thead>
+        <tbody>
         {% for c in complaints %}
-        <tr>
-          <td>{{ c['complaint_id'] }}</td>
-          <td>{{ c['name'] }}</td>
-          <td>{{ c['phone'] }}</td>
-          <td>{{ c['issue'] }}</td>
-          <td>{{ c['status'] }}</td>
-          <td>{{ c['timestamp'] }}</td>
-          <td>
-            <form method="POST" action="/update_status">
-              <input type="hidden" name="ticket_id" value="{{ c['complaint_id'] }}">
-              <select name="status">
-                <option value="Pending" {% if c['status']=='Pending' %}selected{% endif %}>Pending</option>
-                <option value="In Progress" {% if c['status']=='In Progress' %}selected{% endif %}>In Progress</option>
-                <option value="Resolved" {% if c['status']=='Resolved' %}selected{% endif %}>Resolved</option>
-              </select>
-              <button type="submit">Update</button>
-            </form>
-          </td>
-        </tr>
+            <tr>
+                <td>{{ c[0] }}</td>
+                <td>{{ c[1] }}</td>
+                <td>{{ c[2] }}</td>
+                <td>{{ c[3] }}</td>
+                <td>{{ c[4] }}</td>
+                <td>{{ c[5] }}</td>
+                <td>{{ c[7] }}</td>
+            </tr>
         {% endfor %}
-      </tbody>
+        </tbody>
     </table>
-  </div>
+</div>
+
+<script>
+const barChart = new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+        labels: ['Unassigned', 'In Progress', 'Completed'],
+        datasets: [{
+            label: 'Complaints Status',
+            data: [{{ unassigned }}, {{ in_progress }}, {{ completed }}],
+            backgroundColor: ['#e74c3c', '#f1c40f', '#2ecc71']
+        }]
+    }
+});
+const pieChart = new Chart(document.getElementById('pieChart'), {
+    type: 'pie',
+    data: {
+        labels: ['Unassigned', 'In Progress', 'Completed'],
+        datasets: [{
+            data: [{{ unassigned }}, {{ in_progress }}, {{ completed }}],
+            backgroundColor: ['#e74c3c', '#f1c40f', '#2ecc71']
+        }]
+    }
+});
+</script>
 </body>
 </html>

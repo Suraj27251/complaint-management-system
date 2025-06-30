@@ -1,99 +1,104 @@
-from flask import Flask, render_template, request, redirect, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 import sqlite3
-import uuid
-from datetime import datetime
+import os
 
 app = Flask(__name__)
+DB_PATH = "complaints.db"
 
-# ------------------- Database Connection -------------------
-def db_connection():
-    conn = sqlite3.connect('database/complaints.db')
-    return conn
+# ✅ Initialize DB
+def init_db():
+    if not os.path.exists(DB_PATH):
+        with sqlite3.connect(DB_PATH) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS complaints (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT,
+                    phone TEXT,
+                    issue TEXT,
+                    location TEXT,
+                    status TEXT DEFAULT 'Unassigned',
+                    comment TEXT DEFAULT '',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            """)
+            conn.commit()
 
-# ------------------- Home Page -------------------
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-# ------------------- Track Complaint Page -------------------
-@app.route('/track', methods=['GET', 'POST'])
-def track():
-    ticket = None
-    if request.method == 'POST':
-        ticket_id = request.form['ticket_id']
-        conn = db_connection()
+# ✅ Save complaint
+def save_complaint(name, phone, issue, location):
+    with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM complaints WHERE complaint_id=?", (ticket_id,))
-        ticket = cursor.fetchone()
-        conn.close()
-    return render_template('track.html', ticket=ticket)
+        cursor.execute("""
+            INSERT INTO complaints (name, phone, issue, location)
+            VALUES (?, ?, ?, ?)
+        """, (name, phone, issue, location))
+        conn.commit()
 
-# ------------------- Admin Dashboard -------------------
-@app.route('/dashboard')
+# ✅ Dashboard Stats + Complaints
+def get_stats():
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM complaints")
+        total = cursor.fetchone()[0]
+
+        cursor.execute("SELECT COUNT(*) FROM complaints WHERE status='Unassigned'")
+        unassigned = cursor.fetchone()[0]
+
+        cursor.execute("SELECT COUNT(*) FROM complaints WHERE status='In Progress'")
+        in_progress = cursor.fetchone()[0]
+
+        cursor.execute("SELECT COUNT(*) FROM complaints WHERE status='Completed'")
+        completed = cursor.fetchone()[0]
+
+        cursor.execute("SELECT * FROM complaints ORDER BY created_at DESC")
+        complaints = cursor.fetchall()
+
+    return total, unassigned, in_progress, completed, complaints
+
+# ✅ Routes
+@app.route('/')
 def dashboard():
-    conn = db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM complaints ORDER BY timestamp DESC")
-    complaints = cursor.fetchall()
-    conn.close()
-    return render_template('dashboard.html', complaints=complaints)
+    total, unassigned, in_progress, completed, complaints = get_stats()
+    return render_template("dashboard.html", total=total, unassigned=unassigned,
+                           in_progress=in_progress, completed=completed,
+                           complaints=complaints)
 
-# ------------------- WhatsApp Flow Endpoint -------------------
+@app.route('/track')
+def track():
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM complaints ORDER BY created_at DESC")
+        complaints = cursor.fetchall()
+    return render_template("track.html", complaints=complaints)
+
+@app.route('/update/<int:complaint_id>', methods=['POST'])
+def update_complaint(complaint_id):
+    status = request.form.get("status")
+    comment = request.form.get("comment")
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE complaints
+            SET status = ?, comment = ?
+            WHERE id = ?
+        """, (status, comment, complaint_id))
+        conn.commit()
+    return redirect(url_for('track'))
+
+# ✅ WhatsApp Flow endpoint
 @app.route('/flow-endpoint', methods=['POST'])
 def flow_endpoint():
     try:
-        data = request.get_json()
-
-        # Extract WhatsApp form fields — make sure they match your Flow's keys
-        name = data['form_data'].get('name')
-        phone = data['form_data'].get('phone')
-        issue = data['form_data'].get('issue')
-
-        # Generate ticket
-        ticket_id = str(uuid.uuid4())[:8]
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-        # Save to database
-        conn = db_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO complaints (complaint_id, name, phone, issue, status, timestamp)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (ticket_id, name, phone, issue, "Pending", timestamp))
-        conn.commit()
-        conn.close()
-
-        return jsonify({"status": "success", "ticket_id": ticket_id}), 200
-
+        data = request.get_json(force=True)
+        name = data.get("name", "Unknown")
+        phone = data.get("phone", "Unknown")
+        issue = data.get("issue", "Not specified")
+        location = data.get("location", "Not specified")
+        save_complaint(name, phone, issue, location)
+        return jsonify({"status": "received"}), 200
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 400
+        return jsonify({"error": str(e)}), 400
 
-# ------------------- Manual Form Submission (Optional) -------------------
-@app.route('/submit', methods=['POST'])
-def submit_complaint():
-    name = request.form['name']
-    phone = request.form['phone']
-    issue = request.form['issue']
-
-    ticket_id = str(uuid.uuid4())[:8]
-    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-    conn = db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO complaints (complaint_id, name, phone, issue, status, timestamp)
-        VALUES (?, ?, ?, ?, ?, ?)
-    """, (ticket_id, name, phone, issue, "Pending", timestamp))
-    conn.commit()
-    conn.close()
-
-    return redirect('/track')
-
-# ------------------- Health Check -------------------
-@app.route('/ping')
-def ping():
-    return "Server is running!", 200
-
-# ------------------- Run App -------------------
 if __name__ == '__main__':
+    init_db()
     app.run(debug=True)
