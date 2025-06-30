@@ -1,28 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Submit Complaint</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <meta charset="UTF-8">
+    <title>Complaint Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-  <div class="container">
-    <h1>📋 Submit Your Complaint</h1>
-    <form action="/submit" method="POST">
-      <label>Name:</label>
-      <input type="text" name="name" required />
+    <div class="container">
+        <h1>Complaint Management Dashboard</h1>
 
-      <label>Phone:</label>
-      <input type="text" name="phone" required />
+        <div class="stats">
+            <div>Total Complaints: <strong>{{ total }}</strong></div>
+            <div>Unassigned: <strong>{{ unassigned }}</strong></div>
+            <div>In Progress: <strong>{{ in_progress }}</strong></div>
+            <div>Completed: <strong>{{ completed }}</strong></div>
+        </div>
 
-      <label>Issue:</label>
-      <textarea name="issue" required></textarea>
-
-      <button type="submit">Submit</button>
-    </form>
-
-    <p>🎫 Want to check your complaint? <a href="/track">Click here</a></p>
-  </div>
+        {% if complaints %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Customer Name</th>
+                    <th>Phone</th>
+                    <th>Issue</th>
+                    <th>Status</th>
+                    <th>Update Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for comp in complaints %}
+                <tr>
+                    <td>{{ comp[0] }}</td>
+                    <td>{{ comp[1] }}</td>
+                    <td>{{ comp[2] }}</td>
+                    <td>{{ comp[3] }}</td>
+                    <td>{{ comp[4] }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('dashboard') }}">
+                            <input type="hidden" name="id" value="{{ comp[0] }}">
+                            <select name="status" required>
+                                <option value="">--Select--</option>
+                                <option value="unassigned">Unassigned</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                            <button type="submit">Update</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p>No complaints found.</p>
+        {% endif %}
+    </div>
 </body>
 </html>
