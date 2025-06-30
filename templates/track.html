@@ -5,83 +5,82 @@
     <title>Track Complaint - Customer View</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f6f8;
-            padding: 20px;
-        }
-        .container {
+        .track-container {
             max-width: 600px;
-            margin: auto;
+            margin: 3rem auto;
             background: white;
-            border-radius: 8px;
-            padding: 30px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
         }
-        h2 {
-            text-align: center;
-            color: #333;
-        }
-        form {
-            margin-bottom: 25px;
-            text-align: center;
-        }
-        input[type="text"] {
+
+        .track-form input[type="text"] {
+            width: 100%;
             padding: 10px;
-            width: 80%;
-            border-radius: 4px;
-            border: 1px solid #ccc;
+            margin-top: 1rem;
+            font-size: 16px;
         }
-        button {
-            padding: 10px 20px;
-            background: #007BFF;
-            border: none;
-            color: white;
-            border-radius: 4px;
-            margin-top: 10px;
-            cursor: pointer;
+
+        .track-form button {
+            margin-top: 1rem;
+            width: 100%;
         }
-        .card {
-            background-color: #fff;
-            margin-top: 15px;
-            padding: 15px;
-            border-radius: 6px;
-            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+
+        .complaint-box {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-left: 5px solid #17a2b8;
+            border-radius: 5px;
         }
-        .card p {
-            margin: 8px 0;
+
+        .complaint-box.completed {
+            border-left-color: #28a745;
         }
-        .no-results {
-            text-align: center;
-            color: #999;
+
+        .complaint-box.unassigned {
+            border-left-color: #ffc107;
+        }
+
+        .status-label {
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Track Your Complaint</h2>
-        <form method="POST">
-            <input type="text" name="mobile" placeholder="Enter your mobile number (without +91)" required>
-            <br>
-            <button type="submit">Track Complaint</button>
-        </form>
 
-        {% if complaints %}
-            <h3>Status:</h3>
-            {% for c in complaints %}
-                <div class="card">
-                    <p><strong>Complaint ID:</strong> {{ c[0] }}</p>
-                    <p><strong>Name:</strong> {{ c[1] }}</p>
-                    <p><strong>Issue:</strong> {{ c[2] }}</p>
-                    <p><strong>Date:</strong> {{ c[4] }}</p>
-                    <p><strong>Status:</strong> {{ c[5] }}</p>
-                    <p><strong>Assigned To:</strong> {{ c[6] }}</p>
-                    <p><strong>Admin Comment:</strong> {{ c[7] }}</p>
-                </div>
-            {% endfor %}
-        {% elif complaints is not none %}
-            <p class="no-results">No complaints found for this mobile number.</p>
-        {% endif %}
-    </div>
+<nav>
+    <div class="nav-brand">Smart CMS – Track Complaint</div>
+</nav>
+
+<div class="track-container">
+    <h2>Track Your Complaint</h2>
+    <form method="POST" class="track-form">
+        <label for="mobile">Enter your 10-digit Mobile Number:</label>
+        <input type="text" name="mobile" id="mobile" placeholder="e.g. 9876543210" required pattern="[0-9]{10}">
+        <button type="submit">Track Complaint</button>
+    </form>
+
+    {% if complaints %}
+        <h3>Your Complaint{{ complaints|length > 1 and 's' or '' }}</h3>
+        {% for complaint in complaints %}
+            <div class="complaint-box {% if complaint[5] == 'Completed' %}completed{% elif complaint[5] == 'Unassigned' %}unassigned{% endif %}">
+                <p><strong>Name:</strong> {{ complaint[1] }}</p>
+                <p><strong>Issue:</strong> {{ complaint[2] }}</p>
+                <p><strong>Date:</strong> {{ complaint[4] }}</p>
+                <p><strong>Status:</strong> <span class="status-label">{{ complaint[5] }}</span></p>
+                {% if complaint[6] %}
+                    <p><strong>Assigned To:</strong> {{ complaint[6] }}</p>
+                {% endif %}
+                {% if complaint[7] %}
+                    <p><strong>Admin Comment:</strong> {{ complaint[7] }}</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% elif searched %}
+        <p>No complaint found for this number. Please check your number and try again.</p>
+    {% endif %}
+</div>
+
 </body>
 </html>
