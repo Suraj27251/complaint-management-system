@@ -1,23 +1,155 @@
-<!-- INSIDE dashboard.html (loop for each complaint row) -->
-{% for complaint in complaints %}
-<tr>
-  <td>{{ complaint['id'] }}</td>
-  <td>{{ complaint['name'] }}</td>
-  <td>{{ complaint['issue'] }}</td>
-  <td>{{ complaint['status'] }}</td>
-  <td>{{ complaint['assigned_to'] or '—' }}</td>
-  <td>{{ complaint['comment'] or '—' }}</td>
-  <td>
-    <form action="/update/{{ complaint['id'] }}" method="POST">
-      <select name="status" class="form-select form-select-sm" required>
-        <option value="Unassigned" {% if complaint['status'] == 'Unassigned' %}selected{% endif %}>Unassigned</option>
-        <option value="In Progress" {% if complaint['status'] == 'In Progress' %}selected{% endif %}>In Progress</option>
-        <option value="Completed" {% if complaint['status'] == 'Completed' %}selected{% endif %}>Completed</option>
-      </select>
-      <input type="text" name="assigned_to" class="form-control form-control-sm mt-1" placeholder="Assigned To" value="{{ complaint['assigned_to'] }}">
-      <input type="text" name="comment" class="form-control form-control-sm mt-1" placeholder="Admin Comment" value="{{ complaint['comment'] }}">
-      <button type="submit" class="btn btn-sm btn-success mt-1">Update</button>
-    </form>
-  </td>
-</tr>
-{% endfor %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard - Complaint Management</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: #f4f6f9;
+    }
+
+    nav {
+      background: #2c3e50;
+      padding: 10px 20px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-brand {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .dashboard {
+      padding: 20px;
+    }
+
+    .card-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      flex: 1;
+      min-width: 200px;
+      border-left: 5px solid #007bff;
+      border-radius: 6px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.05);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    table th, table td {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+    }
+
+    table th {
+      background: #007bff;
+      color: white;
+    }
+
+    .chart-container {
+      margin-top: 30px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    canvas {
+      background: white;
+      border-radius: 6px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.05);
+      padding: 15px;
+    }
+
+    select, input[type="text"] {
+      padding: 5px;
+    }
+
+    button {
+      background: #28a745;
+      color: white;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">Complaint Admin Dashboard</div>
+</nav>
+
+<div class="dashboard">
+  <div class="card-container">
+    <div class="card">
+      <h3>Total Complaints</h3>
+      <p>{{ total }}</p>
+    </div>
+    <div class="card">
+      <h3>Unassigned</h3>
+      <p>{{ unassigned }}</p>
+    </div>
+    <div class="card">
+      <h3>In Progress</h3>
+      <p>{{ in_progress }}</p>
+    </div>
+    <div class="card">
+      <h3>Completed</h3>
+      <p>{{ completed }}</p>
+    </div>
+  </div>
+
+  <h2>All Complaints</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Issue</th>
+        <th>Mobile</th>
+        <th>Date</th>
+        <th>Status</th>
+        <th>Assigned</th>
+        <th>Comment</th>
+        <th>Update</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for complaint in complaints %}
+      <tr>
+        <form method="POST" action="{{ url_for('update_complaint', complaint_id=complaint[0]) }}">
+          <td>{{ complaint[0] }}</td>
+          <td>{{ complaint[1] }}</td>
+          <td>{{ complaint[2] }}</td>
+          <td>{{ complaint[3] }}</td>
+          <td>{{ complaint[4] }}</td>
+          <td>
+            <select name="status">
+              <option value="Unassigned" {% if complaint[5] == 'Unassigned' %}selected{% endif %}>Unassigned</option>
+              <option value="In Progress" {% if complaint[5] == 'In Progress' %}selected{% endif %}>In Progress</option>
+              <option value="Completed" {% if complaint[5] == 'Completed' %}selected{% endif %}>Completed</option>
+            </select>
+          </td>
+          <td><input type="text" name="assigned_to" value="{{ complaint[6] }}"></td>
+          <td><input type="text" name="comment" value="{{ co
