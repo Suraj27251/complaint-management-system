@@ -8,13 +8,61 @@
     <style>
         body {
             font-family: 'Roboto', sans-serif;
-            padding: 20px;
             background: #f2f5f9;
+            margin: 0;
+            padding: 0;
         }
 
-        h1 {
+        /* 🔷 HEADER */
+        .header {
+            background-color: #007BFF;
+            padding: 15px 30px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header .logo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .header .title {
+            font-size: 18px;
+        }
+
+        .header select {
+            padding: 5px;
+            border-radius: 4px;
+            border: none;
+            font-size: 14px;
+        }
+
+        /* 🗂️ TABS */
+        .tabs {
+            display: flex;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .tab {
+            padding: 12px 20px;
             text-align: center;
+            cursor: pointer;
+            border-right: 1px solid #ccc;
+            flex: 1;
+            font-weight: bold;
             color: #333;
+        }
+
+        .tab:hover, .tab.active {
+            background-color: #e0e0e0;
+        }
+
+        /* 📊 CONTENT */
+        .container {
+            padding: 20px 40px;
         }
 
         .stats {
@@ -77,16 +125,71 @@
 </head>
 <body>
 
-    <h1>Dashboard</h1>
-
-    <div class="stats">
-        <div>Total: {{ total }}</div>
-        <div>Pending: {{ pending }}</div>
-        <div>Resolved: {{ resolved }}</div>
+    <!-- 🔷 HEADER -->
+    <div class="header">
+        <div class="logo">COUNTRYLINK BROADBAND</div>
+        <div class="title">DASHBOARD</div>
+        <div>
+            <select>
+                <option value="en">ENGLISH</option>
+                <option value="hi">HINDI</option>
+            </select>
+        </div>
     </div>
 
-    <div class="chart-container">
-        <canvas id="statusChart"></canvas>
+    <!-- 🗂️ TABS -->
+    <div class="tabs">
+        <div class="tab active">🏠 Dashboard</div>
+        <div class="tab">📋 Complaints</div>
+        <div class="tab">➕ New Connections</div>
+        <div class="tab">📦 Stock</div>
+        <div class="tab">📥 Inbox</div>
+        <div class="tab">📊 Reporting</div>
+    </div>
+
+    <!-- 🔽 CONTENT -->
+    <div class="container">
+        <div class="stats">
+            <div>Total: {{ total }}</div>
+            <div>Pending: {{ pending }}</div>
+            <div>Resolved: {{ resolved }}</div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="statusChart"></canvas>
+        </div>
+
+        <h2 style="margin-top: 50px;">Recent Complaints</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Mobile</th>
+                    <th>Complaint</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for comp in recent_complaints %}
+                <tr>
+                    <td>{{ comp[0] }}</td>
+                    <td>{{ comp[1] }}</td>
+                    <td>{{ comp[2] }}</td>
+                    <td>{{ comp[3] }}</td>
+                    <td>{{ comp[4] }}</td>
+                    <td>
+                        {% if comp[4] != 'Resolved' %}
+                            <a class="button" href="{{ url_for('update_status', complaint_id=comp[0], status='Resolved') }}">Mark Resolved</a>
+                        {% else %}
+                            <span style="color: green;">✔ Done</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 
     <script>
@@ -108,38 +211,6 @@
             }
         });
     </script>
-
-    <h2 style="margin-top: 50px;">Recent Complaints</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Mobile</th>
-                <th>Complaint</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for comp in recent_complaints %}
-            <tr>
-                <td>{{ comp[0] }}</td>
-                <td>{{ comp[1] }}</td>
-                <td>{{ comp[2] }}</td>
-                <td>{{ comp[3] }}</td>
-                <td>{{ comp[4] }}</td>
-                <td>
-                    {% if comp[4] != 'Resolved' %}
-                        <a class="button" href="{{ url_for('update_status', complaint_id=comp[0], status='Resolved') }}">Mark Resolved</a>
-                    {% else %}
-                        <span style="color: green;">✔ Done</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
 
 </body>
 </html>
