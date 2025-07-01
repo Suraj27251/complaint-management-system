@@ -92,7 +92,6 @@
                 <th>Mobile</th>
                 <th>Complaint</th>
                 <th>Status</th>
-                <th>Remarks</th>
             </tr>
         </thead>
         <tbody>
@@ -103,7 +102,6 @@
                 <td>{{ comp[2] }}</td>
                 <td>{{ comp[3] }}</td>
                 <td>{{ comp[4] }}</td>
-                <td>{{ comp[5] if comp|length > 5 else '-' }}</td>
             </tr>
             {% endfor %}
         </tbody>
