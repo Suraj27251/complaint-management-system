@@ -1,11 +1,83 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Track Complaint</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        form {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            width: 250px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin-left: 10px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        table {
+            width: 90%;
+            margin: 30px auto;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        thead {
+            background-color: #2c3e50;
+            color: white;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background-color: #f2f2f2;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #888;
+            margin-top: 40px;
+        }
+    </style>
 </head>
 <body>
     <h1>Track Your Complaint</h1>
+
     <form method="POST">
         <input type="text" name="mobile" placeholder="Enter your mobile number" required>
         <button type="submit">Track</button>
@@ -14,7 +86,14 @@
     {% if complaints %}
     <table>
         <thead>
-            <tr><th>ID</th><th>Name</th><th>Email</th><th>Message</th><th>Status</th><th>Remarks</th></tr>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Mobile</th>
+                <th>Complaint</th>
+                <th>Status</th>
+                <th>Remarks</th>
+            </tr>
         </thead>
         <tbody>
             {% for comp in complaints %}
@@ -22,13 +101,17 @@
                 <td>{{ comp[0] }}</td>
                 <td>{{ comp[1] }}</td>
                 <td>{{ comp[2] }}</td>
+                <td>{{ comp[3] }}</td>
                 <td>{{ comp[4] }}</td>
-                <td>{{ comp[5] }}</td>
-                <td>{{ comp[6] }}</td>
+                <td>{{ comp[5] if comp|length > 5 else '-' }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    {% else %}
+        <div class="no-data">
+            <p>No complaints found for the entered number.</p>
+        </div>
     {% endif %}
 </body>
 </html>
