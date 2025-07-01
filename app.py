@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify 
 import sqlite3
 
 app = Flask(__name__)
@@ -95,5 +95,10 @@ def flow_endpoint():
 
     return jsonify({"status": "received"}), 200
 
+# ✅ NEW: Lightweight ping route for uptime bots
+@app.route('/ping')
+def ping():
+    return 'pong', 200
+
 if __name__ == '__main__':
-    app.run(debug=True) 
+    app.run(debug=True)
