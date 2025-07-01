@@ -67,6 +67,16 @@ def track():
     conn.close()
     return render_template('track.html', complaints=complaints)
 
+# ✅ NEW: Added GET version to show form if someone visits /track directly
+@app.route('/track', methods=['GET'])
+def track_form():
+    return '''
+    <form method="POST" action="/track">
+        <input type="text" name="mobile" placeholder="Enter your mobile number" required>
+        <button type="submit">Track</button>
+    </form>
+    '''
+
 @app.route('/update_status/<int:complaint_id>/<status>')
 def update_status(complaint_id, status):
     conn = sqlite3.connect('complaints.db')
@@ -95,7 +105,7 @@ def flow_endpoint():
 
     return jsonify({"status": "received"}), 200
 
-# ✅ NEW: Lightweight ping route for uptime bots
+# ✅ Lightweight ping route for uptime bots
 @app.route('/ping')
 def ping():
     return 'pong', 200
