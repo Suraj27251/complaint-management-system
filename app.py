@@ -1,20 +1,15 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
-import psycopg2
-import os
+import sqlite3
 
 app = Flask(__name__)
 
-# Get DB connection
-def get_db_connection():
-    return psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require')
-
 # Initialize the database
 def init_db():
-    conn = get_db_connection()
+    conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
     c.execute('''
         CREATE TABLE IF NOT EXISTS complaints (
-            id SERIAL PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             mobile TEXT NOT NULL,
             complaint TEXT NOT NULL,
@@ -30,7 +25,7 @@ def before_request():
 
 @app.route('/')
 def dashboard():
-    conn = get_db_connection()
+    conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
     c.execute('SELECT COUNT(*) FROM complaints')
     total = c.fetchone()[0]
@@ -41,7 +36,7 @@ def dashboard():
     c.execute("SELECT COUNT(*) FROM complaints WHERE status = 'Resolved'")
     resolved = c.fetchone()[0]
 
-    # ✅ Show last 50 complaints
+    # ✅ Updated to show last 50 complaints instead of 10
     c.execute("SELECT * FROM complaints ORDER BY id DESC LIMIT 50")
     recent_complaints = c.fetchall()
 
@@ -54,9 +49,9 @@ def submit():
     mobile = request.form['mobile']
     complaint = request.form['complaint']
 
-    conn = get_db_connection()
+    conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
-    c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (%s, %s, %s)", (name, mobile, complaint))
+    c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)", (name, mobile, complaint))
     conn.commit()
     conn.close()
     return redirect(url_for('dashboard'))
@@ -65,18 +60,18 @@ def submit():
 def track():
     mobile = request.form['mobile']
 
-    conn = get_db_connection()
+    conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
-    c.execute("SELECT * FROM complaints WHERE mobile = %s", (mobile,))
+    c.execute("SELECT * FROM complaints WHERE mobile = ?", (mobile,))
     complaints = c.fetchall()
     conn.close()
     return render_template('track.html', complaints=complaints)
 
 @app.route('/update_status/<int:complaint_id>/<status>')
 def update_status(complaint_id, status):
-    conn = get_db_connection()
+    conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
-    c.execute("UPDATE complaints SET status = %s WHERE id = %s", (status, complaint_id))
+    c.execute("UPDATE complaints SET status = ? WHERE id = ?", (status, complaint_id))
     conn.commit()
     conn.close()
     return redirect(url_for('dashboard'))
@@ -92,13 +87,13 @@ def flow_endpoint():
     if not all([name, mobile, complaint]):
         return jsonify({"error": "Missing required fields"}), 400
 
-    conn = get_db_connection()
+    conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
-    c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (%s, %s, %s)", (name, mobile, complaint))
+    c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)", (name, mobile, complaint))
     conn.commit()
     conn.close()
 
     return jsonify({"status": "received"}), 200
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True) 
