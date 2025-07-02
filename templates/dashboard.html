@@ -177,15 +177,7 @@
                     <td>{{ comp[2] }}</td>
                     <td>{{ comp[3] }}</td>
                     <td>{{ comp[4] }}</td>
-                    <td>
-                        {% if comp[6] == 'High' %}
-                            <span style="color: red;">🔴 High</span>
-                        {% elif comp[6] == 'Medium' %}
-                            <span style="color: orange;">🟠 Medium</span>
-                        {% else %}
-                            <span style="color: green;">🟢 Low</span>
-                        {% endif %}
-                    </td>
+                    <td>{{ comp[6] }}</td>
                     <td>
                         {% if comp[4] != 'Resolved' %}
                             <a class="button" href="{{ url_for('update_status', complaint_id=comp[0], status='Resolved') }}">Mark Resolved</a>
