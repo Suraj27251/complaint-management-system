@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify 
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 import sqlite3
 
 app = Flask(__name__)
@@ -13,6 +13,17 @@ def init_db():
             name TEXT NOT NULL,
             mobile TEXT NOT NULL,
             complaint TEXT NOT NULL,
+            status TEXT DEFAULT 'Pending',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    # Optional: Create connection_requests table
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS connection_requests (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            mobile TEXT NOT NULL,
+            area TEXT,
             status TEXT DEFAULT 'Pending',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
@@ -89,7 +100,7 @@ def track():
     conn.close()
     return render_template('track.html', complaints=complaints)
 
-# ✅ Complaint tracking (GET) - show form
+# ✅ Complaint tracking (GET)
 @app.route('/track', methods=['GET'])
 def track_form():
     return '''
@@ -129,7 +140,34 @@ def flow_endpoint():
 
     return jsonify({"status": "received"}), 200
 
-# ✅ Lightweight ping route for uptime bots
+# ✅ New connections (HTML view)
+@app.route('/new-connections')
+def new_connections():
+    return render_template('connection.html')
+
+# ✅ New connections (API endpoint)
+@app.route('/api/new-connections', methods=['GET'])
+def api_new_connections():
+    conn = sqlite3.connect('complaints.db')
+    c = conn.cursor()
+    c.execute("SELECT id, name, mobile, area, status, created_at FROM connection_requests ORDER BY created_at DESC")
+    rows = c.fetchall()
+    conn.close()
+
+    connections = []
+    for row in rows:
+        connections.append({
+            "id": row[0],
+            "name": row[1],
+            "mobile": row[2],
+            "area": row[3],
+            "status": row[4],
+            "created_at": row[5]
+        })
+
+    return jsonify(connections)
+
+# ✅ Ping route
 @app.route('/ping')
 def ping():
     return 'pong', 200
