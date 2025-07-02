@@ -154,7 +154,7 @@ def new_connections():
     conn.close()
     return render_template('connection.html', connections=connections)
 
-# ✅ New connections API (JSON)
+# ✅ New connections API (GET JSON)
 @app.route('/api/new-connections', methods=['GET'])
 def api_new_connections():
     conn = sqlite3.connect('complaints.db')
@@ -175,6 +175,26 @@ def api_new_connections():
         })
 
     return jsonify(connections)
+
+# ✅ New connection request submission (POST JSON)
+@app.route('/api/new-connection-request', methods=['POST'])
+def new_connection_request():
+    data = request.get_json()
+
+    name = data.get("name")
+    mobile = data.get("mobile")
+    area = data.get("area")
+
+    if not all([name, mobile]):
+        return jsonify({"error": "Missing name or mobile"}), 400
+
+    conn = sqlite3.connect('complaints.db')
+    c = conn.cursor()
+    c.execute("INSERT INTO connection_requests (name, mobile, area) VALUES (?, ?, ?)", (name, mobile, area))
+    conn.commit()
+    conn.close()
+
+    return jsonify({"status": "received"}), 200
 
 # ✅ Ping route
 @app.route('/ping')
