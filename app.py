@@ -1,10 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify 
 import sqlite3
-from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
-# Initialize the database
+# ✅ Initialize the database
 def init_db():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
@@ -15,7 +14,7 @@ def init_db():
             mobile TEXT NOT NULL,
             complaint TEXT NOT NULL,
             status TEXT DEFAULT 'Pending',
-            date TEXT DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
     conn.commit()
@@ -25,10 +24,12 @@ def init_db():
 def before_request():
     init_db()
 
+# ✅ Dashboard with Priority Calculation
 @app.route('/')
 def dashboard():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
+
     c.execute('SELECT COUNT(*) FROM complaints')
     total = c.fetchone()[0]
 
@@ -38,39 +39,31 @@ def dashboard():
     c.execute("SELECT COUNT(*) FROM complaints WHERE status = 'Resolved'")
     resolved = c.fetchone()[0]
 
-    # ✅ Get last 50 complaints
     c.execute("SELECT * FROM complaints ORDER BY id DESC LIMIT 50")
-    complaints_raw = c.fetchall()
+    recent_complaints_raw = c.fetchall()
 
-    # ✅ Calculate priority
-    recent_complaints = []
-    for comp in complaints_raw:
+    priority_complaints = []
+    for comp in recent_complaints_raw:
         mobile = comp[2]
-        # Count complaints from same mobile in last 30 days
         c.execute("""
             SELECT COUNT(*) FROM complaints
-            WHERE mobile = ? AND date >= date('now', '-30 days')
+            WHERE mobile = ? AND date(created_at) >= date('now', '-30 day')
         """, (mobile,))
-        count_last_30 = c.fetchone()[0]
+        count_last_30_days = c.fetchone()[0]
 
-        if count_last_30 >= 3:
-            priority = 'High'
-        elif count_last_30 == 2:
-            priority = 'Medium'
+        if count_last_30_days >= 3:
+            priority = "High"
+        elif count_last_30_days == 2:
+            priority = "Medium"
         else:
-            priority = 'Low'
+            priority = "Low"
 
-        # Add priority as 6th value in tuple
-        comp_with_priority = comp + (priority,)
-        recent_complaints.append(comp_with_priority)
+        priority_complaints.append(comp + (priority,))
 
     conn.close()
-    return render_template('dashboard.html',
-                           total=total,
-                           pending=pending,
-                           resolved=resolved,
-                           recent_complaints=recent_complaints)
+    return render_template('dashboard.html', total=total, pending=pending, resolved=resolved, recent_complaints=priority_complaints)
 
+# ✅ Complaint submission
 @app.route('/submit', methods=['POST'])
 def submit():
     name = request.form['name']
@@ -79,15 +72,16 @@ def submit():
 
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
-    c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)",
-              (name, mobile, complaint))
+    c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)", (name, mobile, complaint))
     conn.commit()
     conn.close()
     return redirect(url_for('dashboard'))
 
+# ✅ Complaint tracking (POST)
 @app.route('/track', methods=['POST'])
 def track():
     mobile = request.form['mobile']
+
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
     c.execute("SELECT * FROM complaints WHERE mobile = ?", (mobile,))
@@ -95,6 +89,7 @@ def track():
     conn.close()
     return render_template('track.html', complaints=complaints)
 
+# ✅ Complaint tracking (GET) - show form
 @app.route('/track', methods=['GET'])
 def track_form():
     return '''
@@ -104,6 +99,7 @@ def track_form():
     </form>
     '''
 
+# ✅ Update complaint status
 @app.route('/update_status/<int:complaint_id>/<status>')
 def update_status(complaint_id, status):
     conn = sqlite3.connect('complaints.db')
@@ -113,6 +109,7 @@ def update_status(complaint_id, status):
     conn.close()
     return redirect(url_for('dashboard'))
 
+# ✅ WhatsApp flow endpoint (API)
 @app.route('/flow-endpoint', methods=['POST'])
 def flow_endpoint():
     data = request.get_json()
@@ -126,13 +123,13 @@ def flow_endpoint():
 
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
-    c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)",
-              (name, mobile, complaint))
+    c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)", (name, mobile, complaint))
     conn.commit()
     conn.close()
 
     return jsonify({"status": "received"}), 200
 
+# ✅ Lightweight ping route for uptime bots
 @app.route('/ping')
 def ping():
     return 'pong', 200
