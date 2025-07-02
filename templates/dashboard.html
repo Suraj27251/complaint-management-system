@@ -13,7 +13,6 @@
             padding: 0;
         }
 
-        /* 🔷 HEADER */
         .header {
             background-color: #007BFF;
             padding: 15px 30px;
@@ -39,7 +38,6 @@
             font-size: 14px;
         }
 
-        /* 🗂️ TABS */
         .tabs {
             display: flex;
             background-color: #f8f9fa;
@@ -60,7 +58,6 @@
             background-color: #e0e0e0;
         }
 
-        /* 📊 CONTENT */
         .container {
             padding: 20px 40px;
         }
@@ -168,6 +165,7 @@
                     <th>Mobile</th>
                     <th>Complaint</th>
                     <th>Status</th>
+                    <th>Priority</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -179,6 +177,15 @@
                     <td>{{ comp[2] }}</td>
                     <td>{{ comp[3] }}</td>
                     <td>{{ comp[4] }}</td>
+                    <td>
+                        {% if comp[6] == 'High' %}
+                            <span style="color: red;">🔴 High</span>
+                        {% elif comp[6] == 'Medium' %}
+                            <span style="color: orange;">🟠 Medium</span>
+                        {% else %}
+                            <span style="color: green;">🟢 Low</span>
+                        {% endif %}
+                    </td>
                     <td>
                         {% if comp[4] != 'Resolved' %}
                             <a class="button" href="{{ url_for('update_status', complaint_id=comp[0], status='Resolved') }}">Mark Resolved</a>
