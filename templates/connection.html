@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>New Connections</title>
+    <style>
+        body { font-family: Arial; background: #f4f4f4; padding: 20px; }
+        h1 { text-align: center; color: #333; }
+        table { width: 100%; border-collapse: collapse; background: white; margin-top: 20px; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }
+        th { background-color: #007BFF; color: white; }
+    </style>
+    <script>
+        async function loadConnections() {
+            const res = await fetch('/api/new-connections');
+            const data = await res.json();
+            const tableBody = document.getElementById('conn-table');
+            tableBody.innerHTML = data.map(d => `
+                <tr>
+                    <td>${d.id}</td>
+                    <td>${d.name}</td>
+                    <td>${d.mobile}</td>
+                    <td>${d.status}</td>
+                    <td>${d.address}</td>
+                </tr>
+            `).join('');
+        }
+        window.onload = loadConnections;
+    </script>
+</head>
+<body>
+    <h1>New Connections</h1>
+    <table>
+        <thead><tr><th>ID</th><th>Name</th><th>Mobile</th><th>Status</th><th>Address</th></tr></thead>
+        <tbody id="conn-table"><tr><td colspan="5">Loading...</td></tr></tbody>
+    </table>
+</body>
+</html>
