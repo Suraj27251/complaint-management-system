@@ -1,37 +1,59 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>New Connections</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <title>New Connection Requests</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <style>
         body {
             font-family: 'Roboto', sans-serif;
             background: #f2f5f9;
-            padding: 20px;
             margin: 0;
+            padding: 0;
         }
 
-        h1 {
+        .header {
+            background-color: #007BFF;
+            padding: 15px 30px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header .logo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .header .title {
+            font-size: 18px;
+        }
+
+        .container {
+            padding: 20px 40px;
+        }
+
+        h2 {
+            margin-top: 30px;
             color: #333;
-            text-align: center;
         }
 
         table {
             width: 100%;
-            background: #fff;
             border-collapse: collapse;
-            margin-top: 30px;
+            background: #fff;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-top: 20px;
         }
 
         th, td {
             padding: 12px 15px;
-            border: 1px solid #ddd;
             text-align: center;
+            border-bottom: 1px solid #eee;
         }
 
         th {
-            background-color: #007BFF;
+            background-color: #4CAF50;
             color: white;
         }
 
@@ -39,68 +61,50 @@
             background-color: #f1f1f1;
         }
 
-        .status {
-            padding: 4px 8px;
-            border-radius: 4px;
-            color: white;
-            font-size: 13px;
+        .status-requested {
+            color: #ff9800;
         }
 
-        .status.Pending {
-            background-color: #f39c12;
-        }
-
-        .status.Connected {
-            background-color: #2ecc71;
-        }
-
-        .status.Rejected {
-            background-color: #e74c3c;
+        .status-installed {
+            color: green;
         }
     </style>
 </head>
 <body>
 
-    <h1>📡 New Connection Requests</h1>
+    <div class="header">
+        <div class="logo">COUNTRYLINK BROADBAND</div>
+        <div class="title">New Connections</div>
+    </div>
 
-    <table id="connectionsTable">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Mobile</th>
-                <th>Area</th>
-                <th>Status</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Data will be inserted by JavaScript -->
-        </tbody>
-    </table>
+    <div class="container">
+        <h2>New Connection Requests</h2>
 
-    <script>
-        async function fetchConnections() {
-            const res = await fetch('/api/new-connections');
-            const data = await res.json();
-
-            const tbody = document.querySelector('#connectionsTable tbody');
-            tbody.innerHTML = '';
-
-            data.forEach(conn => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${conn.name}</td>
-                    <td>${conn.mobile}</td>
-                    <td>${conn.area || '-'}</td>
-                    <td><span class="status ${conn.status}">${conn.status}</span></td>
-                    <td>${new Date(conn.created_at).toLocaleDateString()}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        fetchConnections();
-    </script>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Mobile</th>
+                    <th>Address</th>
+                    <th>Status</th>
+                    <th>Requested At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for conn in connections %}
+                <tr>
+                    <td>{{ conn[0] }}</td>
+                    <td>{{ conn[1] }}</td>
+                    <td>{{ conn[2] }}</td>
+                    <td>{{ conn[3] }}</td>
+                    <td class="status-{{ conn[4]|lower }}">{{ conn[4] }}</td>
+                    <td>{{ conn[5] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
 </body>
 </html>
