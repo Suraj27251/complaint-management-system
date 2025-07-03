@@ -29,6 +29,14 @@
             font-size: 18px;
         }
 
+        .header a.home-btn {
+            color: white;
+            text-decoration: none;
+            background: #28a745;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+
         .container {
             padding: 20px 40px;
         }
@@ -68,6 +76,24 @@
         .status-installed {
             color: green;
         }
+
+        select.status-dropdown {
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        button.save-btn {
+            padding: 6px 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button.save-btn:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -75,6 +101,7 @@
     <div class="header">
         <div class="logo">COUNTRYLINK BROADBAND</div>
         <div class="title">New Connections</div>
+        <a href="{{ url_for('dashboard') }}" class="home-btn">🏠 Home</a>
     </div>
 
     <div class="container">
@@ -89,17 +116,27 @@
                     <th>Address</th>
                     <th>Status</th>
                     <th>Requested At</th>
+                    <th>Update</th>
                 </tr>
             </thead>
             <tbody>
                 {% for conn in connections %}
                 <tr>
-                    <td>{{ conn[0] }}</td>
-                    <td>{{ conn[1] }}</td>
-                    <td>{{ conn[2] }}</td>
-                    <td>{{ conn[3] }}</td>
-                    <td class="status-{{ conn[4]|lower }}">{{ conn[4] }}</td>
-                    <td>{{ conn[5] }}</td>
+                    <form action="{{ url_for('update_connection_status', connection_id=conn[0]) }}" method="POST">
+                        <td>{{ conn[0] }}</td>
+                        <td>{{ conn[1] }}</td>
+                        <td>{{ conn[2] }}</td>
+                        <td>{{ conn[3] }}</td>
+                        <td>
+                            <select name="status" class="status-dropdown">
+                                <option value="Pending" {% if conn[4] == 'Pending' %}selected{% endif %}>Pending</option>
+                                <option value="Hold" {% if conn[4] == 'Hold' %}selected{% endif %}>Hold</option>
+                                <option value="Completed" {% if conn[4] == 'Completed' %}selected{% endif %}>Completed</option>
+                            </select>
+                        </td>
+                        <td>{{ conn[5] }}</td>
+                        <td><button type="submit" class="save-btn">Save</button></td>
+                    </form>
                 </tr>
                 {% endfor %}
             </tbody>
