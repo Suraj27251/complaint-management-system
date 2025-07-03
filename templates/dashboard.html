@@ -95,6 +95,7 @@
             border-collapse: collapse;
             background: #fff;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-top: 30px;
         }
 
         th, td {
@@ -123,6 +124,13 @@
         a.button:hover {
             background-color: #0b7dda;
         }
+
+        .section-title {
+            margin-top: 50px;
+            font-size: 22px;
+            color: #333;
+        }
+
     </style>
 </head>
 <body>
@@ -161,7 +169,7 @@
             <canvas id="statusChart"></canvas>
         </div>
 
-        <h2 style="margin-top: 50px;">Recent Complaints</h2>
+        <h2 class="section-title">Recent Complaints</h2>
         <table>
             <thead>
                 <tr>
@@ -194,6 +202,43 @@
                 {% endfor %}
             </tbody>
         </table>
+
+        <!-- 🔌 RECENT OPEN CONNECTION REQUESTS -->
+        {% if pending_connections %}
+        <h2 class="section-title">Recent Open Connection Requests (Pending)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Mobile</th>
+                    <th>Area</th>
+                    <th>Status</th>
+                    <th>Requested At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for conn in pending_connections %}
+                <tr>
+                    <td>{{ conn[0] }}</td>
+                    <td>{{ conn[1] }}</td>
+                    <td>{{ conn[2] }}</td>
+                    <td>{{ conn[3] }}</td>
+                    <td style="color: orange; font-weight: bold;">{{ conn[4] }}</td>
+                    <td>{{ conn[5] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div style="margin-top: 10px;">
+            <a href="{{ url_for('new_connections') }}">
+                <button style="padding: 6px 12px; background-color: #007BFF; color: white; border: none; border-radius: 4px;">
+                    View All Connections
+                </button>
+            </a>
+        </div>
+        {% endif %}
     </div>
 
     <script>
