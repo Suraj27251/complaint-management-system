@@ -39,7 +39,7 @@ def init_db():
 def before_request():
     init_db()
 
-# ✅ Dashboard with priority
+# ✅ Dashboard with priority + pending connection preview
 @app.route('/')
 def dashboard():
     conn = sqlite3.connect('complaints.db')
@@ -57,6 +57,7 @@ def dashboard():
     c.execute("SELECT * FROM complaints ORDER BY id DESC LIMIT 50")
     recent_complaints_raw = c.fetchall()
 
+    # Priority calculation
     priority_complaints = []
     for comp in recent_complaints_raw:
         mobile = comp[2]
@@ -75,8 +76,25 @@ def dashboard():
 
         priority_complaints.append(comp + (priority,))
 
+    # 🔽 Get recent pending connection requests (limit 5)
+    c.execute("SELECT id, name, mobile, area, status, created_at FROM connection_requests WHERE status = 'Pending' ORDER BY created_at DESC LIMIT 5")
+    pending_connections = c.fetchall()
+
+    # 🔢 Total pending connection count (optional creative addition)
+    c.execute("SELECT COUNT(*) FROM connection_requests WHERE status = 'Pending'")
+    pending_connection_count = c.fetchone()[0]
+
     conn.close()
-    return render_template('dashboard.html', total=total, pending=pending, resolved=resolved, recent_complaints=priority_complaints)
+
+    return render_template(
+        'dashboard.html',
+        total=total,
+        pending=pending,
+        resolved=resolved,
+        recent_complaints=priority_complaints,
+        pending_connections=pending_connections,
+        pending_connection_count=pending_connection_count
+    )
 
 # ✅ Complaint submission
 @app.route('/submit', methods=['POST'])
