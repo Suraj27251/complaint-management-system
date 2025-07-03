@@ -80,7 +80,7 @@ def dashboard():
     c.execute("SELECT id, name, mobile, area, status, created_at FROM connection_requests WHERE status = 'Pending' ORDER BY created_at DESC LIMIT 5")
     pending_connections = c.fetchall()
 
-    # 🔢 Total pending connection count (optional creative addition)
+    # 🔢 Total pending connection count
     c.execute("SELECT COUNT(*) FROM connection_requests WHERE status = 'Pending'")
     pending_connection_count = c.fetchone()[0]
 
@@ -162,7 +162,7 @@ def flow_endpoint():
 
     return jsonify({"status": "received"}), 200
 
-# ✅ New connections (HTML view with data)
+# ✅ New connections (HTML view)
 @app.route('/new-connections')
 def new_connections():
     conn = sqlite3.connect('complaints.db')
@@ -224,6 +224,11 @@ def update_connection_status(connection_id):
     conn.commit()
     conn.close()
     return redirect(url_for('new_connections'))
+
+# ✅ Stock page (new route)
+@app.route('/stock')
+def stock():
+    return render_template('stock.html')
 
 # ✅ Ping route
 @app.route('/ping')
