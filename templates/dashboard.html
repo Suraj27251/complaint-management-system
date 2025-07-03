@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dashboard</title>
+    <title>Complaint Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -151,7 +151,7 @@
         <div class="tab active"><a href="#">🏠 Dashboard</a></div>
         <div class="tab"><a href="#">📋 Complaints</a></div>
         <div class="tab"><a href="{{ url_for('new_connections') }}">➕ New Connections</a></div>
-        <div class="tab"><a href="{{ url_for('stock') }}">📦 Stock</a></div>
+        <div class="tab"><a href="#">📦 Stock</a></div>
         <div class="tab"><a href="#">👥 Human Resource</a></div>
         <div class="tab"><a href="#">📊 Reporting</a></div>
     </div>
@@ -238,6 +238,12 @@
             </a>
         </div>
         {% endif %}
+
+        <!-- 📦 EMBEDDED STOCK MANAGEMENT -->
+        <h2 class="section-title">📦 Stock Management</h2>
+        <div style="margin-top: 20px;">
+            {% include 'stock.html' %}
+        </div>
     </div>
 
     <script>
