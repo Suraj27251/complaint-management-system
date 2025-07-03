@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stock Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #f2f5f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background-color: #007BFF;
+            padding: 15px 30px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header .logo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .header .title {
+            font-size: 18px;
+        }
+
+        .tabs {
+            display: flex;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            text-align: center;
+            cursor: pointer;
+            border-right: 1px solid #ccc;
+            flex: 1;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .tab:hover, .tab.active {
+            background-color: #e0e0e0;
+        }
+
+        .tab a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .container {
+            padding: 30px 50px;
+        }
+
+        h2 {
+            color: #333;
+            margin-top: 40px;
+        }
+
+        form {
+            background: #fff;
+            padding: 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-radius: 6px;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            margin-top: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="logo">COUNTRYLINK BROADBAND</div>
+        <div class="title">STOCK MANAGEMENT</div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <div class="tab"><a href="{{ url_for('dashboard') }}">🏠 Dashboard</a></div>
+        <div class="tab"><a href="#">📋 Complaints</a></div>
+        <div class="tab"><a href="{{ url_for('new_connections') }}">➕ New Connections</a></div>
+        <div class="tab active"><a href="#">📦 Stock</a></div>
+        <div class="tab"><a href="#">👥 HR</a></div>
+    </div>
+
+    <div class="container">
+        <h2>Add or Update Stock Item</h2>
+        <form action="#" method="POST">
+            <label for="item_type">Device Type</label>
+            <select id="item_type" name="item_type">
+                <option value="Switch">Switch</option>
+                <option value="ONU WAN Router">ONU WAN Router</option>
+                <option value="ONT Router">ONT Router</option>
+            </select>
+
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="3" placeholder="e.g. TP-Link 8-Port Gigabit Switch, Serial No: XXXX1234"></textarea>
+
+            <label for="quantity">Quantity</label>
+            <input type="number" id="quantity" name="quantity" min="1">
+
+            <button type="submit">Add / Update Stock</button>
+        </form>
+
+        <h2>Issued Devices</h2>
+        <form action="#" method="POST">
+            <label for="device">Device Type</label>
+            <select id="device" name="device">
+                <option value="Switch">Switch</option>
+                <option value="ONU WAN Router">ONU WAN Router</option>
+                <option value="ONT Router">ONT Router</option>
+            </select>
+
+            <label for="recipient">Issued To</label>
+            <input type="text" id="recipient" name="recipient" placeholder="Enter employee/customer name">
+
+            <label for="date">Date</label>
+            <input type="date" id="date" name="date">
+
+            <label for="note">Note</label>
+            <textarea id="note" name="note" rows="2" placeholder="Installation purpose, replacement, etc."></textarea>
+
+            <label for="payment_mode">Payment Mode</label>
+            <select id="payment_mode" name="payment_mode">
+                <option value="Deposit">Deposit</option>
+                <option value="Sold">Sold</option>
+                <option value="Free">Free</option>
+            </select>
+
+            <label for="status">Status</label>
+            <select id="status" name="status">
+                <option value="Pending">Pending</option>
+                <option value="Paid">Paid</option>
+            </select>
+
+            <button type="submit">Record Issuance</button>
+        </form>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Device</th>
+                    <th>Issued To</th>
+                    <th>Date</th>
+                    <th>Note</th>
+                    <th>Payment Mode</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- You can populate this dynamically -->
+                <tr>
+                    <td>ONU WAN Router</td>
+                    <td>Ramesh Patil</td>
+                    <td>2025-07-02</td>
+                    <td>Installed at customer home</td>
+                    <td>Deposit</td>
+                    <td>Pending</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
