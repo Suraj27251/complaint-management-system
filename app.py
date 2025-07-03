@@ -196,6 +196,17 @@ def new_connection_request():
 
     return jsonify({"status": "received"}), 200
 
+# ✅ Update connection status from dropdown (POST)
+@app.route('/update-connection-status/<int:connection_id>', methods=['POST'])
+def update_connection_status(connection_id):
+    new_status = request.form['status']
+    conn = sqlite3.connect('complaints.db')
+    c = conn.cursor()
+    c.execute("UPDATE connection_requests SET status = ? WHERE id = ?", (new_status, connection_id))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('new_connections'))
+
 # ✅ Ping route
 @app.route('/ping')
 def ping():
