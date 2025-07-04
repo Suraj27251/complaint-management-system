@@ -58,7 +58,7 @@ def init_db():
 def before_request():
     init_db()
 
-# ✅ Dashboard route
+# ✅ Dashboard
 @app.route('/')
 def dashboard():
     conn = sqlite3.connect('complaints.db')
@@ -83,11 +83,11 @@ def dashboard():
             SELECT COUNT(*) FROM complaints
             WHERE mobile = ? AND date(created_at) >= date('now', '-30 day')
         """, (mobile,))
-        count_last_30_days = c.fetchone()[0]
+        count = c.fetchone()[0]
 
-        if count_last_30_days >= 3:
+        if count >= 3:
             priority = "High"
-        elif count_last_30_days == 2:
+        elif count == 2:
             priority = "Medium"
         else:
             priority = "Low"
@@ -100,8 +100,8 @@ def dashboard():
     c.execute("SELECT COUNT(*) FROM connection_requests WHERE status = 'Pending'")
     pending_connection_count = c.fetchone()[0]
 
-    stock_summary = {}
     device_types = ['Switch', 'WAN Router', 'ONT Router', 'ONU']
+    stock_summary = {}
     for device in device_types:
         c.execute("SELECT SUM(quantity) FROM stock WHERE item_type = ?", (device,))
         stock = c.fetchone()[0] or 0
@@ -116,9 +116,7 @@ def dashboard():
         }
 
     conn.close()
-
-    return render_template(
-        'dashboard.html',
+    return render_template('dashboard.html',
         total=total,
         pending=pending,
         resolved=resolved,
@@ -128,13 +126,12 @@ def dashboard():
         stock_summary=stock_summary
     )
 
-# ✅ Complaint submission
+# ✅ Complaint form
 @app.route('/submit', methods=['POST'])
 def submit():
     name = request.form['name']
     mobile = request.form['mobile']
     complaint = request.form['complaint']
-
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
     c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)", (name, mobile, complaint))
@@ -165,7 +162,7 @@ def update_status(complaint_id, status):
     conn.close()
     return redirect(url_for('dashboard'))
 
-# ✅ WhatsApp webhook (for Meta)
+# ✅ Webhook for WhatsApp
 @app.route('/webhook', methods=['GET', 'POST'])
 def webhook():
     if request.method == 'GET':
@@ -185,23 +182,39 @@ def webhook():
                     value = change.get('value', {})
                     contacts = value.get('contacts', [])
                     messages = value.get('messages', [])
-
                     if contacts and messages:
                         name = contacts[0].get('profile', {}).get('name', 'Unknown')
                         mobile = contacts[0].get('wa_id', '')
-                        message_text = messages[0].get('text', {}).get('body', '')
+                        message = messages[0].get('text', {}).get('body', '')
 
                         conn = sqlite3.connect('complaints.db')
                         c = conn.cursor()
-                        c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)", (name, mobile, message_text))
+                        c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)", (name, mobile, message))
                         conn.commit()
                         conn.close()
         except Exception as e:
-            print("Webhook Error:", e)
-
+            print("Webhook error:", e)
         return 'EVENT_RECEIVED', 200
 
-# ✅ View webhook complaints (UI)
+# ✅ WhatsApp Flow Test Endpoint
+@app.route('/flow-endpoint', methods=['POST'])
+def flow_endpoint():
+    data = request.get_json()
+    name = data.get("name")
+    mobile = data.get("mobile")
+    complaint = data.get("complaint")
+
+    if not all([name, mobile, complaint]):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    conn = sqlite3.connect('complaints.db')
+    c = conn.cursor()
+    c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)", (name, mobile, complaint))
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "received"}), 200
+
+# ✅ View all complaints (UI)
 @app.route('/complaints')
 def view_complaints():
     conn = sqlite3.connect('complaints.db')
@@ -211,7 +224,7 @@ def view_complaints():
     conn.close()
     return render_template('complaints.html', complaints=complaints)
 
-# ✅ New connection requests
+# ✅ New connections page
 @app.route('/new-connections')
 def new_connections():
     conn = sqlite3.connect('complaints.db')
@@ -221,7 +234,7 @@ def new_connections():
     conn.close()
     return render_template('connection.html', connections=connections)
 
-# ✅ New connection API
+# ✅ API endpoint to get all new connections
 @app.route('/api/new-connections')
 def api_new_connections():
     conn = sqlite3.connect('complaints.db')
@@ -234,7 +247,7 @@ def api_new_connections():
         for row in rows
     ])
 
-# ✅ Submit connection request
+# ✅ Submit new connection request
 @app.route('/api/new-connection-request', methods=['POST'])
 def new_connection_request():
     data = request.get_json()
@@ -252,7 +265,7 @@ def new_connection_request():
     conn.close()
     return jsonify({"status": "received"}), 200
 
-# ✅ Update connection request status
+# ✅ Update connection status
 @app.route('/update-connection-status/<int:connection_id>', methods=['POST'])
 def update_connection_status(connection_id):
     new_status = request.form['status']
@@ -263,7 +276,7 @@ def update_connection_status(connection_id):
     conn.close()
     return redirect(url_for('new_connections'))
 
-# ✅ Stock page (GET + POST)
+# ✅ Stock page
 @app.route('/stock', methods=['GET', 'POST'])
 def stock():
     conn = sqlite3.connect('complaints.db')
@@ -277,7 +290,6 @@ def stock():
 
             c.execute("SELECT id FROM stock WHERE item_type = ? AND description = ?", (item_type, description))
             existing = c.fetchone()
-
             if existing:
                 c.execute("UPDATE stock SET quantity = quantity + ? WHERE id = ?", (quantity, existing[0]))
             else:
@@ -307,7 +319,7 @@ def stock():
     conn.close()
     return render_template('stock.html', stock_items=stock_items, issued_items=issued_items)
 
-# ✅ Ping
+# ✅ Ping (for uptime monitoring)
 @app.route('/ping')
 def ping():
     return 'pong', 200
