@@ -78,35 +78,35 @@
 <body>
     <h1>Track Your Complaint</h1>
 
-    <form method="POST">
+    <form method="POST" action="{{ url_for('track') }}">
         <input type="text" name="mobile" placeholder="Enter your mobile number" required>
         <button type="submit">Track</button>
     </form>
 
     {% if complaints %}
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Mobile</th>
-                <th>Complaint</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for comp in complaints %}
-            <tr>
-                <td>{{ comp[0] }}</td>
-                <td>{{ comp[1] }}</td>
-                <td>{{ comp[2] }}</td>
-                <td>{{ comp[3] }}</td>
-                <td>{{ comp[4] }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Mobile</th>
+                    <th>Complaint</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for comp in complaints %}
+                <tr>
+                    <td>{{ comp[0] }}</td>
+                    <td>{{ comp[1] }}</td>
+                    <td>{{ comp[2] }}</td>
+                    <td>{{ comp[3] }}</td>
+                    <td>{{ comp[4] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% elif request.method == 'POST' %}
         <div class="no-data">
             <p>No complaints found for the entered number.</p>
         </div>
