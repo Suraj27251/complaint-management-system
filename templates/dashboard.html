@@ -69,8 +69,7 @@
 
         .stats {
             display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
+            justify-content: space-around;
             margin: 30px 0;
         }
 
@@ -79,11 +78,11 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
             color: #333;
-            min-width: 220px;
-            flex: 1;
+            width: 30%;
+            text-align: center;
         }
 
         .chart-container {
@@ -160,33 +159,16 @@
 
     <!-- 🔽 CONTENT -->
     <div class="container">
-
-        <!-- 📈 Complaint Stats -->
         <div class="stats">
             <div>Total: {{ total }}</div>
             <div>Pending: {{ pending }}</div>
             <div>Resolved: {{ resolved }}</div>
         </div>
 
-        <!-- 📦 Stock Counts -->
-        <h2 class="section-title">Current Stock</h2>
-        <div class="stats">
-            {% for device, data in stock_summary.items() %}
-                <div>
-                    {{ device }}<br>
-                    Stock: {{ data.stock }}<br>
-                    Issued: {{ data.issued }}<br>
-                    Available: {{ data.available }}
-                </div>
-            {% endfor %}
-        </div>
-
-        <!-- 📊 Complaint Chart -->
         <div class="chart-container">
             <canvas id="statusChart"></canvas>
         </div>
 
-        <!-- 🚨 Recent Complaints -->
         <h2 class="section-title">Recent Complaints</h2>
         <table>
             <thead>
@@ -221,7 +203,7 @@
             </tbody>
         </table>
 
-        <!-- 🔌 Pending Connections -->
+        <!-- 🔌 RECENT OPEN CONNECTION REQUESTS -->
         {% if pending_connections %}
         <h2 class="section-title">Recent Open Connection Requests (Pending)</h2>
         <table>
@@ -257,9 +239,31 @@
             </a>
         </div>
         {% endif %}
+
+        <!-- 📦 CURRENT STOCK SUMMARY -->
+        <h2 class="section-title">Current Stock Summary</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Device</th>
+                    <th>Total Stock</th>
+                    <th>Issued</th>
+                    <th>Available</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for device, summary in stock_summary.items() %}
+                <tr>
+                    <td>{{ device }}</td>
+                    <td>{{ summary.stock }}</td>
+                    <td>{{ summary.issued }}</td>
+                    <td>{{ summary.available }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 
-    <!-- 📊 Chart JS Script -->
     <script>
         const ctx = document.getElementById('statusChart').getContext('2d');
         const statusChart = new Chart(ctx, {
@@ -279,5 +283,6 @@
             }
         });
     </script>
+
 </body>
 </html>
