@@ -105,6 +105,22 @@ def dashboard():
     c.execute("SELECT COUNT(*) FROM connection_requests WHERE status = 'Pending'")
     pending_connection_count = c.fetchone()[0]
 
+    # 📦 Stock Summary for Dashboard
+    stock_summary = {}
+    device_types = ['Switch', 'WAN Router', 'ONT Router', 'ONU']
+    for device in device_types:
+        c.execute("SELECT SUM(quantity) FROM stock WHERE item_type = ?", (device,))
+        stock = c.fetchone()[0] or 0
+
+        c.execute("SELECT COUNT(*) FROM issued_stock WHERE device = ?", (device,))
+        issued = c.fetchone()[0] or 0
+
+        stock_summary[device] = {
+            'stock': stock,
+            'issued': issued,
+            'available': stock - issued
+        }
+
     conn.close()
 
     return render_template(
@@ -114,7 +130,8 @@ def dashboard():
         resolved=resolved,
         recent_complaints=priority_complaints,
         pending_connections=pending_connections,
-        pending_connection_count=pending_connection_count
+        pending_connection_count=pending_connection_count,
+        stock_summary=stock_summary
     )
 
 # ✅ Complaint submission
