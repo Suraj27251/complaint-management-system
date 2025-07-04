@@ -20,7 +20,7 @@ def init_db():
         )
     ''')
 
-    # ✅ Connection requests table
+    # Connection requests table
     c.execute('''
         CREATE TABLE IF NOT EXISTS connection_requests (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,7 +39,7 @@ def init_db():
 def before_request():
     init_db()
 
-# ✅ Dashboard with priority + pending connection preview
+# ✅ Dashboard
 @app.route('/')
 def dashboard():
     conn = sqlite3.connect('complaints.db')
@@ -76,11 +76,10 @@ def dashboard():
 
         priority_complaints.append(comp + (priority,))
 
-    # 🔽 Get recent pending connection requests (limit 5)
+    # Pending connection requests (preview)
     c.execute("SELECT id, name, mobile, area, status, created_at FROM connection_requests WHERE status = 'Pending' ORDER BY created_at DESC LIMIT 5")
     pending_connections = c.fetchall()
 
-    # 🔢 Total pending connection count
     c.execute("SELECT COUNT(*) FROM connection_requests WHERE status = 'Pending'")
     pending_connection_count = c.fetchone()[0]
 
@@ -110,27 +109,18 @@ def submit():
     conn.close()
     return redirect(url_for('dashboard'))
 
-# ✅ Complaint tracking (POST)
-@app.route('/track', methods=['POST'])
+# ✅ Complaint tracking (Unified GET & POST)
+@app.route('/track', methods=['GET', 'POST'])
 def track():
-    mobile = request.form['mobile']
-
-    conn = sqlite3.connect('complaints.db')
-    c = conn.cursor()
-    c.execute("SELECT * FROM complaints WHERE mobile = ?", (mobile,))
-    complaints = c.fetchall()
-    conn.close()
+    complaints = []
+    if request.method == 'POST':
+        mobile = request.form['mobile']
+        conn = sqlite3.connect('complaints.db')
+        c = conn.cursor()
+        c.execute("SELECT * FROM complaints WHERE mobile = ?", (mobile,))
+        complaints = c.fetchall()
+        conn.close()
     return render_template('track.html', complaints=complaints)
-
-# ✅ Complaint tracking (GET)
-@app.route('/track', methods=['GET'])
-def track_form():
-    return '''
-    <form method="POST" action="/track">
-        <input type="text" name="mobile" placeholder="Enter your mobile number" required>
-        <button type="submit">Track</button>
-    </form>
-    '''
 
 # ✅ Update complaint status
 @app.route('/update_status/<int:complaint_id>/<status>')
@@ -146,7 +136,6 @@ def update_status(complaint_id, status):
 @app.route('/flow-endpoint', methods=['POST'])
 def flow_endpoint():
     data = request.get_json()
-
     name = data.get("name")
     mobile = data.get("mobile")
     complaint = data.get("complaint")
@@ -159,10 +148,9 @@ def flow_endpoint():
     c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)", (name, mobile, complaint))
     conn.commit()
     conn.close()
-
     return jsonify({"status": "received"}), 200
 
-# ✅ New connections (HTML view)
+# ✅ New connections HTML view
 @app.route('/new-connections')
 def new_connections():
     conn = sqlite3.connect('complaints.db')
@@ -172,33 +160,23 @@ def new_connections():
     conn.close()
     return render_template('connection.html', connections=connections)
 
-# ✅ New connections API (GET JSON)
-@app.route('/api/new-connections', methods=['GET'])
+# ✅ New connection API
+@app.route('/api/new-connections')
 def api_new_connections():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
     c.execute("SELECT id, name, mobile, area, status, created_at FROM connection_requests ORDER BY created_at DESC")
     rows = c.fetchall()
     conn.close()
+    return jsonify([
+        {"id": row[0], "name": row[1], "mobile": row[2], "area": row[3], "status": row[4], "created_at": row[5]}
+        for row in rows
+    ])
 
-    connections = []
-    for row in rows:
-        connections.append({
-            "id": row[0],
-            "name": row[1],
-            "mobile": row[2],
-            "area": row[3],
-            "status": row[4],
-            "created_at": row[5]
-        })
-
-    return jsonify(connections)
-
-# ✅ New connection request submission (POST JSON)
+# ✅ New connection request (POST)
 @app.route('/api/new-connection-request', methods=['POST'])
 def new_connection_request():
     data = request.get_json()
-
     name = data.get("name")
     mobile = data.get("mobile")
     area = data.get("area")
@@ -214,7 +192,7 @@ def new_connection_request():
 
     return jsonify({"status": "received"}), 200
 
-# ✅ Update connection status from dropdown (POST)
+# ✅ Update connection status
 @app.route('/update-connection-status/<int:connection_id>', methods=['POST'])
 def update_connection_status(connection_id):
     new_status = request.form['status']
@@ -225,7 +203,7 @@ def update_connection_status(connection_id):
     conn.close()
     return redirect(url_for('new_connections'))
 
-# ✅ Stock page (new route)
+# ✅ Stock page route
 @app.route('/stock')
 def stock():
     return render_template('stock.html')
