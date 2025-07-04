@@ -8,7 +8,7 @@ def init_db():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
 
-    # Complaints table
+    # Existing tables
     c.execute('''
         CREATE TABLE IF NOT EXISTS complaints (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,7 +20,6 @@ def init_db():
         )
     ''')
 
-    # Connection requests table
     c.execute('''
         CREATE TABLE IF NOT EXISTS connection_requests (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -32,6 +31,29 @@ def init_db():
         )
     ''')
 
+    # 🔧 Stock table
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS stock (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            item_type TEXT,
+            description TEXT,
+            quantity INTEGER
+        )
+    ''')
+
+    # 🧾 Issued stock table
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS issued_stock (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            device TEXT,
+            recipient TEXT,
+            date TEXT,
+            note TEXT,
+            payment_mode TEXT,
+            status TEXT
+        )
+    ''')
+
     conn.commit()
     conn.close()
 
@@ -39,7 +61,7 @@ def init_db():
 def before_request():
     init_db()
 
-# ✅ Dashboard
+# ✅ Dashboard route
 @app.route('/')
 def dashboard():
     conn = sqlite3.connect('complaints.db')
@@ -76,7 +98,7 @@ def dashboard():
 
         priority_complaints.append(comp + (priority,))
 
-    # Pending connection requests (preview)
+    # Pending connection requests preview
     c.execute("SELECT id, name, mobile, area, status, created_at FROM connection_requests WHERE status = 'Pending' ORDER BY created_at DESC LIMIT 5")
     pending_connections = c.fetchall()
 
@@ -109,7 +131,7 @@ def submit():
     conn.close()
     return redirect(url_for('dashboard'))
 
-# ✅ Complaint tracking (Unified GET & POST)
+# ✅ Complaint tracking (GET + POST)
 @app.route('/track', methods=['GET', 'POST'])
 def track():
     complaints = []
@@ -173,7 +195,7 @@ def api_new_connections():
         for row in rows
     ])
 
-# ✅ New connection request (POST)
+# ✅ New connection request submission
 @app.route('/api/new-connection-request', methods=['POST'])
 def new_connection_request():
     data = request.get_json()
@@ -189,10 +211,9 @@ def new_connection_request():
     c.execute("INSERT INTO connection_requests (name, mobile, area) VALUES (?, ?, ?)", (name, mobile, area))
     conn.commit()
     conn.close()
-
     return jsonify({"status": "received"}), 200
 
-# ✅ Update connection status
+# ✅ Update connection request status
 @app.route('/update-connection-status/<int:connection_id>', methods=['POST'])
 def update_connection_status(connection_id):
     new_status = request.form['status']
@@ -203,10 +224,53 @@ def update_connection_status(connection_id):
     conn.close()
     return redirect(url_for('new_connections'))
 
-# ✅ Stock page route
-@app.route('/stock')
+# ✅ Stock page (GET + POST)
+@app.route('/stock', methods=['GET', 'POST'])
 def stock():
-    return render_template('stock.html')
+    conn = sqlite3.connect('complaints.db')
+    c = conn.cursor()
+
+    if request.method == 'POST':
+        if 'item_type' in request.form and 'quantity' in request.form:
+            # Add/Update stock
+            item_type = request.form['item_type']
+            description = request.form['description']
+            quantity = int(request.form['quantity'])
+
+            c.execute("SELECT id FROM stock WHERE item_type = ? AND description = ?", (item_type, description))
+            existing = c.fetchone()
+
+            if existing:
+                c.execute("UPDATE stock SET quantity = quantity + ? WHERE id = ?", (quantity, existing[0]))
+            else:
+                c.execute("INSERT INTO stock (item_type, description, quantity) VALUES (?, ?, ?)", (item_type, description, quantity))
+            conn.commit()
+
+        elif 'device' in request.form and 'recipient' in request.form:
+            # Record issuance
+            c.execute('''
+                INSERT INTO issued_stock (device, recipient, date, note, payment_mode, status)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (
+                request.form['device'],
+                request.form['recipient'],
+                request.form['date'],
+                request.form['note'],
+                request.form['payment_mode'],
+                request.form['status']
+            ))
+            conn.commit()
+
+    # Fetch stock
+    c.execute("SELECT item_type, description, quantity FROM stock")
+    stock_items = c.fetchall()
+
+    # Fetch issued items
+    c.execute("SELECT device, recipient, date, note, payment_mode, status FROM issued_stock ORDER BY id DESC LIMIT 20")
+    issued_items = c.fetchall()
+
+    conn.close()
+    return render_template('stock.html', stock_items=stock_items, issued_items=issued_items)
 
 # ✅ Ping route
 @app.route('/ping')
