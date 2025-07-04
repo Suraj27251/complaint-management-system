@@ -249,7 +249,6 @@ def stock():
 
     if request.method == 'POST':
         if 'item_type' in request.form and 'quantity' in request.form:
-            # Add/Update stock
             item_type = request.form['item_type']
             description = request.form['description']
             quantity = int(request.form['quantity'])
@@ -264,7 +263,6 @@ def stock():
             conn.commit()
 
         elif 'device' in request.form and 'recipient' in request.form:
-            # Record issuance
             c.execute('''
                 INSERT INTO issued_stock (device, recipient, date, note, payment_mode, status)
                 VALUES (?, ?, ?, ?, ?, ?)
@@ -278,16 +276,50 @@ def stock():
             ))
             conn.commit()
 
-    # Fetch stock
     c.execute("SELECT item_type, description, quantity FROM stock")
     stock_items = c.fetchall()
 
-    # Fetch issued items
     c.execute("SELECT device, recipient, date, note, payment_mode, status FROM issued_stock ORDER BY id DESC LIMIT 20")
     issued_items = c.fetchall()
 
     conn.close()
     return render_template('stock.html', stock_items=stock_items, issued_items=issued_items)
+
+# ✅ WhatsApp Webhook
+@app.route('/webhook', methods=['GET', 'POST'])
+def webhook():
+    if request.method == 'GET':
+        VERIFY_TOKEN = 'complaint_whatsapp_token'
+        mode = request.args.get('hub.mode')
+        token = request.args.get('hub.verify_token')
+        challenge = request.args.get('hub.challenge')
+        if mode == 'subscribe' and token == VERIFY_TOKEN:
+            return challenge, 200
+        return 'Verification failed', 403
+
+    if request.method == 'POST':
+        data = request.get_json()
+        try:
+            for entry in data.get('entry', []):
+                for change in entry.get('changes', []):
+                    value = change.get('value', {})
+                    contacts = value.get('contacts', [])
+                    messages = value.get('messages', [])
+
+                    if contacts and messages:
+                        name = contacts[0].get('profile', {}).get('name', 'Unknown')
+                        mobile = contacts[0].get('wa_id', '')
+                        message_text = messages[0].get('text', {}).get('body', '')
+
+                        conn = sqlite3.connect('complaints.db')
+                        c = conn.cursor()
+                        c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)", (name, mobile, message_text))
+                        conn.commit()
+                        conn.close()
+        except Exception as e:
+            print("Webhook Error:", e)
+
+        return 'EVENT_RECEIVED', 200
 
 # ✅ Ping route
 @app.route('/ping')
