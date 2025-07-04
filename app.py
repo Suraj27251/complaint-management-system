@@ -8,7 +8,7 @@ def init_db():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
 
-    # Existing tables
+    # Tables
     c.execute('''
         CREATE TABLE IF NOT EXISTS complaints (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,7 +31,6 @@ def init_db():
         )
     ''')
 
-    # 🔧 Stock table
     c.execute('''
         CREATE TABLE IF NOT EXISTS stock (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -41,7 +40,6 @@ def init_db():
         )
     ''')
 
-    # 🧾 Issued stock table
     c.execute('''
         CREATE TABLE IF NOT EXISTS issued_stock (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,7 +59,7 @@ def init_db():
 def before_request():
     init_db()
 
-# ✅ Dashboard route
+# ✅ Dashboard
 @app.route('/')
 def dashboard():
     conn = sqlite3.connect('complaints.db')
@@ -79,7 +77,6 @@ def dashboard():
     c.execute("SELECT * FROM complaints ORDER BY id DESC LIMIT 50")
     recent_complaints_raw = c.fetchall()
 
-    # Priority calculation
     priority_complaints = []
     for comp in recent_complaints_raw:
         mobile = comp[2]
@@ -87,34 +84,23 @@ def dashboard():
             SELECT COUNT(*) FROM complaints
             WHERE mobile = ? AND date(created_at) >= date('now', '-30 day')
         """, (mobile,))
-        count_last_30_days = c.fetchone()[0]
-
-        if count_last_30_days >= 3:
-            priority = "High"
-        elif count_last_30_days == 2:
-            priority = "Medium"
-        else:
-            priority = "Low"
-
+        count = c.fetchone()[0]
+        priority = "High" if count >= 3 else "Medium" if count == 2 else "Low"
         priority_complaints.append(comp + (priority,))
 
-    # Pending connection requests preview
     c.execute("SELECT id, name, mobile, area, status, created_at FROM connection_requests WHERE status = 'Pending' ORDER BY created_at DESC LIMIT 5")
     pending_connections = c.fetchall()
 
     c.execute("SELECT COUNT(*) FROM connection_requests WHERE status = 'Pending'")
     pending_connection_count = c.fetchone()[0]
 
-    # 📦 Stock Summary for Dashboard
     stock_summary = {}
     device_types = ['Switch', 'WAN Router', 'ONT Router', 'ONU']
     for device in device_types:
         c.execute("SELECT SUM(quantity) FROM stock WHERE item_type = ?", (device,))
         stock = c.fetchone()[0] or 0
-
         c.execute("SELECT COUNT(*) FROM issued_stock WHERE device = ?", (device,))
         issued = c.fetchone()[0] or 0
-
         stock_summary[device] = {
             'stock': stock,
             'issued': issued,
@@ -122,25 +108,18 @@ def dashboard():
         }
 
     conn.close()
+    return render_template('dashboard.html', total=total, pending=pending, resolved=resolved,
+                           recent_complaints=priority_complaints,
+                           pending_connections=pending_connections,
+                           pending_connection_count=pending_connection_count,
+                           stock_summary=stock_summary)
 
-    return render_template(
-        'dashboard.html',
-        total=total,
-        pending=pending,
-        resolved=resolved,
-        recent_complaints=priority_complaints,
-        pending_connections=pending_connections,
-        pending_connection_count=pending_connection_count,
-        stock_summary=stock_summary
-    )
-
-# ✅ Complaint submission
+# ✅ Complaint form
 @app.route('/submit', methods=['POST'])
 def submit():
     name = request.form['name']
     mobile = request.form['mobile']
     complaint = request.form['complaint']
-
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
     c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)", (name, mobile, complaint))
@@ -148,7 +127,7 @@ def submit():
     conn.close()
     return redirect(url_for('dashboard'))
 
-# ✅ Complaint tracking (GET + POST)
+# ✅ Complaint tracking
 @app.route('/track', methods=['GET', 'POST'])
 def track():
     complaints = []
@@ -161,7 +140,7 @@ def track():
         conn.close()
     return render_template('track.html', complaints=complaints)
 
-# ✅ Update complaint status
+# ✅ Complaint status update
 @app.route('/update_status/<int:complaint_id>/<status>')
 def update_status(complaint_id, status):
     conn = sqlite3.connect('complaints.db')
@@ -171,25 +150,7 @@ def update_status(complaint_id, status):
     conn.close()
     return redirect(url_for('dashboard'))
 
-# ✅ WhatsApp flow endpoint
-@app.route('/flow-endpoint', methods=['POST'])
-def flow_endpoint():
-    data = request.get_json()
-    name = data.get("name")
-    mobile = data.get("mobile")
-    complaint = data.get("complaint")
-
-    if not all([name, mobile, complaint]):
-        return jsonify({"error": "Missing required fields"}), 400
-
-    conn = sqlite3.connect('complaints.db')
-    c = conn.cursor()
-    c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)", (name, mobile, complaint))
-    conn.commit()
-    conn.close()
-    return jsonify({"status": "received"}), 200
-
-# ✅ New connections HTML view
+# ✅ New connections page
 @app.route('/new-connections')
 def new_connections():
     conn = sqlite3.connect('complaints.db')
@@ -212,17 +173,15 @@ def api_new_connections():
         for row in rows
     ])
 
-# ✅ New connection request submission
+# ✅ Submit new connection request
 @app.route('/api/new-connection-request', methods=['POST'])
 def new_connection_request():
     data = request.get_json()
     name = data.get("name")
     mobile = data.get("mobile")
     area = data.get("area")
-
     if not all([name, mobile]):
         return jsonify({"error": "Missing name or mobile"}), 400
-
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
     c.execute("INSERT INTO connection_requests (name, mobile, area) VALUES (?, ?, ?)", (name, mobile, area))
@@ -230,7 +189,7 @@ def new_connection_request():
     conn.close()
     return jsonify({"status": "received"}), 200
 
-# ✅ Update connection request status
+# ✅ Update connection status
 @app.route('/update-connection-status/<int:connection_id>', methods=['POST'])
 def update_connection_status(connection_id):
     new_status = request.form['status']
@@ -241,27 +200,24 @@ def update_connection_status(connection_id):
     conn.close()
     return redirect(url_for('new_connections'))
 
-# ✅ Stock page (GET + POST)
+# ✅ Stock management
 @app.route('/stock', methods=['GET', 'POST'])
 def stock():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
-
     if request.method == 'POST':
         if 'item_type' in request.form and 'quantity' in request.form:
             item_type = request.form['item_type']
             description = request.form['description']
             quantity = int(request.form['quantity'])
-
             c.execute("SELECT id FROM stock WHERE item_type = ? AND description = ?", (item_type, description))
             existing = c.fetchone()
-
             if existing:
                 c.execute("UPDATE stock SET quantity = quantity + ? WHERE id = ?", (quantity, existing[0]))
             else:
-                c.execute("INSERT INTO stock (item_type, description, quantity) VALUES (?, ?, ?)", (item_type, description, quantity))
+                c.execute("INSERT INTO stock (item_type, description, quantity) VALUES (?, ?, ?)",
+                          (item_type, description, quantity))
             conn.commit()
-
         elif 'device' in request.form and 'recipient' in request.form:
             c.execute('''
                 INSERT INTO issued_stock (device, recipient, date, note, payment_mode, status)
@@ -275,13 +231,10 @@ def stock():
                 request.form['status']
             ))
             conn.commit()
-
     c.execute("SELECT item_type, description, quantity FROM stock")
     stock_items = c.fetchall()
-
     c.execute("SELECT device, recipient, date, note, payment_mode, status FROM issued_stock ORDER BY id DESC LIMIT 20")
     issued_items = c.fetchall()
-
     conn.close()
     return render_template('stock.html', stock_items=stock_items, issued_items=issued_items)
 
@@ -311,17 +264,20 @@ def webhook():
                         mobile = contacts[0].get('wa_id', '')
                         message_text = messages[0].get('text', {}).get('body', '')
 
-                        conn = sqlite3.connect('complaints.db')
-                        c = conn.cursor()
-                        c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)", (name, mobile, message_text))
-                        conn.commit()
-                        conn.close()
+                        if mobile and message_text:
+                            conn = sqlite3.connect('complaints.db')
+                            c = conn.cursor()
+                            c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)",
+                                      (name, mobile, message_text))
+                            conn.commit()
+                            conn.close()
         except Exception as e:
             print("Webhook Error:", e)
+            return 'Webhook processing error', 200
 
         return 'EVENT_RECEIVED', 200
 
-# ✅ Ping route
+# ✅ Ping
 @app.route('/ping')
 def ping():
     return 'pong', 200
