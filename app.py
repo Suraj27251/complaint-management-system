@@ -8,7 +8,6 @@ def init_db():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
 
-    # Complaints table
     c.execute('''
         CREATE TABLE IF NOT EXISTS complaints (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,7 +19,6 @@ def init_db():
         )
     ''')
 
-    # Connection requests table
     c.execute('''
         CREATE TABLE IF NOT EXISTS connection_requests (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -32,7 +30,6 @@ def init_db():
         )
     ''')
 
-    # Stock table
     c.execute('''
         CREATE TABLE IF NOT EXISTS stock (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,7 +39,6 @@ def init_db():
         )
     ''')
 
-    # Issued stock table
     c.execute('''
         CREATE TABLE IF NOT EXISTS issued_stock (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -169,34 +165,11 @@ def update_status(complaint_id, status):
     conn.close()
     return redirect(url_for('dashboard'))
 
-# ✅ WhatsApp Flow Endpoint
-@app.route('/flow-endpoint', methods=['GET', 'POST'])
-def flow_endpoint():
-    if request.method == 'GET':
-        return '✅ Flow endpoint is live. Send a POST request with complaint data.', 200
-
-    data = request.get_json()
-    name = data.get("name")
-    mobile = data.get("mobile")
-    complaint = data.get("complaint")
-
-    if not all([name, mobile, complaint]):
-        return jsonify({"error": "Missing required fields"}), 400
-
-    conn = sqlite3.connect('complaints.db')
-    c = conn.cursor()
-    c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)", (name, mobile, complaint))
-    conn.commit()
-    conn.close()
-
-    return jsonify({"status": "received"}), 200
-
-# ✅ WhatsApp Webhook Verification & Receiver
+# ✅ WhatsApp webhook (for Meta)
 @app.route('/webhook', methods=['GET', 'POST'])
 def webhook():
-    VERIFY_TOKEN = 'complaint_whatsapp_token'
-
     if request.method == 'GET':
+        VERIFY_TOKEN = 'complaint_whatsapp_token'
         mode = request.args.get('hub.mode')
         token = request.args.get('hub.verify_token')
         challenge = request.args.get('hub.challenge')
@@ -228,7 +201,17 @@ def webhook():
 
         return 'EVENT_RECEIVED', 200
 
-# ✅ New connections page
+# ✅ View webhook complaints (UI)
+@app.route('/complaints')
+def view_complaints():
+    conn = sqlite3.connect('complaints.db')
+    c = conn.cursor()
+    c.execute("SELECT id, name, mobile, complaint, status, created_at FROM complaints ORDER BY created_at DESC LIMIT 100")
+    complaints = c.fetchall()
+    conn.close()
+    return render_template('complaints.html', complaints=complaints)
+
+# ✅ New connection requests
 @app.route('/new-connections')
 def new_connections():
     conn = sqlite3.connect('complaints.db')
@@ -238,7 +221,7 @@ def new_connections():
     conn.close()
     return render_template('connection.html', connections=connections)
 
-# ✅ API: new connections
+# ✅ New connection API
 @app.route('/api/new-connections')
 def api_new_connections():
     conn = sqlite3.connect('complaints.db')
@@ -251,7 +234,7 @@ def api_new_connections():
         for row in rows
     ])
 
-# ✅ API: Submit new connection request
+# ✅ Submit connection request
 @app.route('/api/new-connection-request', methods=['POST'])
 def new_connection_request():
     data = request.get_json()
@@ -269,7 +252,7 @@ def new_connection_request():
     conn.close()
     return jsonify({"status": "received"}), 200
 
-# ✅ Update connection request
+# ✅ Update connection request status
 @app.route('/update-connection-status/<int:connection_id>', methods=['POST'])
 def update_connection_status(connection_id):
     new_status = request.form['status']
@@ -280,7 +263,7 @@ def update_connection_status(connection_id):
     conn.close()
     return redirect(url_for('new_connections'))
 
-# ✅ Stock page
+# ✅ Stock page (GET + POST)
 @app.route('/stock', methods=['GET', 'POST'])
 def stock():
     conn = sqlite3.connect('complaints.db')
@@ -294,6 +277,7 @@ def stock():
 
             c.execute("SELECT id FROM stock WHERE item_type = ? AND description = ?", (item_type, description))
             existing = c.fetchone()
+
             if existing:
                 c.execute("UPDATE stock SET quantity = quantity + ? WHERE id = ?", (quantity, existing[0]))
             else:
@@ -323,7 +307,7 @@ def stock():
     conn.close()
     return render_template('stock.html', stock_items=stock_items, issued_items=issued_items)
 
-# ✅ Ping route for uptime check
+# ✅ Ping
 @app.route('/ping')
 def ping():
     return 'pong', 200
