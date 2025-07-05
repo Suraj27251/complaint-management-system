@@ -29,9 +29,9 @@ h1, h2 {
 }
 
 .header .logo img {
-    height: 4px;
+    height: 40px;
+    max-height: 60px;
     width: auto;
-    max-height: 5px;
 }
 
 .header .title {
@@ -53,6 +53,35 @@ h1, h2 {
     border-radius: 4px;
     border: 1px solid #ccc;
     background: #f8f8f8;
+}
+
+/* ===== NAVIGATION TABS ===== */
+.tabs {
+    display: flex;
+    justify-content: space-around;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #ccc;
+    flex-wrap: wrap;
+}
+
+.tab {
+    padding: 12px 16px;
+    text-align: center;
+    cursor: pointer;
+    flex-grow: 1;
+    font-weight: bold;
+    border-right: 1px solid #ccc;
+}
+
+.tab a {
+    text-decoration: none;
+    color: #333;
+    display: block;
+}
+
+.tab:hover,
+.tab.active {
+    background-color: #e0e0e0;
 }
 
 /* ===== FORM STYLES (track.html) ===== */
@@ -93,6 +122,34 @@ h1, h2 {
     color: #666;
 }
 
+/* ===== STATS CARDS ===== */
+.stats {
+    display: flex;
+    justify-content: space-around;
+    margin: 30px 0;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.stats div {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    flex: 1 1 30%;
+}
+
+/* ===== PIE CHART CONTAINER ===== */
+.chart-container {
+    max-width: 400px;
+    width: 100%;
+    margin: 0 auto 40px auto;
+}
+
 /* ===== TABLE STYLE ===== */
 table {
     width: 90%;
@@ -117,7 +174,7 @@ tr:hover {
     background-color: #f1f1f1;
 }
 
-/* ===== BUTTON LINK STYLE (optional) ===== */
+/* ===== BUTTON LINK STYLE ===== */
 a.button {
     padding: 5px 10px;
     background-color: #2196F3;
@@ -154,6 +211,16 @@ a.button:hover {
         margin-top: 10px;
     }
 
+    .tabs {
+        flex-direction: column;
+    }
+
+    .tab {
+        border-right: none;
+        border-bottom: 1px solid #ccc;
+        width: 100%;
+    }
+
     .track-form {
         flex-direction: column;
         align-items: center;
@@ -171,5 +238,9 @@ a.button:hover {
 
     th, td {
         padding: 10px 8px;
+    }
+
+    .chart-container {
+        max-width: 300px;
     }
 }
