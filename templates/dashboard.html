@@ -10,11 +10,11 @@
 
 <!-- 🔷 HEADER -->
 <div class="header">
-    <div class="header-logo">
+    <div class="logo">
         <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Countrylink Logo">
     </div>
-    <div class="header-title">COUNTRYLINK BROADBAND</div>
-    <div class="header-lang">
+    <div class="title">COUNTRYLINK BROADBAND</div>
+    <div class="language">
         <select>
             <option value="en">ENGLISH</option>
             <option value="hi">HINDI</option>
@@ -155,7 +155,8 @@
             }]
         },
         options: {
-            responsive: true
+            responsive: true,
+            maintainAspectRatio: false
         }
     });
 </script>
