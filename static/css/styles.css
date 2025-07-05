@@ -1,84 +1,175 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Track Complaint</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <style>
-        .track-form {
-            display: flex;
-            justify-content: center;
-            margin-top: 30px;
-        }
+/* ===== GENERAL RESET ===== */
+body {
+    font-family: 'Roboto', sans-serif;
+    background: #f2f5f9;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
 
-        .track-form input[type="text"] {
-            width: 250px;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
+h1, h2 {
+    text-align: center;
+    color: #333;
+}
 
-        .track-form button {
-            padding: 10px 20px;
-            margin-left: 10px;
-            font-size: 16px;
-            background-color: #3498db;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+/* ===== HEADER STYLE ===== */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #ddd;
+    flex-wrap: wrap;
+}
 
-        .track-form button:hover {
-            background-color: #2980b9;
-        }
+.header .logo {
+    display: flex;
+    align-items: center;
+}
 
-        .no-data {
-            text-align: center;
-            margin-top: 40px;
-            font-style: italic;
-            color: #666;
-        }
-    </style>
-</head>
-<body>
-    <h1>Track Your Complaint</h1>
+.header .logo img {
+    height: 45px;
+    width: auto;
+    max-height: 50px;
+}
 
-    <form method="POST" class="track-form">
-        <input type="text" name="mobile" placeholder="Enter your mobile number" required>
-        <button type="submit">Track</button>
-    </form>
+.header .title {
+    flex: 1;
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    color: #333;
+}
 
-    {% if complaints %}
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Mobile</th>
-                <th>Complaint</th>
-                <th>Status</th>
-                <th>Remarks</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for comp in complaints %}
-            <tr>
-                <td>{{ comp[0] }}</td>
-                <td>{{ comp[1] }}</td>
-                <td>{{ comp[2] }}</td>
-                <td>{{ comp[3] }}</td>
-                <td>{{ comp[4] }}</td>
-                <td>{{ comp[5] if comp|length > 5 else '-' }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <div class="no-data">
-        <p>No complaints found for the entered number.</p>
-    </div>
-    {% endif %}
-</body>
-</html>
+.header .language {
+    display: flex;
+    align-items: center;
+}
+
+.header .language select {
+    padding: 6px 12px;
+    font-size: 14px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background: #f8f8f8;
+}
+
+/* ===== FORM STYLES (track.html) ===== */
+.track-form {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
+.track-form input[type="text"] {
+    width: 250px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.track-form button {
+    padding: 10px 20px;
+    margin-left: 10px;
+    font-size: 16px;
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.track-form button:hover {
+    background-color: #2980b9;
+}
+
+.no-data {
+    text-align: center;
+    margin-top: 40px;
+    font-style: italic;
+    color: #666;
+}
+
+/* ===== TABLE STYLE ===== */
+table {
+    width: 90%;
+    margin: 40px auto;
+    border-collapse: collapse;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+
+th {
+    background-color: #4CAF50;
+    color: white;
+}
+
+tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* ===== BUTTON LINK STYLE (optional) ===== */
+a.button {
+    padding: 5px 10px;
+    background-color: #2196F3;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+a.button:hover {
+    background-color: #0b7dda;
+}
+
+/* ===== RESPONSIVE MEDIA QUERIES ===== */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .header .title {
+        order: 1;
+        width: 100%;
+        margin: 10px 0;
+    }
+
+    .header .logo {
+        order: 0;
+        margin-bottom: 10px;
+    }
+
+    .header .language {
+        order: 2;
+        margin-top: 10px;
+    }
+
+    .track-form {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .track-form button {
+        margin-left: 0;
+        margin-top: 10px;
+    }
+
+    table {
+        width: 100%;
+        font-size: 14px;
+    }
+
+    th, td {
+        padding: 10px 8px;
+    }
+}
