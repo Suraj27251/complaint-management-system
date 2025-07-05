@@ -9,17 +9,70 @@
             font-family: Arial, sans-serif;
             background: #f4f6f8;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+        }
+
+        /* 🔷 Header Styling */
+        .header {
+            background-color: #007BFF;
+            padding: 10px 20px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .header-logo img {
+            height: 40px;
+            max-width: 120px;
+            object-fit: contain;
+        }
+
+        .header-title {
+            flex: 1;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .header-lang {
+            min-width: 100px;
+            text-align: right;
+        }
+
+        .header-lang select {
+            padding: 5px;
+            border-radius: 4px;
+            border: none;
+            font-size: 14px;
+        }
+
+        @media screen and (max-width: 600px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .header-title {
+                margin: 10px 0;
+            }
+
+            .header-lang {
+                text-align: center;
+                margin-top: 10px;
+            }
         }
 
         h1 {
             text-align: center;
             color: #2c3e50;
+            margin-top: 30px;
         }
 
         form {
             text-align: center;
-            margin-top: 30px;
+            margin-top: 20px;
         }
 
         input[type="text"] {
@@ -76,40 +129,56 @@
     </style>
 </head>
 <body>
-    <h1>Track Your Complaint</h1>
 
-    <form method="POST" action="{{ url_for('track') }}">
-        <input type="text" name="mobile" placeholder="Enter your mobile number" required>
-        <button type="submit">Track</button>
-    </form>
+<!-- 🔷 HEADER -->
+<div class="header">
+    <div class="header-logo">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Countrylink Logo">
+    </div>
+    <div class="header-title">COUNTRYLINK BROADBAND</div>
+    <div class="header-lang">
+        <select>
+            <option value="en">ENGLISH</option>
+            <option value="hi">HINDI</option>
+        </select>
+    </div>
+</div>
 
-    {% if complaints %}
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Mobile</th>
-                    <th>Complaint</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for comp in complaints %}
-                <tr>
-                    <td>{{ comp[0] }}</td>
-                    <td>{{ comp[1] }}</td>
-                    <td>{{ comp[2] }}</td>
-                    <td>{{ comp[3] }}</td>
-                    <td>{{ comp[4] }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% elif request.method == 'POST' %}
-        <div class="no-data">
-            <p>No complaints found for the entered number.</p>
-        </div>
-    {% endif %}
+<h1>Track Your Complaint</h1>
+
+<form method="POST" action="{{ url_for('track') }}">
+    <input type="text" name="mobile" placeholder="Enter your mobile number" required>
+    <button type="submit">Track</button>
+</form>
+
+{% if complaints %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Mobile</th>
+                <th>Complaint</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for comp in complaints %}
+            <tr>
+                <td>{{ comp[0] }}</td>
+                <td>{{ comp[1] }}</td>
+                <td>{{ comp[2] }}</td>
+                <td>{{ comp[3] }}</td>
+                <td>{{ comp[4] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% elif request.method == 'POST' %}
+    <div class="no-data">
+        <p>No complaints found for the entered number.</p>
+    </div>
+{% endif %}
+
 </body>
 </html>
