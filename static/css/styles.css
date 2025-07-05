@@ -29,9 +29,9 @@ h1, h2 {
 }
 
 .header .logo img {
-    height: 45px;
+    height: 4px;
     width: auto;
-    max-height: 50px;
+    max-height: 5px;
 }
 
 .header .title {
