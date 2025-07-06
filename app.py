@@ -358,6 +358,13 @@ def hr_page():
     conn.close()
     return render_template('hr.html', records=records, summary=summary)
 
+# ✅ Dummy endpoint to fix HR form error
+@app.route('/update_salary', methods=['POST'])
+def update_salary():
+    # 👇 Right now, it just redirects back to the HR dashboard.
+    # Add DB update logic later if you store base salary.
+    return redirect(url_for('hr_dashboard'))
+
 # ✅ Ping (for uptime monitoring)
 @app.route('/ping')
 def ping():
