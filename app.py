@@ -51,6 +51,18 @@ def init_db():
         )
     ''')
 
+    # ✅ Attendance table for HR
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS staff_attendance (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            first_name TEXT,
+            last_name TEXT,
+            date TEXT,
+            time TEXT,
+            action TEXT
+        )
+    ''')
+
     conn.commit()
     conn.close()
 
@@ -318,6 +330,29 @@ def stock():
 
     conn.close()
     return render_template('stock.html', stock_items=stock_items, issued_items=issued_items)
+
+# ✅ HR page
+@app.route('/hr')
+def hr_page():
+    conn = sqlite3.connect('complaints.db')
+    c = conn.cursor()
+
+    # Attendance records
+    c.execute("SELECT first_name, last_name, date, time, action FROM staff_attendance ORDER BY date DESC, time DESC")
+    records = c.fetchall()
+
+    # Monthly summary
+    c.execute('''
+        SELECT first_name, last_name,
+            SUM(CASE WHEN action = 'Log in' THEN 1 ELSE 0 END) as present_days,
+            SUM(CASE WHEN action = 'Absent' OR action IS NULL THEN 1 ELSE 0 END) as absent_days
+        FROM staff_attendance
+        GROUP BY first_name, last_name
+    ''')
+    summary = c.fetchall()
+
+    conn.close()
+    return render_template('hr.html', records=records, summary=summary)
 
 # ✅ Ping (for uptime monitoring)
 @app.route('/ping')
