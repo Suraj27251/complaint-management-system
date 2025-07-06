@@ -332,7 +332,7 @@ def stock():
     return render_template('stock.html', stock_items=stock_items, issued_items=issued_items)
 
 # ✅ HR page
-@app.route('/hr', endpoint='hr_dashboard')
+@app.route('/hr', endpoint='hr_dashboard')  # ✅ Fixed: Add endpoint so url_for('hr_dashboard') works
 def hr_page():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
@@ -353,6 +353,7 @@ def hr_page():
 
     conn.close()
     return render_template('hr.html', records=records, summary=summary)
+
 
 # ✅ Ping (for uptime monitoring)
 @app.route('/ping')
