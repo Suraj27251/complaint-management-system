@@ -51,7 +51,6 @@ def init_db():
         )
     ''')
 
-    # ✅ Attendance table for HR
     c.execute('''
         CREATE TABLE IF NOT EXISTS staff_attendance (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -97,13 +96,7 @@ def dashboard():
         """, (mobile,))
         count = c.fetchone()[0]
 
-        if count >= 3:
-            priority = "High"
-        elif count == 2:
-            priority = "Medium"
-        else:
-            priority = "Low"
-
+        priority = "High" if count >= 3 else "Medium" if count == 2 else "Low"
         priority_complaints.append(comp + (priority,))
 
     c.execute("SELECT id, name, mobile, area, status, created_at FROM connection_requests WHERE status = 'Pending' ORDER BY created_at DESC LIMIT 5")
@@ -138,12 +131,13 @@ def dashboard():
         stock_summary=stock_summary
     )
 
-# ✅ Complaint form
+# ✅ Submit complaint form
 @app.route('/submit', methods=['POST'])
 def submit():
     name = request.form['name']
     mobile = request.form['mobile']
     complaint = request.form['complaint']
+
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
     c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)", (name, mobile, complaint))
@@ -208,7 +202,7 @@ def webhook():
             print("Webhook error:", e)
         return 'EVENT_RECEIVED', 200
 
-# ✅ WhatsApp Flow Test Endpoint
+# ✅ Flow API for WhatsApp Form submissions
 @app.route('/flow-endpoint', methods=['POST'])
 def flow_endpoint():
     data = request.get_json()
@@ -226,7 +220,7 @@ def flow_endpoint():
     conn.close()
     return jsonify({"status": "received"}), 200
 
-# ✅ View all complaints (UI)
+# ✅ View complaints (UI)
 @app.route('/complaints')
 def view_complaints():
     conn = sqlite3.connect('complaints.db')
@@ -236,7 +230,7 @@ def view_complaints():
     conn.close()
     return render_template('complaints.html', complaints=complaints)
 
-# ✅ New connections page
+# ✅ New connection requests UI
 @app.route('/new-connections')
 def new_connections():
     conn = sqlite3.connect('complaints.db')
@@ -246,36 +240,19 @@ def new_connections():
     conn.close()
     return render_template('connection.html', connections=connections)
 
-# ✅ API endpoint to get all new connections
-@app.route('/api/new-connections')
-def api_new_connections():
-    conn = sqlite3.connect('complaints.db')
-    c = conn.cursor()
-    c.execute("SELECT id, name, mobile, area, status, created_at FROM connection_requests ORDER BY created_at DESC")
-    rows = c.fetchall()
-    conn.close()
-    return jsonify([
-        {"id": row[0], "name": row[1], "mobile": row[2], "area": row[3], "status": row[4], "created_at": row[5]}
-        for row in rows
-    ])
-
-# ✅ Submit new connection request
-@app.route('/api/new-connection-request', methods=['POST'])
+# ✅ Submit new connection request (form)
+@app.route('/new-connection-request', methods=['POST'])
 def new_connection_request():
-    data = request.get_json()
-    name = data.get("name")
-    mobile = data.get("mobile")
-    area = data.get("area")
-
-    if not all([name, mobile]):
-        return jsonify({"error": "Missing name or mobile"}), 400
+    name = request.form['name']
+    mobile = request.form['mobile']
+    area = request.form['area']
 
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
     c.execute("INSERT INTO connection_requests (name, mobile, area) VALUES (?, ?, ?)", (name, mobile, area))
     conn.commit()
     conn.close()
-    return jsonify({"status": "received"}), 200
+    return redirect(url_for('new_connections'))
 
 # ✅ Update connection status
 @app.route('/update-connection-status/<int:connection_id>', methods=['POST'])
@@ -288,14 +265,14 @@ def update_connection_status(connection_id):
     conn.close()
     return redirect(url_for('new_connections'))
 
-# ✅ Stock page
+# ✅ Stock management
 @app.route('/stock', methods=['GET', 'POST'])
 def stock():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
 
     if request.method == 'POST':
-        if 'item_type' in request.form and 'quantity' in request.form:
+        if 'item_type' in request.form:
             item_type = request.form['item_type']
             description = request.form['description']
             quantity = int(request.form['quantity'])
@@ -308,7 +285,7 @@ def stock():
                 c.execute("INSERT INTO stock (item_type, description, quantity) VALUES (?, ?, ?)", (item_type, description, quantity))
             conn.commit()
 
-        elif 'device' in request.form and 'recipient' in request.form:
+        elif 'device' in request.form:
             c.execute('''
                 INSERT INTO issued_stock (device, recipient, date, note, payment_mode, status)
                 VALUES (?, ?, ?, ?, ?, ?)
@@ -331,25 +308,23 @@ def stock():
     conn.close()
     return render_template('stock.html', stock_items=stock_items, issued_items=issued_items)
 
-# ✅ HR page
+# ✅ HR Page
 @app.route('/hr', endpoint='hr_dashboard')
 def hr_page():
     conn = sqlite3.connect('complaints.db')
-    conn.row_factory = sqlite3.Row  # ✅ Make rows accessible by name
+    conn.row_factory = sqlite3.Row
     c = conn.cursor()
 
-    # Attendance records
     c.execute("SELECT first_name, last_name, date, time, action FROM staff_attendance ORDER BY date DESC, time DESC")
     records = c.fetchall()
 
-    # Monthly summary
     c.execute('''
         SELECT first_name || ' ' || last_name AS name,
-            COUNT(DISTINCT date) AS total_days,
-            SUM(CASE WHEN action = 'Log in' THEN 1 ELSE 0 END) as present,
-            SUM(CASE WHEN action = 'Absent' THEN 1 ELSE 0 END) as absent,
-            SUM(CASE WHEN action = 'Log in' THEN 1 ELSE 0 END) as login,
-            SUM(CASE WHEN action = 'Log out' THEN 1 ELSE 0 END) as logout
+               COUNT(DISTINCT date) AS total_days,
+               SUM(CASE WHEN action = 'Log in' THEN 1 ELSE 0 END) AS present,
+               SUM(CASE WHEN action = 'Absent' THEN 1 ELSE 0 END) AS absent,
+               SUM(CASE WHEN action = 'Log in' THEN 1 ELSE 0 END) AS login,
+               SUM(CASE WHEN action = 'Log out' THEN 1 ELSE 0 END) AS logout
         FROM staff_attendance
         GROUP BY first_name, last_name
     ''')
@@ -358,14 +333,12 @@ def hr_page():
     conn.close()
     return render_template('hr.html', records=records, summary=summary)
 
-# ✅ Dummy endpoint to fix HR form error
+# ✅ Dummy salary update (avoid form error)
 @app.route('/update_salary', methods=['POST'])
 def update_salary():
-    # 👇 Right now, it just redirects back to the HR dashboard.
-    # Add DB update logic later if you store base salary.
     return redirect(url_for('hr_dashboard'))
 
-# ✅ Ping (for uptime monitoring)
+# ✅ Uptime monitor
 @app.route('/ping')
 def ping():
     return 'pong', 200
