@@ -332,7 +332,7 @@ def stock():
     return render_template('stock.html', stock_items=stock_items, issued_items=issued_items)
 
 # ✅ HR page
-@app.route('/hr')
+@app.route('/hr', endpoint='hr_dashboard')
 def hr_page():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
