@@ -332,9 +332,10 @@ def stock():
     return render_template('stock.html', stock_items=stock_items, issued_items=issued_items)
 
 # ✅ HR page
-@app.route('/hr', endpoint='hr_dashboard')  # ✅ Fixed: Add endpoint so url_for('hr_dashboard') works
+@app.route('/hr', endpoint='hr_dashboard')
 def hr_page():
     conn = sqlite3.connect('complaints.db')
+    conn.row_factory = sqlite3.Row  # ✅ Make rows accessible by name
     c = conn.cursor()
 
     # Attendance records
@@ -343,9 +344,12 @@ def hr_page():
 
     # Monthly summary
     c.execute('''
-        SELECT first_name, last_name,
-            SUM(CASE WHEN action = 'Log in' THEN 1 ELSE 0 END) as present_days,
-            SUM(CASE WHEN action = 'Absent' OR action IS NULL THEN 1 ELSE 0 END) as absent_days
+        SELECT first_name || ' ' || last_name AS name,
+            COUNT(DISTINCT date) AS total_days,
+            SUM(CASE WHEN action = 'Log in' THEN 1 ELSE 0 END) as present,
+            SUM(CASE WHEN action = 'Absent' THEN 1 ELSE 0 END) as absent,
+            SUM(CASE WHEN action = 'Log in' THEN 1 ELSE 0 END) as login,
+            SUM(CASE WHEN action = 'Log out' THEN 1 ELSE 0 END) as logout
         FROM staff_attendance
         GROUP BY first_name, last_name
     ''')
@@ -353,7 +357,6 @@ def hr_page():
 
     conn.close()
     return render_template('hr.html', records=records, summary=summary)
-
 
 # ✅ Ping (for uptime monitoring)
 @app.route('/ping')
