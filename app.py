@@ -343,6 +343,37 @@ def hr_page():
 def update_salary():
     return redirect(url_for('hr_dashboard'))
 
+# ✅ Webhook to receive staff attendance data
+@app.route('/staff-attendance-webhook', methods=['POST'])
+def staff_attendance_webhook():
+    if request.is_json:
+        data = request.get_json()
+        first_name = data.get('first_name')
+        last_name = data.get('last_name')
+        date = data.get('date')
+        time = data.get('time')
+        action = data.get('action')
+    else:
+        first_name = request.form.get('first_name')
+        last_name = request.form.get('last_name')
+        date = request.form.get('date')
+        time = request.form.get('time')
+        action = request.form.get('action')
+
+    if not all([first_name, last_name, date, time, action]):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    conn = sqlite3.connect('complaints.db')
+    c = conn.cursor()
+    c.execute('''
+        INSERT INTO staff_attendance (first_name, last_name, date, time, action)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (first_name, last_name, date, time, action))
+    conn.commit()
+    conn.close()
+
+    return jsonify({"status": "attendance saved"}), 200
+
 # ✅ Uptime monitor
 @app.route('/ping')
 def ping():
