@@ -168,17 +168,13 @@ def update_status(complaint_id, status):
     conn.close()
     return redirect(url_for('dashboard'))
 
-# ✅ Webhook for WhatsApp
+# ✅ Webhook for WhatsApp (no token verification)
 @app.route('/webhook', methods=['GET', 'POST'])
 def webhook():
     if request.method == 'GET':
-        VERIFY_TOKEN = 'complaint_whatsapp_token'
-        mode = request.args.get('hub.mode')
-        token = request.args.get('hub.verify_token')
+        # Directly return the challenge without token verification
         challenge = request.args.get('hub.challenge')
-        if mode == 'subscribe' and token == VERIFY_TOKEN:
-            return challenge, 200
-        return 'Verification failed', 403
+        return challenge or 'Missing challenge parameter', 200
 
     if request.method == 'POST':
         data = request.get_json()
@@ -195,7 +191,8 @@ def webhook():
 
                         conn = sqlite3.connect('complaints.db')
                         c = conn.cursor()
-                        c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)", (name, mobile, message))
+                        c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)", 
+                                  (name, mobile, message))
                         conn.commit()
                         conn.close()
         except Exception as e:
