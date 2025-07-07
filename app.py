@@ -52,15 +52,16 @@ def init_db():
     ''')
 
     c.execute('''
-        CREATE TABLE IF NOT EXISTS staff_attendance (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            first_name TEXT,
-            last_name TEXT,
-            date TEXT,
-            time TEXT,
-            action TEXT
-        )
-    ''')
+    CREATE TABLE IF NOT EXISTS staff_attendance (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        first_name TEXT,
+        last_name TEXT,
+        date TEXT,
+        time TEXT,
+        action TEXT,
+        note TEXT
+    )
+''')
 
     conn.commit()
     conn.close()
