@@ -317,7 +317,8 @@ def hr_page():
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
 
-    c.execute("SELECT first_name, last_name, date, time, action FROM staff_attendance ORDER BY date DESC, time DESC")
+    # Include `note` in SELECT
+    c.execute("SELECT first_name, last_name, date, time, action, note FROM staff_attendance ORDER BY date DESC, time DESC")
     records = c.fetchall()
 
     c.execute('''
@@ -340,7 +341,7 @@ def hr_page():
 def update_salary():
     return redirect(url_for('hr_dashboard'))
 
-# ✅ Webhook to receive staff attendance data
+# ✅ Webhook to receive staff attendance data with `note`
 @app.route('/staff-attendance-webhook', methods=['POST'])
 def staff_attendance_webhook():
     if request.is_json:
@@ -350,12 +351,14 @@ def staff_attendance_webhook():
         date = data.get('date')
         time = data.get('time')
         action = data.get('action')
+        note = data.get('note')
     else:
         first_name = request.form.get('first_name')
         last_name = request.form.get('last_name')
         date = request.form.get('date')
         time = request.form.get('time')
         action = request.form.get('action')
+        note = request.form.get('note')
 
     if not all([first_name, last_name, date, time, action]):
         return jsonify({"error": "Missing required fields"}), 400
@@ -363,9 +366,9 @@ def staff_attendance_webhook():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
     c.execute('''
-        INSERT INTO staff_attendance (first_name, last_name, date, time, action)
-        VALUES (?, ?, ?, ?, ?)
-    ''', (first_name, last_name, date, time, action))
+        INSERT INTO staff_attendance (first_name, last_name, date, time, action, note)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (first_name, last_name, date, time, action, note))
     conn.commit()
     conn.close()
 
