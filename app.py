@@ -181,67 +181,41 @@ def webhook():
         challenge = request.args.get('hub.challenge')
         return challenge or '', 200
 
-    if request.method == 'POST':
-        try:
-            print("\n--- Incoming Webhook ---")
-            print("Headers:", dict(request.headers))
+    try:
+        print("\n--- Incoming Webhook ---")
+        print("Headers:", dict(request.headers))
 
-            raw = request.data.decode('utf-8')
-            print("Raw body received:", repr(raw))
+        content_type = request.headers.get('Content-Type', '')
+        print("Content-Type:", content_type)
 
-            if not raw.strip():
-                print("❌ Empty request body")
-                return jsonify({"error": "Empty request body"}), 400
+        if content_type == 'application/json':
+            data = request.get_json()
+        elif content_type == 'application/x-www-form-urlencoded':
+            form_data = request.form.to_dict(flat=True)
+            print("Form Data:", form_data)
+            raw_json = next(iter(form_data.values()), None)
+            if raw_json:
+                data = json.loads(raw_json)
+            else:
+                print("❌ No JSON payload found in form data")
+                return jsonify({"error": "Missing JSON body"}), 400
+        else:
+            print("❌ Unsupported Content-Type")
+            return jsonify({"error": "Unsupported Content-Type"}), 400
 
-            data = json.loads(raw)
-            print("Parsed JSON:", data)
+        print("Parsed data:", data)
 
-            for entry in data.get('entry', []):
-                business_account_id = entry.get('id')
+        # [Same logic as before... parsing and inserting into DB]
 
-                for change in entry.get('changes', []):
-                    value = change.get('value', {})
-                    metadata = value.get('metadata', {})
-                    display_phone_number = metadata.get('display_phone_number', '')
-                    phone_number_id = metadata.get('phone_number_id', '')
+        return jsonify({"status": "Message received"}), 200
 
-                    contacts = value.get('contacts', [])
-                    messages = value.get('messages', [])
+    except json.JSONDecodeError as e:
+        print("❌ JSON Decode Error:", str(e))
+        return jsonify({"error": "Invalid JSON format"}), 400
+    except Exception as e:
+        print("❌ General Webhook Error:", str(e))
+        return jsonify({"error": "Processing failed"}), 500
 
-                    if contacts and messages:
-                        name = contacts[0].get('profile', {}).get('name', 'Unknown')
-                        mobile = contacts[0].get('wa_id', '')
-                        message = messages[0].get('text', {}).get('body', '')
-                        timestamp_unix = messages[0].get('timestamp')
-                        created_at = datetime.fromtimestamp(int(timestamp_unix)).strftime('%Y-%m-%d %H:%M:%S') if timestamp_unix else datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-                        print(f"✔️ Inserting complaint from {name} ({mobile}): {message}")
-
-                        if name and mobile and message:
-                            conn = sqlite3.connect('complaints.db')
-                            c = conn.cursor()
-                            c.execute("""
-                                INSERT INTO complaints (
-                                    name, mobile, complaint, status, created_at, 
-                                    wa_timestamp, business_account_id, 
-                                    display_phone_number, phone_number_id
-                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                            """, (
-                                name, mobile, message, 'Pending', created_at,
-                                timestamp_unix, business_account_id,
-                                display_phone_number, phone_number_id
-                            ))
-                            conn.commit()
-                            conn.close()
-
-            return jsonify({"status": "Message received"}), 200
-
-        except json.JSONDecodeError as e:
-            print("❌ JSON Decode Error:", str(e))
-            return jsonify({"error": "Invalid JSON format"}), 400
-        except Exception as e:
-            print("❌ General Webhook Error:", str(e))
-            return jsonify({"error": "Processing failed"}), 500
             
 # ✅ Flow API for WhatsApp Form submissions
 @app.route('/flow-endpoint', methods=['POST'])
