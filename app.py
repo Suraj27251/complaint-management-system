@@ -218,6 +218,14 @@ def webhook():
             print("❌ Webhook error:", e)
             return jsonify({"error": "Webhook processing failed"}), 500
 
+
+# ✅ Middleware to ensure JSON response for webhook and flow
+@app.after_request
+def set_default_json_header(response):
+    if request.path.startswith('/webhook') or request.path.startswith('/flow-endpoint'):
+        response.headers['Content-Type'] = 'application/json'
+    return response
+
 # ✅ Flow API for WhatsApp Form submissions
 @app.route('/flow-endpoint', methods=['POST'])
 def flow_endpoint():
