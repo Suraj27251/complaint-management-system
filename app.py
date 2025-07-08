@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, json
+from flask import Flask, render_template, request, redirect, url_for, jsonify
+import json
+from json import JSONDecodeError
 import sqlite3
 from datetime import datetime
-
 app = Flask(__name__)
 
 # ✅ Initialize the database
