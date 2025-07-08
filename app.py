@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, json
 import sqlite3
 from datetime import datetime
 
@@ -170,7 +170,6 @@ def update_status(complaint_id, status):
     conn.close()
     return redirect(url_for('dashboard'))
 
-# ✅ Webhook for WhatsApp (no token verification)
 @app.route('/webhook', methods=['GET', 'POST'])
 def webhook():
     if request.method == 'GET':
@@ -179,13 +178,15 @@ def webhook():
 
     if request.method == 'POST':
         try:
-            # Handle different content types
-            if request.content_type != 'application/json':
-                return jsonify({"error": "Unsupported Media Type"}), 415
+            # Try to parse JSON from proper header
+            if request.is_json:
+                data = request.get_json()
+            else:
+                # Fallback: parse raw body manually
+                data = json.loads(request.data.decode('utf-8'))
 
-            data = request.get_json(force=True)
             if not data:
-                return jsonify({"error": "Empty JSON data"}), 400
+                return jsonify({"error": "Empty payload"}), 400
 
             for entry in data.get('entry', []):
                 for change in entry.get('changes', []):
@@ -214,7 +215,7 @@ def webhook():
         except Exception as e:
             print("Webhook error:", e)
             return jsonify({"error": "Webhook processing failed"}), 500
-
+            
 # ✅ Flow API for WhatsApp Form submissions
 @app.route('/flow-endpoint', methods=['POST'])
 def flow_endpoint():
