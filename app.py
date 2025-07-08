@@ -190,7 +190,6 @@ def webhook():
         if request.is_json:
             raw_json = request.get_data(as_text=True)
         elif request.content_type == 'application/x-www-form-urlencoded':
-            # Get the first key in form data, which is the JSON string
             form_keys = list(request.form.keys())
             if form_keys:
                 raw_json = form_keys[0]
@@ -198,60 +197,57 @@ def webhook():
         print("Raw body received:", raw_json)
 
         if not raw_json:
-            print("❌ No JSON payload found in form data")
+            print("❌ No JSON payload found")
             return jsonify({"error": "No JSON payload"}), 400
 
-        # Parse JSON
-        data = json.loads(raw_json)
+        try:
+            data = json.loads(raw_json)
+        except json.JSONDecodeError as e:
+            print("❌ JSON decode error:", e)
+            return jsonify({"error": "Invalid JSON format"}), 400
 
-        # Your normal processing logic starts here
         print("✅ Parsed JSON:", data)
 
-        for entry in data.get('entry', []):
-            business_account_id = entry.get('id')
+        # Handle message-type webhook (user message)
+        if 'messages' in data:
+            contacts = data.get('contacts', [])
+            messages = data.get('messages', [])
+            metadata = data.get('metadata', {})
 
-            for change in entry.get('changes', []):
-                value = change.get('value', {})
-                metadata = value.get('metadata', {})
-                display_phone_number = metadata.get('display_phone_number', '')
-                phone_number_id = metadata.get('phone_number_id', '')
+            if contacts and messages:
+                name = contacts[0].get('profile', {}).get('name', 'Unknown')
+                mobile = contacts[0].get('wa_id', '')
+                message = messages[0].get('text', {}).get('body', '')
+                timestamp_unix = messages[0].get('timestamp')
+                created_at = datetime.fromtimestamp(int(timestamp_unix)).strftime('%Y-%m-%d %H:%M:%S') if timestamp_unix else datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-                contacts = value.get('contacts', [])
-                messages = value.get('messages', [])
+                conn = sqlite3.connect('complaints.db')
+                c = conn.cursor()
+                c.execute("""
+                    INSERT INTO complaints (
+                        name, mobile, complaint, status, created_at, 
+                        wa_timestamp, business_account_id, 
+                        display_phone_number, phone_number_id
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    name, mobile, message, 'Pending', created_at,
+                    timestamp_unix,
+                    metadata.get('business_account_id', ''),
+                    metadata.get('display_phone_number', ''),
+                    metadata.get('phone_number_id', '')
+                ))
+                conn.commit()
+                conn.close()
 
-                if contacts and messages:
-                    name = contacts[0].get('profile', {}).get('name', 'Unknown')
-                    mobile = contacts[0].get('wa_id', '')
-                    message = messages[0].get('text', {}).get('body', '')
-                    timestamp_unix = messages[0].get('timestamp')
-                    created_at = datetime.fromtimestamp(int(timestamp_unix)).strftime('%Y-%m-%d %H:%M:%S') if timestamp_unix else datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        # You can also log or store status-type messages if needed
+        elif 'statuses' in data:
+            print("ℹ️ Status update received:", data.get('statuses'))
 
-                    if name and mobile and message:
-                        conn = sqlite3.connect('complaints.db')
-                        c = conn.cursor()
-                        c.execute("""
-                            INSERT INTO complaints (
-                                name, mobile, complaint, status, created_at, 
-                                wa_timestamp, business_account_id, 
-                                display_phone_number, phone_number_id
-                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        """, (
-                            name, mobile, message, 'Pending', created_at,
-                            timestamp_unix, business_account_id,
-                            display_phone_number, phone_number_id
-                        ))
-                        conn.commit()
-                        conn.close()
-
-        return jsonify({"status": "Message received"}), 200
-
-    except json.JSONDecodeError as e:
-        print("❌ JSON decode error:", e)
-        return jsonify({"error": "Invalid JSON format"}), 400
+        return jsonify({"status": "Webhook processed"}), 200
 
     except Exception as e:
-        print("❌ Webhook error:", e)
-        return jsonify({"error": "Processing failed"}), 500
+        print("❌ Unexpected error:", e)
+        return jsonify({"error": "Internal Server Error"}), 500
             
 # ✅ Flow API for WhatsApp Form submissions
 @app.route('/flow-endpoint', methods=['POST'])
