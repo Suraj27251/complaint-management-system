@@ -1,8 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
-import json
-from json import JSONDecodeError
 import sqlite3
 from datetime import datetime
+
 app = Flask(__name__)
 
 # ✅ Initialize the database
@@ -11,19 +10,15 @@ def init_db():
     c = conn.cursor()
 
     c.execute('''
-    CREATE TABLE IF NOT EXISTS complaints (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        mobile TEXT NOT NULL,
-        complaint TEXT NOT NULL,
-        status TEXT DEFAULT 'Pending',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        wa_timestamp TEXT,
-        business_account_id TEXT,
-        display_phone_number TEXT,
-        phone_number_id TEXT
-    )
-''')
+        CREATE TABLE IF NOT EXISTS complaints (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            mobile TEXT NOT NULL,
+            complaint TEXT NOT NULL,
+            status TEXT DEFAULT 'Pending',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
 
     c.execute('''
         CREATE TABLE IF NOT EXISTS connection_requests (
@@ -174,82 +169,48 @@ def update_status(complaint_id, status):
     conn.commit()
     conn.close()
     return redirect(url_for('dashboard'))
-    
-# ✅ Updated webhook for met awhatsapp
+
+# ✅ Webhook for WhatsApp (no token verification)
 @app.route('/webhook', methods=['GET', 'POST'])
 def webhook():
     if request.method == 'GET':
         challenge = request.args.get('hub.challenge')
         return challenge or '', 200
 
-    try:
-        print("\n--- Incoming Webhook ---")
-        print("Headers:", dict(request.headers))
-
-        raw_json = None
-
-        if request.is_json:
-            raw_json = request.get_data(as_text=True)
-        elif request.content_type == 'application/x-www-form-urlencoded':
-            form_keys = list(request.form.keys())
-            if form_keys:
-                raw_json = form_keys[0]
-
-        print("Raw body received:", raw_json)
-
-        if not raw_json:
-            print("❌ No JSON payload found")
-            return jsonify({"error": "No JSON payload"}), 400
-
+    if request.method == 'POST':
         try:
-            data = json.loads(raw_json)
-        except json.JSONDecodeError as e:
-            print("❌ JSON decode error:", e)
-            return jsonify({"error": "Invalid JSON format"}), 400
+            data = request.get_json()
+            if not data:
+                return jsonify({"error": "No JSON data received"}), 400
 
-        print("✅ Parsed JSON:", data)
+            for entry in data.get('entry', []):
+                for change in entry.get('changes', []):
+                    value = change.get('value', {})
+                    contacts = value.get('contacts', [])
+                    messages = value.get('messages', [])
 
-        # Handle message-type webhook (user message)
-        if 'messages' in data:
-            contacts = data.get('contacts', [])
-            messages = data.get('messages', [])
-            metadata = data.get('metadata', {})
+                    if contacts and messages:
+                        name = contacts[0].get('profile', {}).get('name', 'Unknown')
+                        mobile = contacts[0].get('wa_id', '')
+                        message = messages[0].get('text', {}).get('body', '')
+                        created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-            if contacts and messages:
-                name = contacts[0].get('profile', {}).get('name', 'Unknown')
-                mobile = contacts[0].get('wa_id', '')
-                message = messages[0].get('text', {}).get('body', '')
-                timestamp_unix = messages[0].get('timestamp')
-                created_at = datetime.fromtimestamp(int(timestamp_unix)).strftime('%Y-%m-%d %H:%M:%S') if timestamp_unix else datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        if name and mobile and message:
+                            conn = sqlite3.connect('complaints.db')
+                            c = conn.cursor()
+                            c.execute("""
+                                INSERT INTO complaints (name, mobile, complaint, status, created_at)
+                                VALUES (?, ?, ?, ?, ?)
+                            """, (name, mobile, message, 'Pending', created_at))
+                            conn.commit()
+                            conn.close()
 
-                conn = sqlite3.connect('complaints.db')
-                c = conn.cursor()
-                c.execute("""
-                    INSERT INTO complaints (
-                        name, mobile, complaint, status, created_at, 
-                        wa_timestamp, business_account_id, 
-                        display_phone_number, phone_number_id
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    name, mobile, message, 'Pending', created_at,
-                    timestamp_unix,
-                    metadata.get('business_account_id', ''),
-                    metadata.get('display_phone_number', ''),
-                    metadata.get('phone_number_id', '')
-                ))
-                conn.commit()
-                conn.close()
+            return 'EVENT_RECEIVED', 200
 
-        # You can also log or store status-type messages if needed
-        elif 'statuses' in data:
-            print("ℹ️ Status update received:", data.get('statuses'))
+        except Exception as e:
+            print("Webhook error:", e)
+            return jsonify({"error": "Webhook processing failed"}), 500
 
-        return jsonify({"status": "Webhook processed"}), 200
-
-    except Exception as e:
-        print("❌ Unexpected error:", e)
-        return jsonify({"error": "Internal Server Error"}), 500
-            
 # ✅ Flow API for WhatsApp Form submissions
 @app.route('/flow-endpoint', methods=['POST'])
 def flow_endpoint():
