@@ -175,7 +175,7 @@ def webhook():
     if request.method == 'GET':
         # Directly return the challenge without token verification
         challenge = request.args.get('hub.challenge')
-        return challenge or 'Missing challenge parameter', 200
+        return challenge or '', 200  # Removed "Missing challenge parameter"
 
     if request.method == 'POST':
         data = request.get_json()
