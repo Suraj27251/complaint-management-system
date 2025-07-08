@@ -179,9 +179,13 @@ def webhook():
 
     if request.method == 'POST':
         try:
-            data = request.get_json()
+            # Handle different content types
+            if request.content_type != 'application/json':
+                return jsonify({"error": "Unsupported Media Type"}), 415
+
+            data = request.get_json(force=True)
             if not data:
-                return jsonify({"error": "No JSON data received"}), 400
+                return jsonify({"error": "Empty JSON data"}), 400
 
             for entry in data.get('entry', []):
                 for change in entry.get('changes', []):
