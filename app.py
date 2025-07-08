@@ -173,32 +173,43 @@ def update_status(complaint_id, status):
 @app.route('/webhook', methods=['GET', 'POST'])
 def webhook():
     if request.method == 'GET':
-        # Directly return the challenge without token verification
+        # Return the challenge value (used during webhook verification)
         challenge = request.args.get('hub.challenge')
-        return challenge or '', 200  # Removed "Missing challenge parameter"
+        return challenge or '', 200
 
     if request.method == 'POST':
-        data = request.get_json()
         try:
+            data = request.get_json()
+            if not data:
+                return jsonify({"error": "No JSON data received"}), 400
+
+            # Process WhatsApp message structure
             for entry in data.get('entry', []):
                 for change in entry.get('changes', []):
                     value = change.get('value', {})
                     contacts = value.get('contacts', [])
                     messages = value.get('messages', [])
+
                     if contacts and messages:
                         name = contacts[0].get('profile', {}).get('name', 'Unknown')
                         mobile = contacts[0].get('wa_id', '')
                         message = messages[0].get('text', {}).get('body', '')
 
-                        conn = sqlite3.connect('complaints.db')
-                        c = conn.cursor()
-                        c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)", 
-                                  (name, mobile, message))
-                        conn.commit()
-                        conn.close()
+                        if name and mobile and message:
+                            # Save to database
+                            conn = sqlite3.connect('complaints.db')
+                            c = conn.cursor()
+                            c.execute("""
+                                INSERT INTO complaints (name, mobile, complaint) 
+                                VALUES (?, ?, ?)""", (name, mobile, message))
+                            conn.commit()
+                            conn.close()
+
+            return 'EVENT_RECEIVED', 200
+
         except Exception as e:
             print("Webhook error:", e)
-        return 'EVENT_RECEIVED', 200
+            return jsonify({"error": "Webhook processing failed"}), 500
 
 # ✅ Flow API for WhatsApp Form submissions
 @app.route('/flow-endpoint', methods=['POST'])
