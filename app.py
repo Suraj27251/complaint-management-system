@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 import sqlite3
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -61,7 +62,7 @@ def init_db():
         action TEXT,
         note TEXT
     )
-''')
+    ''')
 
     conn.commit()
     conn.close()
@@ -173,7 +174,6 @@ def update_status(complaint_id, status):
 @app.route('/webhook', methods=['GET', 'POST'])
 def webhook():
     if request.method == 'GET':
-        # Return the challenge value (used during webhook verification)
         challenge = request.args.get('hub.challenge')
         return challenge or '', 200
 
@@ -183,7 +183,6 @@ def webhook():
             if not data:
                 return jsonify({"error": "No JSON data received"}), 400
 
-            # Process WhatsApp message structure
             for entry in data.get('entry', []):
                 for change in entry.get('changes', []):
                     value = change.get('value', {})
@@ -194,14 +193,15 @@ def webhook():
                         name = contacts[0].get('profile', {}).get('name', 'Unknown')
                         mobile = contacts[0].get('wa_id', '')
                         message = messages[0].get('text', {}).get('body', '')
+                        created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
                         if name and mobile and message:
-                            # Save to database
                             conn = sqlite3.connect('complaints.db')
                             c = conn.cursor()
                             c.execute("""
-                                INSERT INTO complaints (name, mobile, complaint) 
-                                VALUES (?, ?, ?)""", (name, mobile, message))
+                                INSERT INTO complaints (name, mobile, complaint, status, created_at)
+                                VALUES (?, ?, ?, ?, ?)
+                            """, (name, mobile, message, 'Pending', created_at))
                             conn.commit()
                             conn.close()
 
@@ -329,7 +329,6 @@ def hr_page():
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
 
-    # Include `note` in SELECT
     c.execute("SELECT first_name, last_name, date, time, action, note FROM staff_attendance ORDER BY date DESC, time DESC")
     records = c.fetchall()
 
