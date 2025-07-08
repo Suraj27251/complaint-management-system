@@ -173,27 +173,31 @@ def update_status(complaint_id, status):
     conn.commit()
     conn.close()
     return redirect(url_for('dashboard'))
-
+    
+# ✅ Updated webhook for met awhatsapp
 @app.route('/webhook', methods=['GET', 'POST'])
 def webhook():
     if request.method == 'GET':
         challenge = request.args.get('hub.challenge')
         return challenge or '', 200
-# webhook for meta  whatsapp complaint 
+
     if request.method == 'POST':
         try:
-            if request.is_json:
-                data = request.get_json()
-            else:
-                raw = request.data.decode('utf-8')
-                if not raw.strip():
-                    return jsonify({"error": "Empty request body"}), 400
-                data = json.loads(raw)
+            print("\n--- Incoming Webhook ---")
+            print("Headers:", dict(request.headers))
 
-            print("Incoming message:", data)
+            raw = request.data.decode('utf-8')
+            print("Raw body received:", repr(raw))
+
+            if not raw.strip():
+                print("❌ Empty request body")
+                return jsonify({"error": "Empty request body"}), 400
+
+            data = json.loads(raw)
+            print("Parsed JSON:", data)
 
             for entry in data.get('entry', []):
-                business_account_id = entry.get('id')  # e.g., 312536941945170
+                business_account_id = entry.get('id')
 
                 for change in entry.get('changes', []):
                     value = change.get('value', {})
@@ -210,6 +214,8 @@ def webhook():
                         message = messages[0].get('text', {}).get('body', '')
                         timestamp_unix = messages[0].get('timestamp')
                         created_at = datetime.fromtimestamp(int(timestamp_unix)).strftime('%Y-%m-%d %H:%M:%S') if timestamp_unix else datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+                        print(f"✔️ Inserting complaint from {name} ({mobile}): {message}")
 
                         if name and mobile and message:
                             conn = sqlite3.connect('complaints.db')
@@ -230,8 +236,11 @@ def webhook():
 
             return jsonify({"status": "Message received"}), 200
 
+        except json.JSONDecodeError as e:
+            print("❌ JSON Decode Error:", str(e))
+            return jsonify({"error": "Invalid JSON format"}), 400
         except Exception as e:
-            print("Webhook error:", e)
+            print("❌ General Webhook Error:", str(e))
             return jsonify({"error": "Processing failed"}), 500
             
 # ✅ Flow API for WhatsApp Form submissions
