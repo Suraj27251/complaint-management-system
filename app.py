@@ -10,15 +10,19 @@ def init_db():
     c = conn.cursor()
 
     c.execute('''
-        CREATE TABLE IF NOT EXISTS complaints (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            mobile TEXT NOT NULL,
-            complaint TEXT NOT NULL,
-            status TEXT DEFAULT 'Pending',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
+    CREATE TABLE IF NOT EXISTS complaints (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        mobile TEXT NOT NULL,
+        complaint TEXT NOT NULL,
+        status TEXT DEFAULT 'Pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        wa_timestamp TEXT,
+        business_account_id TEXT,
+        display_phone_number TEXT,
+        phone_number_id TEXT
+    )
+''')
 
     c.execute('''
         CREATE TABLE IF NOT EXISTS connection_requests (
@@ -175,22 +179,28 @@ def webhook():
     if request.method == 'GET':
         challenge = request.args.get('hub.challenge')
         return challenge or '', 200
-
+# webhook for meta  whatsapp complaint 
     if request.method == 'POST':
         try:
-            # Try to parse JSON from proper header
             if request.is_json:
                 data = request.get_json()
             else:
-                # Fallback: parse raw body manually
-                data = json.loads(request.data.decode('utf-8'))
+                raw = request.data.decode('utf-8')
+                if not raw.strip():
+                    return jsonify({"error": "Empty request body"}), 400
+                data = json.loads(raw)
 
-            if not data:
-                return jsonify({"error": "Empty payload"}), 400
+            print("Incoming message:", data)
 
             for entry in data.get('entry', []):
+                business_account_id = entry.get('id')  # e.g., 312536941945170
+
                 for change in entry.get('changes', []):
                     value = change.get('value', {})
+                    metadata = value.get('metadata', {})
+                    display_phone_number = metadata.get('display_phone_number', '')
+                    phone_number_id = metadata.get('phone_number_id', '')
+
                     contacts = value.get('contacts', [])
                     messages = value.get('messages', [])
 
@@ -198,23 +208,31 @@ def webhook():
                         name = contacts[0].get('profile', {}).get('name', 'Unknown')
                         mobile = contacts[0].get('wa_id', '')
                         message = messages[0].get('text', {}).get('body', '')
-                        created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        timestamp_unix = messages[0].get('timestamp')
+                        created_at = datetime.fromtimestamp(int(timestamp_unix)).strftime('%Y-%m-%d %H:%M:%S') if timestamp_unix else datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
                         if name and mobile and message:
                             conn = sqlite3.connect('complaints.db')
                             c = conn.cursor()
                             c.execute("""
-                                INSERT INTO complaints (name, mobile, complaint, status, created_at)
-                                VALUES (?, ?, ?, ?, ?)
-                            """, (name, mobile, message, 'Pending', created_at))
+                                INSERT INTO complaints (
+                                    name, mobile, complaint, status, created_at, 
+                                    wa_timestamp, business_account_id, 
+                                    display_phone_number, phone_number_id
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """, (
+                                name, mobile, message, 'Pending', created_at,
+                                timestamp_unix, business_account_id,
+                                display_phone_number, phone_number_id
+                            ))
                             conn.commit()
                             conn.close()
 
-            return 'EVENT_RECEIVED', 200
+            return jsonify({"status": "Message received"}), 200
 
         except Exception as e:
             print("Webhook error:", e)
-            return jsonify({"error": "Webhook processing failed"}), 500
+            return jsonify({"error": "Processing failed"}), 500
             
 # ✅ Flow API for WhatsApp Form submissions
 @app.route('/flow-endpoint', methods=['POST'])
