@@ -28,47 +28,106 @@
     .status-Resolved {
       background-color: #28a745;
     }
+    .filter-section {
+      margin-bottom: 20px;
+    }
+    .search-input {
+      max-width: 250px;
+    }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <h2 class="mb-4 text-center">WhatsApp Complaints Overview</h2>
+<div class="container">
+  <h2 class="mb-4 text-center">WhatsApp Complaints Overview</h2>
 
-    {% if complaints %}
-    <div class="table-responsive">
-      <table class="table table-bordered table-hover align-middle">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Mobile</th>
-            <th>Complaint</th>
-            <th>Status</th>
-            <th>Received At</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for c in complaints %}
-          <tr>
-            <td>{{ c[0] }}</td>
-            <td>{{ c[1] }}</td>
-            <td>{{ c[2] }}</td>
-            <td>{{ c[3] }}</td>
-            <td>
-              <span class="badge badge-status status-{{ c[4] }}">{{ c[4] }}</span>
-            </td>
-            <td>{{ c[5] }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+  <div class="filter-section d-flex justify-content-between align-items-center">
+    <div>
+      <label for="statusFilter" class="form-label">Filter by Status:</label>
+      <select id="statusFilter" class="form-select d-inline-block w-auto">
+        <option value="">All</option>
+        <option value="Pending">Pending</option>
+        <option value="Resolved">Resolved</option>
+      </select>
     </div>
-    {% else %}
-      <div class="alert alert-info text-center">No complaints found.</div>
-    {% endif %}
+    <input type="text" id="searchInput" class="form-control search-input" placeholder="Search by name or mobile">
+    <button class="btn btn-success" onclick="downloadCSV()">Download CSV</button>
   </div>
+
+  {% if complaints %}
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle" id="complaintsTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Mobile</th>
+          <th>Complaint</th>
+          <th>Status</th>
+          <th>Received At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in complaints %}
+        <tr>
+          <td>{{ c[0] }}</td>
+          <td>{{ c[1] }}</td>
+          <td>{{ c[2] }}</td>
+          <td>{{ c[3] }}</td>
+          <td>
+            <span class="badge badge-status status-{{ c[4] }}">{{ c[4] }}</span>
+          </td>
+          <td>{{ c[5] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="alert alert-info text-center">No complaints found.</div>
+  {% endif %}
+</div>
+
+<script>
+  // Filter table rows by status
+  document.getElementById('statusFilter').addEventListener('change', function () {
+    const filter = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#complaintsTable tbody tr');
+    rows.forEach(row => {
+      const status = row.children[4].textContent.toLowerCase();
+      row.style.display = (filter === '' || status === filter) ? '' : 'none';
+    });
+  });
+
+  // Search table rows by name or mobile
+  document.getElementById('searchInput').addEventListener('keyup', function () {
+    const search = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#complaintsTable tbody tr');
+    rows.forEach(row => {
+      const name = row.children[1].textContent.toLowerCase();
+      const mobile = row.children[2].textContent.toLowerCase();
+      row.style.display = (name.includes(search) || mobile.includes(search)) ? '' : 'none';
+    });
+  });
+
+  // Download table as CSV
+  function downloadCSV() {
+    const rows = document.querySelectorAll("#complaintsTable tr");
+    let csv = [];
+    rows.forEach(row => {
+      const cols = row.querySelectorAll("td, th");
+      const rowData = Array.from(cols).map(col => `"${col.textContent.trim()}"`).join(",");
+      csv.push(rowData);
+    });
+    const csvString = csv.join("\n");
+    const blob = new Blob([csvString], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.setAttribute("href", url);
+    a.setAttribute("download", "whatsapp_complaints.csv");
+    a.click();
+  }
+</script>
 
 </body>
 </html>
-
