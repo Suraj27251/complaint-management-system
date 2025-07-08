@@ -181,14 +181,9 @@ def webhook():
     if request.method == 'POST':
         try:
             data = request.get_json(force=True, silent=True)
-
             if not data:
-                raw = request.data.decode('utf-8')
-                try:
-                    data = std_json.loads(raw)
-                except Exception as e:
-                    print("❌ JSON decode error:", e)
-                    return jsonify({"error": "Invalid JSON"}), 400
+                print("❌ No JSON received")
+                return jsonify({"error": "No JSON data received"}), 400
 
             print("✅ Parsed JSON:", data)
 
@@ -202,9 +197,10 @@ def webhook():
                         name = contacts[0].get('profile', {}).get('name', 'Unknown')
                         mobile = contacts[0].get('wa_id', '')
                         message = messages[0].get('text', {}).get('body', '')
-                        created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        timestamp_unix = messages[0].get('timestamp')
+                        created_at = datetime.fromtimestamp(int(timestamp_unix)).strftime('%Y-%m-%d %H:%M:%S') if timestamp_unix else datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-                        if name and mobile and message:
+                        if name.strip() and mobile.strip() and message.strip():
                             conn = sqlite3.connect('complaints.db')
                             c = conn.cursor()
                             c.execute("""
@@ -213,8 +209,10 @@ def webhook():
                             """, (name, mobile, message, 'Pending', created_at))
                             conn.commit()
                             conn.close()
-
-            return jsonify({"status": "EVENT_RECEIVED"}), 200
+                            print(f"✅ Complaint saved for {name} - {mobile}")
+                        else:
+                            print("⚠️ Skipping blank or incomplete message data")
+            return jsonify({"status": "Message received"}), 200
 
         except Exception as e:
             print("❌ Webhook error:", e)
