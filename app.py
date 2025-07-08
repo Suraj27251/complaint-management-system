@@ -179,9 +179,17 @@ def webhook():
 
     if request.method == 'POST':
         try:
-            data = request.get_json()
+            data = request.get_json(force=True, silent=True)
+
             if not data:
-                return jsonify({"error": "No JSON data received"}), 400
+                raw = request.data.decode('utf-8')
+                try:
+                    data = json.loads(raw)
+                except Exception as e:
+                    print("❌ JSON decode error:", e)
+                    return jsonify({"error": "Invalid JSON"}), 400
+
+            print("✅ Parsed JSON:", data)
 
             for entry in data.get('entry', []):
                 for change in entry.get('changes', []):
@@ -205,10 +213,10 @@ def webhook():
                             conn.commit()
                             conn.close()
 
-            return 'EVENT_RECEIVED', 200
+            return jsonify({"status": "EVENT_RECEIVED"}), 200
 
         except Exception as e:
-            print("Webhook error:", e)
+            print("❌ Webhook error:", e)
             return jsonify({"error": "Webhook processing failed"}), 500
 
 # ✅ Flow API for WhatsApp Form submissions
