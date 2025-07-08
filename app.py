@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 import sqlite3
 from datetime import datetime
+import json as std_json
 
 app = Flask(__name__)
 
@@ -184,7 +185,7 @@ def webhook():
             if not data:
                 raw = request.data.decode('utf-8')
                 try:
-                    data = json.loads(raw)
+                    data = std_json.loads(raw)
                 except Exception as e:
                     print("❌ JSON decode error:", e)
                     return jsonify({"error": "Invalid JSON"}), 400
