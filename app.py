@@ -22,11 +22,10 @@ def init_db():
         )
     ''')
 
-    # Attempt to add source column only after ensuring table exists
     try:
         c.execute("ALTER TABLE complaints ADD COLUMN source TEXT DEFAULT 'Web'")
     except sqlite3.OperationalError:
-        pass  # Already exists
+        pass
 
     c.execute('''
         CREATE TABLE IF NOT EXISTS connection_requests (
@@ -61,25 +60,25 @@ def init_db():
     ''')
 
     c.execute('''
-    CREATE TABLE IF NOT EXISTS staff_attendance (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        first_name TEXT,
-        last_name TEXT,
-        date TEXT,
-        time TEXT,
-        action TEXT,
-        note TEXT
-    )
+        CREATE TABLE IF NOT EXISTS staff_attendance (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            first_name TEXT,
+            last_name TEXT,
+            date TEXT,
+            time TEXT,
+            action TEXT,
+            note TEXT
+        )
     ''')
 
     conn.commit()
     conn.close()
 
+
 @app.before_request
 def before_request():
     init_db()
 
-# ✅ Dashboard
 @app.route('/')
 def dashboard():
     conn = sqlite3.connect('complaints.db')
@@ -105,7 +104,6 @@ def dashboard():
             WHERE mobile = ? AND date(created_at) >= date('now', '-30 day')
         """, (mobile,))
         count = c.fetchone()[0]
-
         priority = "High" if count >= 3 else "Medium" if count == 2 else "Low"
         priority_complaints.append(comp + (priority,))
 
@@ -120,26 +118,12 @@ def dashboard():
     for device in device_types:
         c.execute("SELECT SUM(quantity) FROM stock WHERE item_type = ?", (device,))
         stock = c.fetchone()[0] or 0
-
         c.execute("SELECT COUNT(*) FROM issued_stock WHERE device = ?", (device,))
         issued = c.fetchone()[0] or 0
-
-        stock_summary[device] = {
-            'stock': stock,
-            'issued': issued,
-            'available': stock - issued
-        }
+        stock_summary[device] = {'stock': stock, 'issued': issued, 'available': stock - issued}
 
     conn.close()
-    return render_template('dashboard.html',
-        total=total,
-        pending=pending,
-        resolved=resolved,
-        recent_complaints=priority_complaints,
-        pending_connections=pending_connections,
-        pending_connection_count=pending_connection_count,
-        stock_summary=stock_summary
-    )
+    return render_template('dashboard.html', total=total, pending=pending, resolved=resolved, recent_complaints=priority_complaints, pending_connections=pending_connections, pending_connection_count=pending_connection_count, stock_summary=stock_summary)
 
 # ✅ Submit complaint from web
 @app.route('/submit', methods=['POST'])
@@ -166,7 +150,7 @@ def track():
         complaints = c.fetchall()
         conn.close()
     return render_template('track.html', complaints=complaints)
-
+    
 # ✅ Update complaint status
 @app.route('/update_status/<int:complaint_id>/<status>')
 def update_status(complaint_id, status):
