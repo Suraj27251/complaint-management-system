@@ -5,16 +5,10 @@ import json as std_json
 
 app = Flask(__name__)
 
- ✅ Initialize the database
+# ✅ Initialize the database
 def init_db():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
-
-    # Add 'source' field if not exists
-    try:
-        c.execute("ALTER TABLE complaints ADD COLUMN source TEXT DEFAULT 'Web'")
-    except sqlite3.OperationalError:
-        pass  # Column already exists
 
     c.execute('''
         CREATE TABLE IF NOT EXISTS complaints (
@@ -25,6 +19,23 @@ def init_db():
             status TEXT DEFAULT 'Pending',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             source TEXT DEFAULT 'Web'
+        )
+    ''')
+
+    # Attempt to add source column only after ensuring table exists
+    try:
+        c.execute("ALTER TABLE complaints ADD COLUMN source TEXT DEFAULT 'Web'")
+    except sqlite3.OperationalError:
+        pass  # Already exists
+
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS connection_requests (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            mobile TEXT NOT NULL,
+            area TEXT,
+            status TEXT DEFAULT 'Pending',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
 
