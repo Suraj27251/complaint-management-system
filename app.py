@@ -5,10 +5,16 @@ import json as std_json
 
 app = Flask(__name__)
 
-# ✅ Initialize the database
+ ✅ Initialize the database
 def init_db():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
+
+    # Add 'source' field if not exists
+    try:
+        c.execute("ALTER TABLE complaints ADD COLUMN source TEXT DEFAULT 'Web'")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
 
     c.execute('''
         CREATE TABLE IF NOT EXISTS complaints (
@@ -17,18 +23,8 @@ def init_db():
             mobile TEXT NOT NULL,
             complaint TEXT NOT NULL,
             status TEXT DEFAULT 'Pending',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS connection_requests (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            mobile TEXT NOT NULL,
-            area TEXT,
-            status TEXT DEFAULT 'Pending',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            source TEXT DEFAULT 'Web'
         )
     ''')
 
@@ -134,16 +130,15 @@ def dashboard():
         stock_summary=stock_summary
     )
 
-# ✅ Submit complaint form
+# ✅ Submit complaint from web
 @app.route('/submit', methods=['POST'])
 def submit():
     name = request.form['name']
     mobile = request.form['mobile']
     complaint = request.form['complaint']
-
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
-    c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)", (name, mobile, complaint))
+    c.execute("INSERT INTO complaints (name, mobile, complaint, source) VALUES (?, ?, ?, ?)", (name, mobile, complaint, 'Web'))
     conn.commit()
     conn.close()
     return redirect(url_for('dashboard'))
@@ -171,7 +166,7 @@ def update_status(complaint_id, status):
     conn.close()
     return redirect(url_for('dashboard'))
 
-# ✅ Webhook for WhatsApp (no token verification)
+# ✅ Webhook for WhatsApp
 @app.route('/webhook', methods=['GET', 'POST'])
 def webhook():
     if request.method == 'GET':
@@ -182,7 +177,6 @@ def webhook():
         try:
             data = request.get_json(force=True, silent=True)
             if not data:
-                print("❌ No JSON received")
                 return jsonify({"error": "No JSON data received"}), 400
 
             print("✅ Parsed JSON:", data)
@@ -204,9 +198,9 @@ def webhook():
                             conn = sqlite3.connect('complaints.db')
                             c = conn.cursor()
                             c.execute("""
-                                INSERT INTO complaints (name, mobile, complaint, status, created_at)
-                                VALUES (?, ?, ?, ?, ?)
-                            """, (name, mobile, message, 'Pending', created_at))
+                                INSERT INTO complaints (name, mobile, complaint, status, created_at, source)
+                                VALUES (?, ?, ?, ?, ?, ?)
+                            """, (name, mobile, message, 'Pending', created_at, 'WhatsApp'))
                             conn.commit()
                             conn.close()
                             print(f"✅ Complaint saved for {name} - {mobile}")
@@ -218,7 +212,17 @@ def webhook():
             print("❌ Webhook error:", e)
             return jsonify({"error": "Webhook processing failed"}), 500
 
-# ✅ Middleware to ensure JSON response for webhook and flow
+# ✅ View complaints with source
+@app.route('/complaints')
+def view_complaints():
+    conn = sqlite3.connect('complaints.db')
+    c = conn.cursor()
+    c.execute("SELECT id, name, mobile, complaint, status, created_at, source FROM complaints ORDER BY created_at DESC LIMIT 100")
+    complaints = c.fetchall()
+    conn.close()
+    return render_template('complaints.html', complaints=complaints)
+
+# ✅ Middleware to ensure JSON response
 @app.after_request
 def set_default_json_header(response):
     if request.path.startswith('/webhook') or request.path.startswith('/flow-endpoint'):
