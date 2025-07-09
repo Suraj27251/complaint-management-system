@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Complaint Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
@@ -122,7 +123,7 @@
     </div>
     {% endif %}
 
-    <!-- 📦 CURRENT STOCK SUMMARY -->
+    <!-- 📦 Current Stock Summary -->
     <h2 class="section-title">Current Stock Summary</h2>
     <table>
         <thead>
@@ -146,7 +147,7 @@
     </table>
 </div>
 
-<!-- 📊 CHART JS -->
+<!-- 📊 Chart.js Script -->
 <script>
     const ctx = document.getElementById('statusChart').getContext('2d');
     const statusChart = new Chart(ctx, {
