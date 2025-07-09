@@ -200,7 +200,7 @@ def webhook():
                         timestamp_unix = messages[0].get('timestamp')
                         created_at = datetime.fromtimestamp(int(timestamp_unix)).strftime('%Y-%m-%d %H:%M:%S') if timestamp_unix else datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-                        if name.strip() and mobile.strip() and message.strip():
+                        if name.strip() and name.strip() != '.' and mobile.strip() and message.strip():
                             conn = sqlite3.connect('complaints.db')
                             c = conn.cursor()
                             c.execute("""
@@ -217,7 +217,6 @@ def webhook():
         except Exception as e:
             print("❌ Webhook error:", e)
             return jsonify({"error": "Webhook processing failed"}), 500
-
 
 # ✅ Middleware to ensure JSON response for webhook and flow
 @app.after_request
