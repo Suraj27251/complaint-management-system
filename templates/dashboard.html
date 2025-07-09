@@ -44,51 +44,49 @@
         <canvas id="statusChart"></canvas>
     </div>
 
-    
-<h2 class="section-title">Recent Complaints</h2>
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Mobile</th>
-            <th>Complaint</th>
-            <th>Status</th>
-            <th>Priority</th>
-            <th>Source</th> <!-- ✅ New Column -->
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for comp in recent_complaints %}
-        <tr>
-            <td>{{ comp[0] }}</td>
-            <td>{{ comp[1] }}</td>
-            <td>{{ comp[2] }}</td>
-            <td>{{ comp[3] }}</td>
-            <td>{{ comp[4] }}</td>
-            <td>{{ comp[6] }}</td>
-            <td>
-                {% if comp|length > 7 %}
-                    <span class="badge" style="background-color: {% if comp[7] == 'WhatsApp' %}#25D366{% else %}#007BFF{% endif %}; color: white;">
-                        {{ comp[7] }}
+    <!-- 📝 Recent Complaints -->
+    <h2 class="section-title">Recent Complaints</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Mobile</th>
+                <th>Complaint</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Source</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for comp in recent_complaints %}
+            <tr>
+                <td>{{ comp[0] }}</td>
+                <td>{{ comp[1] }}</td>
+                <td>{{ comp[2] }}</td>
+                <td>{{ comp[3] }}</td>
+                <td>{{ comp[4] }}</td>
+                <td>{{ comp[6] }}</td>
+                <td>
+                    {% set src = comp[7] if comp|length > 7 else 'Web' %}
+                    <span class="badge" style="background-color: {{ '#25D366' if src == 'WhatsApp' else '#007BFF' }}; color: white;">
+                        {{ src }}
                     </span>
-                {% else %}
-                    Web
-                {% endif %}
-            </td>
-            <td>
-                {% if comp[4] != 'Resolved' %}
-                    <a class="button" href="{{ url_for('update_status', complaint_id=comp[0], status='Resolved') }}">Mark Resolved</a>
-                {% else %}
-                    <span style="color: green;">✔ Done</span>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+                </td>
+                <td>
+                    {% if comp[4] != 'Resolved' %}
+                        <a class="button" href="{{ url_for('update_status', complaint_id=comp[0], status='Resolved') }}">Mark Resolved</a>
+                    {% else %}
+                        <span style="color: green;">✔ Done</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
+    <!-- ➕ Pending Connection Requests -->
     {% if pending_connections %}
     <h2 class="section-title">Recent Open Connection Requests (Pending)</h2>
     <table>
@@ -115,7 +113,6 @@
             {% endfor %}
         </tbody>
     </table>
-
     <div style="margin-top: 10px;">
         <a href="{{ url_for('new_connections') }}">
             <button style="padding: 6px 12px; background-color: #007BFF; color: white; border: none; border-radius: 4px;">
