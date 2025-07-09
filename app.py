@@ -220,6 +220,15 @@ def flow_endpoint():
     conn.close()
     return jsonify({"status": "received"}), 200
 
+@app.route('/complaints', endpoint='complaints_page')
+def view_complaints():
+    conn = sqlite3.connect('complaints.db')
+    c = conn.cursor()
+    c.execute("SELECT id, name, mobile, complaint, status, created_at, source FROM complaints ORDER BY created_at DESC LIMIT 100")
+    complaints = c.fetchall()
+    conn.close()
+    return render_template('complaints.html', complaints=complaints)
+
 @app.route('/new-connections')
 def new_connections():
     conn = sqlite3.connect('complaints.db')
