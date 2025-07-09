@@ -34,6 +34,11 @@
     .search-input {
       max-width: 250px;
     }
+    .whatsapp-icon {
+      width: 16px;
+      margin-right: 5px;
+      vertical-align: text-bottom;
+    }
   </style>
 </head>
 <body>
@@ -65,19 +70,26 @@
           <th>Complaint</th>
           <th>Status</th>
           <th>Received At</th>
+          <th>Source</th>
         </tr>
       </thead>
       <tbody>
         {% for c in complaints %}
         <tr>
           <td>{{ c[0] }}</td>
-          <td>{{ c[1] }}</td>
+          <td>
+            {% if c[6] == 'WhatsApp' %}
+              <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WA" class="whatsapp-icon">
+            {% endif %}
+            {{ c[1] }}
+          </td>
           <td>{{ c[2] }}</td>
           <td>{{ c[3] }}</td>
           <td>
             <span class="badge badge-status status-{{ c[4] }}">{{ c[4] }}</span>
           </td>
           <td>{{ c[5] }}</td>
+          <td>{{ c[6] or 'Web' }}</td>
         </tr>
         {% endfor %}
       </tbody>
