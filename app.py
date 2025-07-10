@@ -272,37 +272,47 @@ def stock():
     c = conn.cursor()
 
     if request.method == 'POST':
-        # ✅ Stock Add/Update Section
-        if 'item_type' in request.form:
-            item_type = request.form['item_type']
-            description = request.form['description']
-            quantity = int(request.form['quantity'])
-            date = request.form.get('stock_date') or datetime.now().strftime('%Y-%m-%d')  # NEW
+        # ✅ Handle Stock Add or Update
+        if 'item_type' in request.form and 'quantity' in request.form:
+            item_type = request.form.get('item_type', '').strip()
+            description = request.form.get('description', '').strip()
+            quantity = int(request.form.get('quantity') or 0)
+            stock_date = request.form.get('stock_date') or datetime.now().strftime('%Y-%m-%d')
 
-            c.execute("SELECT id FROM stock WHERE item_type = ? AND description = ?", (item_type, description))
-            existing = c.fetchone()
-            if existing:
-                c.execute("UPDATE stock SET quantity = quantity + ?, date = ? WHERE id = ?", (quantity, date, existing[0]))
-            else:
-                c.execute("INSERT INTO stock (item_type, description, quantity, date) VALUES (?, ?, ?, ?)", (item_type, description, quantity, date))
-            conn.commit()
+            if item_type and quantity > 0:
+                c.execute("SELECT id FROM stock WHERE item_type = ? AND description = ?", (item_type, description))
+                existing = c.fetchone()
 
-        # ✅ Issued Stock Section
+                if existing:
+                    c.execute(
+                        "UPDATE stock SET quantity = quantity + ?, date = ? WHERE id = ?",
+                        (quantity, stock_date, existing[0])
+                    )
+                else:
+                    c.execute(
+                        "INSERT INTO stock (item_type, description, quantity, date) VALUES (?, ?, ?, ?)",
+                        (item_type, description, quantity, stock_date)
+                    )
+                conn.commit()
+
+        # ✅ Handle Issued Device Record
         elif 'device' in request.form:
-            c.execute('''
-                INSERT INTO issued_stock (device, recipient, date, note, payment_mode, status)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ''', (
-                request.form['device'],
-                request.form['recipient'],
-                request.form['date'],
-                request.form['note'],
-                request.form['payment_mode'],
-                request.form['status']
-            ))
-            conn.commit()
+            device = request.form.get('device', '').strip()
+            recipient = request.form.get('recipient', '').strip()
+            date = request.form.get('date') or datetime.now().strftime('%Y-%m-%d')
+            note = request.form.get('note', '').strip()
+            payment_mode = request.form.get('payment_mode', '').strip()
+            status = request.form.get('status', '').strip()
 
-    c.execute("SELECT item_type, description, quantity, date FROM stock")
+            if device and recipient and payment_mode and status:
+                c.execute('''
+                    INSERT INTO issued_stock (device, recipient, date, note, payment_mode, status)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ''', (device, recipient, date, note, payment_mode, status))
+                conn.commit()
+
+    # ✅ Fetch for display
+    c.execute("SELECT item_type, description, quantity, date FROM stock ORDER BY id DESC")
     stock_items = c.fetchall()
 
     c.execute("SELECT device, recipient, date, note, payment_mode, status FROM issued_stock ORDER BY id DESC LIMIT 20")
