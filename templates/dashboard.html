@@ -5,8 +5,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- ✅ Font Awesome CDN -->
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <!-- ✅ Font Awesome (correct way to load latest icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
 
@@ -21,18 +21,27 @@
             <option value="en">ENGLISH</option>
             <option value="hi">HINDI</option>
         </select>
+        <!-- 🌙 Theme Toggle -->
+        <div class="theme-toggle" style="margin-left: 15px;">
+            <label class="switch">
+                <input type="checkbox" id="themeToggle">
+                <span class="slider"></span>
+            </label>
+            <span class="theme-label"><i class="fas fa-moon"></i></span>
+        </div>
     </div>
 </div>
 
 <!-- 💂️ TABS -->
 <div class="tabs">
-    <div class="tab active"><a href="#"><i class="fas fa-tachometer-alt"></i> Dashboard</a></div>
+    <div class="tab active"><a href="#"><i class="fas fa-gauge"></i> Dashboard</a></div>
     <div class="tab"><a href="{{ url_for('complaints_page') }}"><i class="fas fa-code-branch"></i> Complaints</a></div>
     <div class="tab"><a href="{{ url_for('new_connections') }}"><i class="fas fa-user-plus"></i> New Connections</a></div>
-    <div class="tab"><a href="{{ url_for('stock') }}"><i class="fas fa-boxes-stacked"></i> Stock</a></div>
+    <div class="tab"><a href="{{ url_for('stock') }}"><i class="fas fa-boxes"></i> Stock</a></div>
     <div class="tab"><a href="{{ url_for('hr_dashboard') }}"><i class="fas fa-users"></i> Human Resource</a></div>
     <div class="tab"><a href="#"><i class="fas fa-chart-line"></i> Reporting</a></div>
 </div>
+
 <!-- 🕽️ CONTENT -->
 <div class="container">
     <div class="stats">
@@ -116,9 +125,7 @@
     </table>
     <div style="margin-top: 10px;">
         <a href="{{ url_for('new_connections') }}">
-            <button style="padding: 6px 12px; background-color: #007BFF; color: white; border: none; border-radius: 4px;">
-                View All Connections
-            </button>
+            <button>View All Connections</button>
         </a>
     </div>
     {% endif %}
@@ -166,6 +173,21 @@
             responsive: true,
             maintainAspectRatio: false
         }
+    });
+
+    // 🌙 Theme Toggle Script
+    const toggle = document.getElementById('themeToggle');
+    const body = document.body;
+    const theme = localStorage.getItem('theme');
+
+    if (theme === 'dark') {
+        body.classList.add('dark-theme');
+        toggle.checked = true;
+    }
+
+    toggle.addEventListener('change', () => {
+        body.classList.toggle('dark-theme');
+        localStorage.setItem('theme', body.classList.contains('dark-theme') ? 'dark' : 'light');
     });
 </script>
 
