@@ -39,13 +39,14 @@ def init_db():
     ''')
 
     c.execute('''
-        CREATE TABLE IF NOT EXISTS stock (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            item_type TEXT,
-            description TEXT,
-            quantity INTEGER
-        )
-    ''')
+    CREATE TABLE IF NOT EXISTS stock (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        item_type TEXT,
+        description TEXT,
+        quantity INTEGER,
+        date TEXT
+    )
+''')
 
     c.execute('''
         CREATE TABLE IF NOT EXISTS issued_stock (
@@ -271,19 +272,22 @@ def stock():
     c = conn.cursor()
 
     if request.method == 'POST':
+        # ✅ Stock Add/Update Section
         if 'item_type' in request.form:
             item_type = request.form['item_type']
             description = request.form['description']
             quantity = int(request.form['quantity'])
+            date = request.form.get('stock_date') or datetime.now().strftime('%Y-%m-%d')  # NEW
 
             c.execute("SELECT id FROM stock WHERE item_type = ? AND description = ?", (item_type, description))
             existing = c.fetchone()
             if existing:
-                c.execute("UPDATE stock SET quantity = quantity + ? WHERE id = ?", (quantity, existing[0]))
+                c.execute("UPDATE stock SET quantity = quantity + ?, date = ? WHERE id = ?", (quantity, date, existing[0]))
             else:
-                c.execute("INSERT INTO stock (item_type, description, quantity) VALUES (?, ?, ?)", (item_type, description, quantity))
+                c.execute("INSERT INTO stock (item_type, description, quantity, date) VALUES (?, ?, ?, ?)", (item_type, description, quantity, date))
             conn.commit()
 
+        # ✅ Issued Stock Section
         elif 'device' in request.form:
             c.execute('''
                 INSERT INTO issued_stock (device, recipient, date, note, payment_mode, status)
@@ -306,7 +310,7 @@ def stock():
 
     conn.close()
     return render_template('stock.html', stock_items=stock_items, issued_items=issued_items)
-
+    # HR dashboard
 @app.route('/hr', endpoint='hr_dashboard')
 def hr_page():
     conn = sqlite3.connect('complaints.db')
