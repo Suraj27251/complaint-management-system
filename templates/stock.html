@@ -4,83 +4,204 @@
     <title>Stock Management</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <style>
+        .form-box {
+            background: #fff;
+            padding: 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-radius: 6px;
+        }
+
+        .form-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .form-group {
+            flex: 1 1 220px;
+            min-width: 200px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        h2 {
+            color: #333;
+            margin-top: 40px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            margin-top: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #888;
+            margin-top: 20px;
+            font-style: italic;
+        }
+
+        .low-stock {
+            background-color: #ffe5e5;
+            color: #d9534f;
+            font-weight: bold;
+        }
+
+        .search-box {
+            margin-top: 10px;
+            text-align: right;
+        }
+
+        .search-box input {
+            width: 250px;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+    </style>
 </head>
 <body>
 
-<!-- Header -->
+<!-- 🔷 HEADER -->
 <div class="header">
-    <div class="logo">COUNTRYLINK BROADBAND</div>
-    <div class="title">STOCK MANAGEMENT</div>
+    <div class="logo">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Countrylink Logo">
+    </div>
+    <div class="title">COUNTRYLINK BROADBAND</div>
+    <div class="language">
+        <select>
+            <option value="en">ENGLISH</option>
+            <option value="hi">HINDI</option>
+        </select>
+    </div>
 </div>
 
-<!-- Tabs -->
+<!-- 💂 TABS -->
 <div class="tabs">
-    <div class="tab"><a href="{{ url_for('dashboard') }}">🏠 Dashboard</a></div>
-    <div class="tab"><a href="#">📋 Complaints</a></div>
-    <div class="tab"><a href="{{ url_for('new_connections') }}">➕ New Connections</a></div>
-    <div class="tab active"><a href="#">📦 Stock</a></div>
-    <div class="tab"><a href="#">👥 HR</a></div>
+    <div class="tab"><a href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></div>
+    <div class="tab"><a href="{{ url_for('complaints_page') }}"><i class="fas fa-code-branch"></i> Complaints</a></div>
+    <div class="tab"><a href="{{ url_for('new_connections') }}"><i class="fas fa-user-plus"></i> New Connections</a></div>
+    <div class="tab active"><a href="#"><i class="fas fa-boxes-stacked"></i> Stock</a></div>
+    <div class="tab"><a href="{{ url_for('hr_dashboard') }}"><i class="fas fa-users"></i> HR</a></div>
 </div>
 
+<!-- 📦 CONTENT -->
 <div class="container">
     <h2>Add or Update Stock Item</h2>
-    <form method="POST">
-        <label for="item_type">Device Type</label>
-        <select id="item_type" name="item_type">
-            <option value="ONU">ONU</option>
-            <option value="WAN Router">WAN Router</option>
-            <option value="ONT Router">ONT Router</option>
-            <option value="Switch">Switch</option>
-        </select>
+    <form method="POST" class="form-box">
+        <div class="form-section">
+            <div class="form-group">
+                <label for="item_type">Device Type</label>
+                <select id="item_type" name="item_type">
+                    <option value="ONU">ONU</option>
+                    <option value="WAN Router">WAN Router</option>
+                    <option value="ONT Router">ONT Router</option>
+                    <option value="Switch">Switch</option>
+                </select>
+            </div>
 
-        <label for="description">Description</label>
-        <textarea id="description" name="description" rows="3"></textarea>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" rows="3"></textarea>
+            </div>
 
-        <label for="quantity">Quantity</label>
-        <input type="number" id="quantity" name="quantity" min="1">
+            <div class="form-group">
+                <label for="quantity">Quantity</label>
+                <input type="number" id="quantity" name="quantity" min="1">
+            </div>
 
-        <!-- ✅ Stock addition date -->
-        <label for="stock_date">Date</label>
-        <input type="date" id="stock_date" name="stock_date">
-
+            <div class="form-group">
+                <label for="stock_date">Date</label>
+                <input type="date" id="stock_date" name="stock_date">
+            </div>
+        </div>
         <button type="submit">Add / Update Stock</button>
     </form>
 
     <h2>Issued Devices</h2>
-    <form method="POST">
-        <label for="device">Device Type</label>
-        <select id="device" name="device">
-            <option value="ONU">ONU</option>
-            <option value="WAN Router">WAN Router</option>
-            <option value="ONT Router">ONT Router</option>
-            <option value="Switch">Switch</option>
-        </select>
+    <form method="POST" class="form-box">
+        <div class="form-section">
+            <div class="form-group">
+                <label for="device">Device Type</label>
+                <select id="device" name="device">
+                    <option value="ONU">ONU</option>
+                    <option value="WAN Router">WAN Router</option>
+                    <option value="ONT Router">ONT Router</option>
+                    <option value="Switch">Switch</option>
+                </select>
+            </div>
 
-        <label for="recipient">Issued To</label>
-        <input type="text" id="recipient" name="recipient">
+            <div class="form-group">
+                <label for="recipient">Issued To</label>
+                <input type="text" id="recipient" name="recipient">
+            </div>
 
-        <label for="date">Date</label>
-        <input type="date" id="date" name="date">
+            <div class="form-group">
+                <label for="date">Date</label>
+                <input type="date" id="date" name="date">
+            </div>
 
-        <label for="note">Note</label>
-        <textarea id="note" name="note" rows="2"></textarea>
+            <div class="form-group">
+                <label for="note">Note</label>
+                <textarea id="note" name="note" rows="2"></textarea>
+            </div>
 
-        <label for="payment_mode">Payment Mode</label>
-        <select id="payment_mode" name="payment_mode">
-            <option value="Deposit">Deposit</option>
-            <option value="Sold">Sold</option>
-            <option value="Free">Free</option>
-        </select>
+            <div class="form-group">
+                <label for="payment_mode">Payment Mode</label>
+                <select id="payment_mode" name="payment_mode">
+                    <option value="Deposit">Deposit</option>
+                    <option value="Sold">Sold</option>
+                    <option value="Free">Free</option>
+                </select>
+            </div>
 
-        <label for="status">Status</label>
-        <select id="status" name="status">
-            <option value="Pending">Pending</option>
-            <option value="Paid">Paid</option>
-        </select>
-
+            <div class="form-group">
+                <label for="status">Status</label>
+                <select id="status" name="status">
+                    <option value="Pending">Pending</option>
+                    <option value="Paid">Paid</option>
+                </select>
+            </div>
+        </div>
         <button type="submit">Record Issuance</button>
     </form>
 
+    <!-- 📊 Stock Table -->
     <h2>📦 Current Stock</h2>
     {% if stock_items %}
     <div class="search-box">
@@ -110,6 +231,7 @@
     <div class="no-data">No stock items found.</div>
     {% endif %}
 
+    <!-- 📝 Issued Records Table -->
     <h2>📝 Issued Stock Records</h2>
     {% if issued_items %}
     <div class="search-box">
