@@ -216,7 +216,7 @@ table {
 th, td {
     padding: 12px 15px;
     text-align: center;
-    border-bottom: 1px solid #eee;
+    white-space: nowrap;
 }
 
 th {
