@@ -4,305 +4,165 @@
     <title>Stock Management</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            background: #f2f5f9;
-            margin: 0;
-            padding: 0;
-        }
-
-        .header {
-            background-color: #007BFF;
-            padding: 15px 30px;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header .logo {
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        .header .title {
-            font-size: 18px;
-        }
-
-        .tabs {
-            display: flex;
-            background-color: #f8f9fa;
-            border-bottom: 1px solid #ccc;
-        }
-
-        .tab {
-            padding: 12px 20px;
-            text-align: center;
-            cursor: pointer;
-            border-right: 1px solid #ccc;
-            flex: 1;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .tab:hover, .tab.active {
-            background-color: #e0e0e0;
-        }
-
-        .tab a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .container {
-            padding: 30px 50px;
-        }
-
-        h2 {
-            color: #333;
-            margin-top: 40px;
-        }
-
-        form {
-            background: #fff;
-            padding: 20px;
-            margin-bottom: 40px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            border-radius: 6px;
-        }
-
-        label {
-            display: block;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-
-        input, textarea, select {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
-
-        button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #fff;
-            margin-top: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-
-        th, td {
-            padding: 12px 15px;
-            text-align: center;
-            border-bottom: 1px solid #eee;
-        }
-
-        th {
-            background-color: #4CAF50;
-            color: white;
-        }
-
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-
-        .no-data {
-            text-align: center;
-            color: #888;
-            margin-top: 20px;
-            font-style: italic;
-        }
-
-        .low-stock {
-            background-color: #ffe5e5;
-            color: #d9534f;
-            font-weight: bold;
-        }
-
-        .search-box {
-            margin-top: 10px;
-            text-align: right;
-        }
-
-        .search-box input {
-            width: 250px;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
-    </style>
 </head>
 <body>
 
-    <!-- Header -->
-    <div class="header">
-        <div class="logo">COUNTRYLINK BROADBAND</div>
-        <div class="title">STOCK MANAGEMENT</div>
+<!-- Header -->
+<div class="header">
+    <div class="logo">COUNTRYLINK BROADBAND</div>
+    <div class="title">STOCK MANAGEMENT</div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+    <div class="tab"><a href="{{ url_for('dashboard') }}">🏠 Dashboard</a></div>
+    <div class="tab"><a href="#">📋 Complaints</a></div>
+    <div class="tab"><a href="{{ url_for('new_connections') }}">➕ New Connections</a></div>
+    <div class="tab active"><a href="#">📦 Stock</a></div>
+    <div class="tab"><a href="#">👥 HR</a></div>
+</div>
+
+<div class="container">
+    <h2>Add or Update Stock Item</h2>
+    <form method="POST">
+        <label for="item_type">Device Type</label>
+        <select id="item_type" name="item_type">
+            <option value="ONU">ONU</option>
+            <option value="WAN Router">WAN Router</option>
+            <option value="ONT Router">ONT Router</option>
+            <option value="Switch">Switch</option>
+        </select>
+
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="3"></textarea>
+
+        <label for="quantity">Quantity</label>
+        <input type="number" id="quantity" name="quantity" min="1">
+
+        <!-- ✅ Stock addition date -->
+        <label for="stock_date">Date</label>
+        <input type="date" id="stock_date" name="stock_date">
+
+        <button type="submit">Add / Update Stock</button>
+    </form>
+
+    <h2>Issued Devices</h2>
+    <form method="POST">
+        <label for="device">Device Type</label>
+        <select id="device" name="device">
+            <option value="ONU">ONU</option>
+            <option value="WAN Router">WAN Router</option>
+            <option value="ONT Router">ONT Router</option>
+            <option value="Switch">Switch</option>
+        </select>
+
+        <label for="recipient">Issued To</label>
+        <input type="text" id="recipient" name="recipient">
+
+        <label for="date">Date</label>
+        <input type="date" id="date" name="date">
+
+        <label for="note">Note</label>
+        <textarea id="note" name="note" rows="2"></textarea>
+
+        <label for="payment_mode">Payment Mode</label>
+        <select id="payment_mode" name="payment_mode">
+            <option value="Deposit">Deposit</option>
+            <option value="Sold">Sold</option>
+            <option value="Free">Free</option>
+        </select>
+
+        <label for="status">Status</label>
+        <select id="status" name="status">
+            <option value="Pending">Pending</option>
+            <option value="Paid">Paid</option>
+        </select>
+
+        <button type="submit">Record Issuance</button>
+    </form>
+
+    <h2>📦 Current Stock</h2>
+    {% if stock_items %}
+    <div class="search-box">
+        <input type="text" id="stockSearch" placeholder="Search stock...">
     </div>
+    <table id="stockTable">
+        <thead>
+            <tr>
+                <th>Device Type</th>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in stock_items %}
+            <tr class="{% if item[2] <= 3 %}low-stock{% endif %}">
+                <td>{{ item[0] }}</td>
+                <td>{{ item[1] }}</td>
+                <td>{{ item[2] }}</td>
+                <td>{{ item[3] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="no-data">No stock items found.</div>
+    {% endif %}
 
-    <!-- Tabs -->
-    <div class="tabs">
-        <div class="tab"><a href="{{ url_for('dashboard') }}">🏠 Dashboard</a></div>
-        <div class="tab"><a href="#">📋 Complaints</a></div>
-        <div class="tab"><a href="{{ url_for('new_connections') }}">➕ New Connections</a></div>
-        <div class="tab active"><a href="#">📦 Stock</a></div>
-        <div class="tab"><a href="#">👥 HR</a></div>
+    <h2>📝 Issued Stock Records</h2>
+    {% if issued_items %}
+    <div class="search-box">
+        <input type="text" id="issuedSearch" placeholder="Search issued records...">
     </div>
+    <table id="issuedTable">
+        <thead>
+            <tr>
+                <th>Device</th>
+                <th>Issued To</th>
+                <th>Date</th>
+                <th>Note</th>
+                <th>Payment Mode</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for issue in issued_items %}
+            <tr>
+                <td>{{ issue[0] }}</td>
+                <td>{{ issue[1] }}</td>
+                <td>{{ issue[2] }}</td>
+                <td>{{ issue[3] }}</td>
+                <td>{{ issue[4] }}</td>
+                <td>{{ issue[5] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="no-data">No issued device records found.</div>
+    {% endif %}
+</div>
 
-    <div class="container">
-        <h2>Add or Update Stock Item</h2>
-<form method="POST">
-    <label for="item_type">Device Type</label>
-    <select id="item_type" name="item_type">
-        <option value="ONU">ONU</option>
-        <option value="WAN Router">WAN Router</option>
-        <option value="ONT Router">ONT Router</option>
-        <option value="Switch">Switch</option>
-    </select>
+<script>
+    function filterTable(inputId, tableId) {
+        const input = document.getElementById(inputId);
+        const table = document.getElementById(tableId);
+        const rows = table.getElementsByTagName("tr");
 
-    <label for="description">Description</label>
-    <textarea id="description" name="description" rows="3"></textarea>
+        input.addEventListener("keyup", () => {
+            const filter = input.value.toLowerCase();
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(filter) ? "" : "none";
+            }
+        });
+    }
 
-    <label for="quantity">Quantity</label>
-    <input type="number" id="quantity" name="quantity" min="1">
-
-    <!-- ✅ New: Date for stock addition -->
-    <label for="stock_date">Date</label>
-    <input type="date" id="stock_date" name="stock_date">
-
-    <button type="submit">Add / Update Stock</button>
-</form>
-
-        <h2>Issued Devices</h2>
-        <form method="POST">
-            <label for="device">Device Type</label>
-            <select id="device" name="device">
-    <option value="ONU">ONU</option>
-    <option value="WAN Router">WAN Router</option>
-    <option value="ONT Router">ONT Router</option>
-    <option value="Switch">Switch</option>
-</select>
-
-            <label for="recipient">Issued To</label>
-            <input type="text" id="recipient" name="recipient">
-
-            <label for="date">Date</label>
-            <input type="date" id="date" name="date">
-
-            <label for="note">Note</label>
-            <textarea id="note" name="note" rows="2"></textarea>
-
-            <label for="payment_mode">Payment Mode</label>
-            <select id="payment_mode" name="payment_mode">
-                <option value="Deposit">Deposit</option>
-                <option value="Sold">Sold</option>
-                <option value="Free">Free</option>
-            </select>
-
-            <label for="status">Status</label>
-            <select id="status" name="status">
-                <option value="Pending">Pending</option>
-                <option value="Paid">Paid</option>
-            </select>
-
-            <button type="submit">Record Issuance</button>
-        </form>
-
-        <h2>📦 Current Stock</h2>
-<table id="stockTable">
-    <thead>
-        <tr>
-            <th>Device Type</th>
-            <th>Description</th>
-            <th>Quantity</th>
-            <th>Date</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for item in stock_items %}
-        <tr class="{% if item[2] <= 3 %}low-stock{% endif %}">
-            <td>{{ item[0] }}</td>
-            <td>{{ item[1] }}</td>
-            <td>{{ item[2] }}</td>
-            <td>{{ item[3] }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-        {% else %}
-        <div class="no-data">No stock items found.</div>
-        {% endif %}
-
-        <h2>📝 Issued Stock Records</h2>
-        {% if issued_items %}
-        <div class="search-box">
-            <input type="text" id="issuedSearch" placeholder="Search issued records...">
-        </div>
-        <table id="issuedTable">
-            <thead>
-                <tr>
-                    <th>Device</th>
-                    <th>Issued To</th>
-                    <th>Date</th>
-                    <th>Note</th>
-                    <th>Payment Mode</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for issue in issued_items %}
-                <tr>
-                    <td>{{ issue[0] }}</td>
-                    <td>{{ issue[1] }}</td>
-                    <td>{{ issue[2] }}</td>
-                    <td>{{ issue[3] }}</td>
-                    <td>{{ issue[4] }}</td>
-                    <td>{{ issue[5] }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <div class="no-data">No issued device records found.</div>
-        {% endif %}
-    </div>
-
-    <script>
-        function filterTable(inputId, tableId) {
-            const input = document.getElementById(inputId);
-            const table = document.getElementById(tableId);
-            const rows = table.getElementsByTagName("tr");
-
-            input.addEventListener("keyup", () => {
-                const filter = input.value.toLowerCase();
-                for (let i = 1; i < rows.length; i++) {
-                    const row = rows[i];
-                    const text = row.textContent.toLowerCase();
-                    row.style.display = text.includes(filter) ? "" : "none";
-                }
-            });
-        }
-
-        filterTable("stockSearch", "stockTable");
-        filterTable("issuedSearch", "issuedTable");
-    </script>
+    filterTable("stockSearch", "stockTable");
+    filterTable("issuedSearch", "issuedTable");
+</script>
 
 </body>
 </html>
