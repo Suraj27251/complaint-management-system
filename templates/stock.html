@@ -226,28 +226,26 @@
         </form>
 
         <h2>📦 Current Stock</h2>
-        {% if stock_items %}
-        <div class="search-box">
-            <input type="text" id="stockSearch" placeholder="Search stock...">
-        </div>
-        <table id="stockTable">
-            <thead>
-                <tr>
-                    <th>Device Type</th>
-                    <th>Description</th>
-                    <th>Quantity</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in stock_items %}
-                <tr class="{% if item[2] <= 3 %}low-stock{% endif %}">
-                    <td>{{ item[0] }}</td>
-                    <td>{{ item[1] }}</td>
-                    <td>{{ item[2] }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<table id="stockTable">
+    <thead>
+        <tr>
+            <th>Device Type</th>
+            <th>Description</th>
+            <th>Quantity</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in stock_items %}
+        <tr class="{% if item[2] <= 3 %}low-stock{% endif %}">
+            <td>{{ item[0] }}</td>
+            <td>{{ item[1] }}</td>
+            <td>{{ item[2] }}</td>
+            <td>{{ item[3] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
         {% else %}
         <div class="no-data">No stock items found.</div>
         {% endif %}
