@@ -45,10 +45,10 @@
 <!-- 🕽️ CONTENT -->
 <div class="container">
     <div class="stats">
-        <div>Total: {{ total }}</div>
-        <div>Pending: {{ pending }}</div>
-        <div>Resolved: {{ resolved }}</div>
-    </div>
+    <div>📊<br>Total<br><span>{{ total }}</span></div>
+    <div>⚠️<br>Pending<br><span>{{ pending }}</span></div>
+    <div>✅<br>Resolved<br><span>{{ resolved }}</span></div>
+</div>
 
     <div class="chart-container">
         <canvas id="statusChart"></canvas>
