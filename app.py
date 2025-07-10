@@ -302,7 +302,7 @@ def stock():
             ))
             conn.commit()
 
-    c.execute("SELECT item_type, description, quantity FROM stock")
+    c.execute("SELECT item_type, description, quantity, date FROM stock")
     stock_items = c.fetchall()
 
     c.execute("SELECT device, recipient, date, note, payment_mode, status FROM issued_stock ORDER BY id DESC LIMIT 20")
