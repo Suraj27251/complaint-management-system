@@ -5,6 +5,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- ✅ Font Awesome CDN -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -24,14 +26,13 @@
 
 <!-- 💂️ TABS -->
 <div class="tabs">
-    <div class="tab active"><a href="#">🏠 Dashboard</a></div>
-    <div class="tab"><a href="{{ url_for('complaints_page') }}">🗼 Webhook Complaints</a></div>
-    <div class="tab"><a href="{{ url_for('new_connections') }}">➕ New Connections</a></div>
-    <div class="tab"><a href="{{ url_for('stock') }}">📦 Stock</a></div>
-    <div class="tab"><a href="{{ url_for('hr_dashboard') }}">👥 Human Resource</a></div>
-    <div class="tab"><a href="#">📊 Reporting</a></div>
+    <div class="tab active"><a href="#"><i class="fas fa-tachometer-alt"></i> Dashboard</a></div>
+    <div class="tab"><a href="{{ url_for('complaints_page') }}"><i class="fas fa-code-branch"></i> Webhook Complaints</a></div>
+    <div class="tab"><a href="{{ url_for('new_connections') }}"><i class="fas fa-user-plus"></i> New Connections</a></div>
+    <div class="tab"><a href="{{ url_for('stock') }}"><i class="fas fa-boxes-stacked"></i> Stock</a></div>
+    <div class="tab"><a href="{{ url_for('hr_dashboard') }}"><i class="fas fa-users"></i> Human Resource</a></div>
+    <div class="tab"><a href="#"><i class="fas fa-chart-line"></i> Reporting</a></div>
 </div>
-
 <!-- 🕽️ CONTENT -->
 <div class="container">
     <div class="stats">
