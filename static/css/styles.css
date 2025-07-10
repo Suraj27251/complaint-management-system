@@ -210,6 +210,35 @@ tr:hover {
     font-style: italic;
 }
 
+/* ===== STATS CARDS ===== */
+.stats {
+    display: flex;
+    justify-content: space-around;
+    margin: 30px auto;
+    max-width: 900px;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.stats div {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    flex: 1 1 30%;
+}
+
+.stats div span {
+    display: block;
+    font-size: 24px;
+    color: #007BFF;
+    margin-top: 5px;
+}
+
 /* ===== CHART CONTAINER ===== */
 .chart-container {
     max-width: 400px;
@@ -317,5 +346,9 @@ body.dark-theme a.button:hover {
 
     .chart-container {
         max-width: 300px;
+    }
+
+    .stats div {
+        flex: 1 1 100%;
     }
 }
