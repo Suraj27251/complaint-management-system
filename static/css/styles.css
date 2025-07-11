@@ -246,113 +246,6 @@ tr:hover {
     margin: 0 auto 40px auto;
 }
 
-/* ===== DARK THEME ===== */
-body.dark-theme {
-    background-color: #1e1e2f;
-    color: #e0e0e0;
-}
-
-body.dark-theme .header {
-    background-color: #2b2b3c;
-    border-bottom: 1px solid #444;
-}
-
-body.dark-theme .title,
-body.dark-theme .tab a {
-    color: #ccc;
-}
-
-body.dark-theme .tabs {
-    background-color: #2e2e42;
-    border-bottom: 1px solid #444;
-}
-
-body.dark-theme .tab:hover,
-body.dark-theme .tab.active {
-    background-color: #3d3d5c;
-}
-
-body.dark-theme .stats div,
-body.dark-theme table,
-body.dark-theme form {
-    background-color: #2c2c3e;
-    color: #e0e0e0;
-    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.05);
-}
-
-body.dark-theme th {
-    background-color: #007bff;
-}
-
-body.dark-theme tr:hover {
-    background-color: #383851;
-}
-
-body.dark-theme input,
-body.dark-theme textarea,
-body.dark-theme select {
-    background-color: #333;
-    color: #eee;
-    border-color: #666;
-}
-
-body.dark-theme button,
-body.dark-theme a.button {
-    background-color: #2196f3;
-}
-
-body.dark-theme button:hover,
-body.dark-theme a.button:hover {
-    background-color: #1a73e8;
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-    .header {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-
-    .header .title {
-        order: 1;
-        width: 100%;
-        margin: 10px 0;
-    }
-
-    .header .logo {
-        order: 0;
-        margin-bottom: 10px;
-    }
-
-    .tabs {
-        flex-direction: column;
-    }
-
-    .tab {
-        border-right: none;
-        border-bottom: 1px solid #ccc;
-        width: 100%;
-    }
-
-    table {
-        width: 100%;
-        font-size: 14px;
-    }
-
-    th, td {
-        padding: 10px 8px;
-    }
-
-    .chart-container {
-        max-width: 300px;
-    }
-
-    .stats div {
-        flex: 1 1 100%;
-    }
-}
-
 /* ===== COMPLAINT HISTORY CARDS ===== */
 .complaint-history-container {
     width: 90%;
@@ -444,4 +337,55 @@ body.dark-theme .complaint-status.pending {
 body.dark-theme .complaint-status.registered {
     background-color: #4a1c1c;
     color: #f28b82;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .header .title {
+        order: 1;
+        width: 100%;
+        margin: 10px 0;
+    }
+
+    .header .logo {
+        order: 0;
+        margin-bottom: 10px;
+    }
+
+    .tabs {
+        flex-direction: column;
+    }
+
+    .tab {
+        border-right: none;
+        border-bottom: 1px solid #ccc;
+        width: 100%;
+    }
+
+    table {
+        width: 100%;
+        font-size: 14px;
+    }
+
+    th, td {
+        padding: 10px 8px;
+    }
+
+    .chart-container {
+        max-width: 300px;
+    }
+
+    .stats div {
+        flex: 1 1 100%;
+    }
+
+    .complaint-card {
+        padding: 12px 15px;
+    }
 }
