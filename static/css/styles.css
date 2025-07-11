@@ -160,6 +160,54 @@ input:checked + .slider:before {
     background-color: #e0e0e0;
 }
 
+/* ===== ENHANCED DASHBOARD TOP NAVBAR ===== */
+.topnav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(to right, #007BFF, #00C6FF);
+    padding: 12px 0;
+    border-bottom: 1px solid #ccc;
+    flex-wrap: wrap;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 10;
+}
+
+.topnav a {
+    text-decoration: none;
+    color: white;
+    font-weight: 600;
+    padding: 12px 20px;
+    margin: 4px;
+    transition: all 0.3s ease;
+    position: relative;
+    border-radius: 5px;
+}
+
+.topnav a::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 5px;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+    z-index: -1;
+}
+
+.topnav a:hover::before,
+.topnav a.active::before {
+    transform: scaleX(1);
+}
+
+.topnav a:hover,
+.topnav a.active {
+    color: #fff;
+    font-weight: 700;
+}
+
 /* ===== COMPLAINT TRACKER STYLES (GREEN PROGRESS BAR) ===== */
 .complaint-tracker {
     display: flex;
@@ -367,12 +415,14 @@ tr:hover {
     }
 
     .tabs,
-    .navbar {
+    .navbar,
+    .topnav {
         flex-direction: column;
     }
 
     .tab,
-    .navbar a {
+    .navbar a,
+    .topnav a {
         border-right: none;
         border-bottom: 1px solid #ccc;
         width: 100%;
@@ -410,3 +460,106 @@ tr:hover {
         display: none;
     }
 }
+
+/* ===== TRACK PAGE ENHANCEMENTS ===== */
+.track-wrapper {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 30px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    text-align: center;
+    transition: background 0.3s, color 0.3s;
+}
+
+.track-wrapper h2 {
+    font-size: 24px;
+    margin-bottom: 25px;
+    color: #333;
+}
+
+.track-wrapper input[type="text"] {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 16px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    margin-bottom: 20px;
+    transition: border-color 0.3s;
+}
+
+.track-wrapper input[type="text"]:focus {
+    border-color: #007BFF;
+    outline: none;
+}
+
+.track-wrapper button {
+    background: #007BFF;
+    color: #fff;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.track-wrapper button:hover {
+    background: #0056b3;
+}
+
+/* ===== Complaint Step Icons ===== */
+.circle i {
+    font-size: 16px;
+}
+
+/* ===== DARK MODE ===== */
+body.dark-mode {
+    background-color: #121212;
+    color: #eaeaea;
+}
+
+body.dark-mode .track-wrapper {
+    background: #2c2c2c;
+    color: #eee;
+}
+
+body.dark-mode .track-wrapper input[type="text"] {
+    background: #3c3c3c;
+    border: 1px solid #555;
+    color: #eee;
+}
+
+body.dark-mode .track-wrapper input[type="text"]:focus {
+    border-color: #00C6FF;
+}
+
+body.dark-mode .track-wrapper button {
+    background: #00C6FF;
+    color: #000;
+}
+
+body.dark-mode .track-wrapper button:hover {
+    background: #00aaff;
+}
+
+body.dark-mode .circle {
+    background: #555;
+}
+
+body.dark-mode .step.active .circle {
+    background: #4CAF50;
+}
+
+body.dark-mode .label {
+    color: #eee;
+}
+
+body.dark-mode .step::after {
+    background: #666;
+}
+
+/* ===== FontAwesome Support for Icons ===== */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
