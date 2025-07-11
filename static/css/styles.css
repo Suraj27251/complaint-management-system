@@ -160,6 +160,63 @@ input:checked + .slider:before {
     background-color: #e0e0e0;
 }
 
+/* ===== COMPLAINT TRACKER STYLES (GREEN PROGRESS BAR) ===== */
+.complaint-tracker {
+    display: flex;
+    justify-content: center;
+    margin: 40px auto 20px;
+    gap: 40px;
+    max-width: 800px;
+    flex-wrap: wrap;
+}
+
+.step {
+    text-align: center;
+    position: relative;
+}
+
+.circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 8px;
+    color: #fff;
+    font-size: 16px;
+}
+
+.step.active .circle {
+    background-color: #28a745;
+}
+
+.label {
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+}
+
+.step::after {
+    content: "";
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    width: 100px;
+    height: 4px;
+    background-color: #ccc;
+    z-index: -1;
+}
+
+.step:last-child::after {
+    content: none;
+}
+
+.step.active::after {
+    background-color: #28a745;
+}
+
 /* ===== FORM STYLES ===== */
 form {
     background: #fff;
@@ -341,5 +398,15 @@ tr:hover {
     .history-card {
         margin: 10px 10px;
         padding: 10px 15px;
+    }
+
+    .complaint-tracker {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .step::after {
+        display: none;
     }
 }
