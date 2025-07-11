@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Track Complaint</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --bg: #f4f6f8;
@@ -12,15 +13,9 @@
             --primary: #3498db;
             --secondary: #2980b9;
             --success: #4CAF50;
-        }
-
-        [data-theme="dark"] {
-            --bg: #1e1e1e;
-            --text: #f4f4f4;
-            --white: #2c2c2c;
-            --primary: #007bff;
-            --secondary: #0056b3;
-            --success: #00e676;
+            --pending: #6c757d;
+            --done: #6f42c1;
+            --active: #28a745;
         }
 
         body {
@@ -42,8 +37,6 @@
 
         .header-logo img {
             height: 40px;
-            max-width: 120px;
-            object-fit: contain;
         }
 
         .header-title {
@@ -53,12 +46,6 @@
             font-weight: bold;
         }
 
-        .header-right {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
         .header-right button {
             background: var(--primary);
             color: white;
@@ -66,6 +53,7 @@
             padding: 6px 12px;
             border-radius: 6px;
             cursor: pointer;
+            margin-left: 5px;
         }
 
         .navbar-links {
@@ -80,9 +68,8 @@
             font-weight: 500;
         }
 
-        h1 {
+        h1, h2 {
             text-align: center;
-            margin-top: 20px;
         }
 
         form {
@@ -109,14 +96,10 @@
             font-size: 16px;
         }
 
-        button[type="submit"]:hover {
-            background-color: var(--secondary);
-        }
-
-        .progress-container {
+        .progress-bar {
             display: flex;
             justify-content: space-between;
-            max-width: 700px;
+            max-width: 600px;
             margin: 30px auto;
             position: relative;
         }
@@ -127,158 +110,142 @@
             position: relative;
         }
 
-        .progress-step::before {
-            content: "";
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            height: 4px;
-            width: 100%;
-            background: #ccc;
-            z-index: -1;
-        }
-
-        .progress-step:first-child::before {
-            left: 50%;
-            width: 50%;
-        }
-
-        .progress-step:last-child::before {
-            width: 50%;
-        }
-
         .circle {
             width: 30px;
             height: 30px;
             margin: 0 auto;
-            background-color: #ccc;
             border-radius: 50%;
             line-height: 30px;
-            color: white;
+            color: #fff;
+            background-color: #ccc;
         }
 
-        .active .circle {
+        .progress-step.active .circle {
             background-color: var(--success);
         }
 
         .progress-label {
+            margin-top: 5px;
+        }
+
+        .order-details {
+            width: 90%;
+            margin: 30px auto;
+            background: var(--white);
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 6px;
+        }
+
+        .order-details table {
+            width: 100%;
+            border-collapse: collapse;
             margin-top: 10px;
         }
 
-        table {
-            width: 90%;
-            margin: 30px auto;
-            border-collapse: collapse;
-            background: var(--white);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        thead {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        th, td {
-            padding: 12px 15px;
+        .order-details th, .order-details td {
+            padding: 10px;
+            border: 1px solid #ddd;
             text-align: center;
-            border-bottom: 1px solid #ddd;
         }
 
-        tr:hover {
-            background-color: #f2f2f2;
+        .badge {
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: white;
+            font-size: 0.9em;
         }
+
+        .pending { background-color: var(--pending); }
+        .done { background-color: var(--done); }
+        .active-status { background-color: var(--active); }
 
         .no-data {
             text-align: center;
             color: #888;
             margin-top: 40px;
         }
-
-        @media screen and (max-width: 600px) {
-            .header {
-                flex-direction: column;
-            }
-            .header-title {
-                margin: 10px 0;
-            }
-        }
     </style>
 </head>
-<body data-theme="light">
-
-<!-- 🔷 HEADER -->
-<div class="header">
-    <div class="header-logo">
-        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Countrylink Logo">
-    </div>
-    <div class="header-title">COUNTRYLINK BROADBAND</div>
-    <div class="header-right">
-        <button onclick="window.open('https://g.co/kgs/uDcwEnk')">📍 Office</button>
-        <button onclick="toggleTheme()">🌓 Theme</button>
-    </div>
-</div>
-
-<div class="navbar-links">
-    <a href="/complaints">Complaints</a>
-    <a href="https://countrylinks.in" target="_blank">Internet Plans</a>
-    <a href="/review">Review</a>
-</div>
-
-<h1>Track Your Complaint</h1>
-
-<form method="POST" action="{{ url_for('track') }}">
-    <input type="text" name="mobile" placeholder="Enter your mobile number" required>
-    <button type="submit">Track</button>
-</form>
-
-{% if status %}
-    <div class="progress-container">
-        {% set steps = ['Registered', 'Pending', 'Assigned', 'Complete'] %}
-        {% for step in steps %}
-        <div class="progress-step {% if steps.index(step) <= steps.index(status) %}active{% endif %}">
-            <div class="circle">{{ loop.index }}</div>
-            <div class="progress-label">{{ step }}</div>
+<body>
+    <div class="header">
+        <div class="header-logo">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Countrylink Logo">
         </div>
-        {% endfor %}
+        <div class="header-title">COUNTRYLINK BROADBAND</div>
+        <div class="header-right">
+            <button onclick="window.open('https://goo.gl/maps/your_office_location')">
+                <i class="fas fa-map-marker-alt"></i> Office
+            </button>
+            <button onclick="toggleTheme()">
+                <i class="fas fa-adjust"></i> Theme
+            </button>
+        </div>
     </div>
-{% endif %}
 
-{% if complaints %}
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Mobile</th>
-                <th>Complaint</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for comp in complaints %}
-            <tr>
-                <td>{{ comp[0] }}</td>
-                <td>{{ comp[1] }}</td>
-                <td>{{ comp[2] }}</td>
-                <td>{{ comp[3] }}</td>
-                <td>{{ comp[4] }}</td>
-            </tr>
+    <div class="navbar-links">
+        <a href="/complaints"><i class="fas fa-tools"></i> Complaints</a>
+        <a href="https://countrylinks.in" target="_blank"><i class="fas fa-globe"></i> Internet Plans</a>
+        <a href="/review"><i class="fas fa-star"></i> Review</a>
+    </div>
+
+    <h1>Track Your Complaint</h1>
+    <form method="POST" action="{{ url_for('track') }}">
+        <input type="text" name="mobile" placeholder="Enter your mobile number" required>
+        <button type="submit">Track</button>
+    </form>
+
+    {% if status %}
+        <div class="progress-bar">
+            {% set steps = ['Registered', 'Pending', 'Assigned', 'Complete'] %}
+            {% for step in steps %}
+            <div class="progress-step {% if steps.index(step) <= steps.index(status) %}active{% endif %}">
+                <div class="circle">{{ loop.index }}</div>
+                <div class="progress-label">{{ step }}</div>
+            </div>
             {% endfor %}
-        </tbody>
-    </table>
-{% elif request.method == 'POST' %}
-    <div class="no-data">
-        <p>No complaints found for the entered number.</p>
-    </div>
-{% endif %}
+        </div>
 
-<script>
-    function toggleTheme() {
-        const body = document.body;
-        const current = body.getAttribute('data-theme');
-        body.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
-    }
-</script>
+        <div class="order-details">
+            <h2><i class="fas fa-list"></i> Complaint Summary</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Mobile</th>
+                        <th>Complaint</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for comp in complaints %}
+                    <tr>
+                        <td>{{ comp[0] }}</td>
+                        <td>{{ comp[1] }}</td>
+                        <td>{{ comp[2] }}</td>
+                        <td>{{ comp[3] }}</td>
+                        <td>
+                            <span class="badge {% if comp[4] == 'Pending' %}pending{% elif comp[4] == 'Assigned' %}done{% else %}active-status{% endif %}">
+                                {{ comp[4] }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% elif request.method == 'POST' %}
+        <div class="no-data">
+            <p><i class="fas fa-info-circle"></i> No complaints found for the entered number.</p>
+        </div>
+    {% endif %}
 
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            body.setAttribute('data-theme', body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+        }
+    </script>
 </body>
 </html>
