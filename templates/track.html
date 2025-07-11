@@ -5,18 +5,35 @@
     <title>Track Complaint</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <style>
+        :root {
+            --bg: #f4f6f8;
+            --text: #2c3e50;
+            --white: #fff;
+            --primary: #3498db;
+            --secondary: #2980b9;
+            --success: #4CAF50;
+        }
+
+        [data-theme="dark"] {
+            --bg: #1e1e1e;
+            --text: #f4f4f4;
+            --white: #2c2c2c;
+            --primary: #007bff;
+            --secondary: #0056b3;
+            --success: #00e676;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            background: #f4f6f8;
+            background: var(--bg);
+            color: var(--text);
             margin: 0;
             padding: 0;
         }
 
-        /* 🔷 Header Styling */
         .header {
-            background-color: #ffffff;
+            background-color: var(--white);
             padding: 10px 20px;
-            color: white;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -36,38 +53,36 @@
             font-weight: bold;
         }
 
-        .header-lang {
-            min-width: 100px;
-            text-align: right;
+        .header-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
 
-        .header-lang select {
-            padding: 5px;
-            border-radius: 4px;
+        .header-right button {
+            background: var(--primary);
+            color: white;
             border: none;
-            font-size: 14px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
         }
 
-        @media screen and (max-width: 600px) {
-            .header {
-                flex-direction: column;
-                text-align: center;
-            }
+        .navbar-links {
+            text-align: center;
+            margin: 15px 0;
+        }
 
-            .header-title {
-                margin: 10px 0;
-            }
-
-            .header-lang {
-                text-align: center;
-                margin-top: 10px;
-            }
+        .navbar-links a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
         }
 
         h1 {
             text-align: center;
-            color: #2c3e50;
-            margin-top: 30px;
+            margin-top: 20px;
         }
 
         form {
@@ -83,10 +98,10 @@
             font-size: 16px;
         }
 
-        button {
+        button[type="submit"] {
             padding: 10px 20px;
             margin-left: 10px;
-            background-color: #3498db;
+            background-color: var(--primary);
             color: white;
             border: none;
             border-radius: 4px;
@@ -94,20 +109,72 @@
             font-size: 16px;
         }
 
-        button:hover {
-            background-color: #2980b9;
+        button[type="submit"]:hover {
+            background-color: var(--secondary);
+        }
+
+        .progress-container {
+            display: flex;
+            justify-content: space-between;
+            max-width: 700px;
+            margin: 30px auto;
+            position: relative;
+        }
+
+        .progress-step {
+            text-align: center;
+            flex: 1;
+            position: relative;
+        }
+
+        .progress-step::before {
+            content: "";
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            height: 4px;
+            width: 100%;
+            background: #ccc;
+            z-index: -1;
+        }
+
+        .progress-step:first-child::before {
+            left: 50%;
+            width: 50%;
+        }
+
+        .progress-step:last-child::before {
+            width: 50%;
+        }
+
+        .circle {
+            width: 30px;
+            height: 30px;
+            margin: 0 auto;
+            background-color: #ccc;
+            border-radius: 50%;
+            line-height: 30px;
+            color: white;
+        }
+
+        .active .circle {
+            background-color: var(--success);
+        }
+
+        .progress-label {
+            margin-top: 10px;
         }
 
         table {
             width: 90%;
             margin: 30px auto;
             border-collapse: collapse;
-            background: white;
+            background: var(--white);
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         thead {
-            background-color: #2c3e50;
+            background-color: var(--primary);
             color: white;
         }
 
@@ -126,9 +193,18 @@
             color: #888;
             margin-top: 40px;
         }
+
+        @media screen and (max-width: 600px) {
+            .header {
+                flex-direction: column;
+            }
+            .header-title {
+                margin: 10px 0;
+            }
+        }
     </style>
 </head>
-<body>
+<body data-theme="light">
 
 <!-- 🔷 HEADER -->
 <div class="header">
@@ -136,12 +212,16 @@
         <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Countrylink Logo">
     </div>
     <div class="header-title">COUNTRYLINK BROADBAND</div>
-    <div class="header-lang">
-        <select>
-            <option value="en">ENGLISH</option>
-            <option value="hi">HINDI</option>
-        </select>
+    <div class="header-right">
+        <button onclick="window.open('https://g.co/kgs/uDcwEnk')">📍 Office</button>
+        <button onclick="toggleTheme()">🌓 Theme</button>
     </div>
+</div>
+
+<div class="navbar-links">
+    <a href="/complaints">Complaints</a>
+    <a href="https://countrylinks.in" target="_blank">Internet Plans</a>
+    <a href="/review">Review</a>
 </div>
 
 <h1>Track Your Complaint</h1>
@@ -150,6 +230,18 @@
     <input type="text" name="mobile" placeholder="Enter your mobile number" required>
     <button type="submit">Track</button>
 </form>
+
+{% if status %}
+    <div class="progress-container">
+        {% set steps = ['Registered', 'Pending', 'Assigned', 'Complete'] %}
+        {% for step in steps %}
+        <div class="progress-step {% if steps.index(step) <= steps.index(status) %}active{% endif %}">
+            <div class="circle">{{ loop.index }}</div>
+            <div class="progress-label">{{ step }}</div>
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
 
 {% if complaints %}
     <table>
@@ -179,6 +271,14 @@
         <p>No complaints found for the entered number.</p>
     </div>
 {% endif %}
+
+<script>
+    function toggleTheme() {
+        const body = document.body;
+        const current = body.getAttribute('data-theme');
+        body.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+    }
+</script>
 
 </body>
 </html>
