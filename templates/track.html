@@ -6,29 +6,17 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --bg: #f4f6f8;
-            --text: #2c3e50;
-            --white: #fff;
-            --primary: #3498db;
-            --secondary: #2980b9;
-            --success: #4CAF50;
-            --pending: #6c757d;
-            --done: #6f42c1;
-            --active: #28a745;
-        }
-
         body {
             font-family: Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            background: #f4f6f8;
             margin: 0;
             padding: 0;
         }
 
         .header {
-            background-color: var(--white);
+            background-color: #ffffff;
             padding: 10px 20px;
+            color: white;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -37,6 +25,8 @@
 
         .header-logo img {
             height: 40px;
+            max-width: 120px;
+            object-fit: contain;
         }
 
         .header-title {
@@ -44,32 +34,35 @@
             text-align: center;
             font-size: 20px;
             font-weight: bold;
+            color: #333;
         }
 
-        .header-right button {
-            background: var(--primary);
-            color: white;
+        .header-map-btn {
+            background-color: transparent;
             border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
             cursor: pointer;
-            margin-left: 5px;
+            font-size: 20px;
+            color: #3498db;
         }
 
-        .navbar-links {
-            text-align: center;
-            margin: 15px 0;
+        .navbar {
+            display: flex;
+            justify-content: center;
+            background-color: #2c3e50;
+            padding: 10px 0;
         }
 
-        .navbar-links a {
+        .navbar a {
+            color: white;
             margin: 0 15px;
             text-decoration: none;
-            color: var(--text);
-            font-weight: 500;
+            font-weight: bold;
         }
 
-        h1, h2 {
+        h1 {
             text-align: center;
+            color: #2c3e50;
+            margin-top: 30px;
         }
 
         form {
@@ -85,10 +78,10 @@
             font-size: 16px;
         }
 
-        button[type="submit"] {
+        button {
             padding: 10px 20px;
             margin-left: 10px;
-            background-color: var(--primary);
+            background-color: #3498db;
             color: white;
             border: none;
             border-radius: 4px;
@@ -96,69 +89,111 @@
             font-size: 16px;
         }
 
-        .progress-bar {
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .complaint-tracker {
             display: flex;
             justify-content: space-between;
-            max-width: 600px;
-            margin: 30px auto;
+            align-items: center;
+            margin: 40px auto 20px;
+            max-width: 700px;
+            padding: 0 10px;
             position: relative;
         }
 
-        .progress-step {
+        .step {
             text-align: center;
             flex: 1;
             position: relative;
+            transition: all 0.3s ease;
         }
 
-        .circle {
-            width: 30px;
-            height: 30px;
-            margin: 0 auto;
+        .step .circle {
+            height: 26px;
+            width: 26px;
             border-radius: 50%;
-            line-height: 30px;
-            color: #fff;
-            background-color: #ccc;
+            background-color: #ddd;
+            margin: 0 auto;
+            line-height: 26px;
+            color: white;
+            font-weight: bold;
         }
 
-        .progress-step.active .circle {
-            background-color: var(--success);
+        .step .label {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #888;
         }
 
-        .progress-label {
-            margin-top: 5px;
+        .step.active .circle {
+            background-color: #2ecc71;
         }
 
-        .order-details {
+        .step.active .label {
+            color: #2ecc71;
+        }
+
+        .step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 13px;
+            right: -50%;
+            width: 100%;
+            height: 3px;
+            background-color: #2ecc71;
+            z-index: -1;
+            transition: background-color 0.3s ease;
+        }
+
+        .step:not(.active):not(:last-child)::after {
+            background-color: #ddd;
+        }
+
+        .complaint-tracker::before {
+            content: '';
+            position: absolute;
+            top: 13px;
+            left: 13%;
+            width: 74%;
+            height: 3px;
+            background-color: #ddd;
+            z-index: -1;
+        }
+
+        .history {
             width: 90%;
-            margin: 30px auto;
-            background: var(--white);
-            padding: 20px;
+            margin: 40px auto;
+            background: white;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             border-radius: 6px;
+            overflow: hidden;
         }
 
-        .order-details table {
+        .history h2 {
+            text-align: center;
+            background: #2c3e50;
+            color: white;
+            padding: 10px;
+            margin: 0;
+        }
+
+        .history table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
         }
 
-        .order-details th, .order-details td {
-            padding: 10px;
+        .history th, .history td {
+            padding: 12px;
             border: 1px solid #ddd;
             text-align: center;
         }
 
-        .badge {
-            padding: 5px 10px;
-            border-radius: 5px;
+        .history th {
+            background: #27ae60;
             color: white;
-            font-size: 0.9em;
         }
-
-        .pending { background-color: var(--pending); }
-        .done { background-color: var(--done); }
-        .active-status { background-color: var(--active); }
 
         .no-data {
             text-align: center;
@@ -168,84 +203,82 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-logo">
-            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Countrylink Logo">
-        </div>
-        <div class="header-title">COUNTRYLINK BROADBAND</div>
-        <div class="header-right">
-            <button onclick="window.open('https://goo.gl/maps/your_office_location')">
-                <i class="fas fa-map-marker-alt"></i> Office
-            </button>
-            <button onclick="toggleTheme()">
-                <i class="fas fa-adjust"></i> Theme
-            </button>
-        </div>
+<div class="header">
+    <div class="header-logo">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Countrylink Logo">
     </div>
-
-    <div class="navbar-links">
-        <a href="/complaints"><i class="fas fa-tools"></i> Complaints</a>
-        <a href="https://countrylinks.in" target="_blank"><i class="fas fa-globe"></i> Internet Plans</a>
-        <a href="/review"><i class="fas fa-star"></i> Review</a>
+    <div class="header-title">COUNTRYLINK BROADBAND</div>
+    <div class="header-lang">
+        <button class="header-map-btn" onclick="window.open('https://maps.google.com?q=Countrylink+Broadband+Office', '_blank')">
+            <i class="fas fa-map-marker-alt"></i>
+        </button>
     </div>
+</div>
+<div class="navbar">
+    <a href="/complaints">Complaints</a>
+    <a href="https://countrylinks.in" target="_blank">Internet Plans</a>
+    <a href="#">Review</a>
+</div>
 
-    <h1>Track Your Complaint</h1>
-    <form method="POST" action="{{ url_for('track') }}">
-        <input type="text" name="mobile" placeholder="Enter your mobile number" required>
-        <button type="submit">Track</button>
-    </form>
+<h1>Track Your Complaint</h1>
 
-    {% if status %}
-        <div class="progress-bar">
-            {% set steps = ['Registered', 'Pending', 'Assigned', 'Complete'] %}
-            {% for step in steps %}
-            <div class="progress-step {% if steps.index(step) <= steps.index(status) %}active{% endif %}">
-                <div class="circle">{{ loop.index }}</div>
-                <div class="progress-label">{{ step }}</div>
-            </div>
-            {% endfor %}
-        </div>
+<form method="POST" action="{{ url_for('track') }}">
+    <input type="text" name="mobile" placeholder="Enter your mobile number" required>
+    <button type="submit">Track</button>
+</form>
 
-        <div class="order-details">
-            <h2><i class="fas fa-list"></i> Complaint Summary</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Mobile</th>
-                        <th>Complaint</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for comp in complaints %}
-                    <tr>
-                        <td>{{ comp[0] }}</td>
-                        <td>{{ comp[1] }}</td>
-                        <td>{{ comp[2] }}</td>
-                        <td>{{ comp[3] }}</td>
-                        <td>
-                            <span class="badge {% if comp[4] == 'Pending' %}pending{% elif comp[4] == 'Assigned' %}done{% else %}active-status{% endif %}">
-                                {{ comp[4] }}
-                            </span>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% elif request.method == 'POST' %}
-        <div class="no-data">
-            <p><i class="fas fa-info-circle"></i> No complaints found for the entered number.</p>
-        </div>
-    {% endif %}
+{% if status %}
+<div class="complaint-tracker">
+    <div class="step {{ 'active' if status in ['Registered', 'Pending', 'Assigned', 'Complete'] else '' }}">
+        <div class="circle">✓</div>
+        <div class="label">Registered</div>
+    </div>
+    <div class="step {{ 'active' if status in ['Pending', 'Assigned', 'Complete'] else '' }}">
+        <div class="circle">✓</div>
+        <div class="label">Pending</div>
+    </div>
+    <div class="step {{ 'active' if status in ['Assigned', 'Complete'] else '' }}">
+        <div class="circle">✓</div>
+        <div class="label">Assigned</div>
+    </div>
+    <div class="step {{ 'active' if status == 'Complete' else '' }}">
+        <div class="circle">✓</div>
+        <div class="label">Complete</div>
+    </div>
+</div>
+{% endif %}
 
-    <script>
-        function toggleTheme() {
-            const body = document.body;
-            body.setAttribute('data-theme', body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-        }
-    </script>
+{% if complaints %}
+<div class="history">
+    <h2><i class="fas fa-clock"></i> Complaint History</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Mobile</th>
+            <th>Complaint</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for comp in complaints %}
+            <tr>
+                <td>{{ comp[0] }}</td>
+                <td>{{ comp[1] }}</td>
+                <td>{{ comp[2] }}</td>
+                <td>{{ comp[3] }}</td>
+                <td><span style="color: green; font-weight: bold;">{{ comp[4] }}</span></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% elif request.method == 'POST' %}
+    <div class="no-data">
+        <p>No complaints found for the entered number.</p>
+    </div>
+{% endif %}
+
 </body>
 </html>
