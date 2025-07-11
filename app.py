@@ -141,14 +141,24 @@ def submit():
 @app.route('/track', methods=['GET', 'POST'])
 def track():
     complaints = []
+    status = None
+
     if request.method == 'POST':
-        mobile = request.form['mobile']
+        mobile = request.form['mobile'].strip()
+
         conn = sqlite3.connect('complaints.db')
         c = conn.cursor()
-        c.execute("SELECT * FROM complaints WHERE mobile = ?", (mobile,))
+
+        c.execute("SELECT id, name, mobile, complaint, status FROM complaints WHERE mobile = ? ORDER BY created_at DESC", (mobile,))
         complaints = c.fetchall()
+
+        if complaints:
+            # Use the most recent complaint status for progress bar
+            status = complaints[0][4]  # 'status' column
+
         conn.close()
-    return render_template('track.html', complaints=complaints)
+
+    return render_template('track.html', complaints=complaints, status=status)
 
 @app.route('/update_status/<int:complaint_id>/<status>')
 def update_status(complaint_id, status):
