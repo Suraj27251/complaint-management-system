@@ -75,7 +75,6 @@ def init_db():
     conn.commit()
     conn.close()
 
-
 @app.before_request
 def before_request():
     init_db()
@@ -144,17 +143,41 @@ def track():
     status = None
 
     if request.method == 'POST':
-        mobile = request.form['mobile'].strip()
+        mobile = request.form.get('mobile', '').strip()
+        name = request.form.get('name', '').strip()
 
         conn = sqlite3.connect('complaints.db')
         c = conn.cursor()
 
-        c.execute("SELECT id, name, mobile, complaint, status FROM complaints WHERE mobile = ? ORDER BY created_at DESC", (mobile,))
+        if mobile and name:
+            c.execute("""
+                SELECT id, name, mobile, complaint, status, created_at 
+                FROM complaints 
+                WHERE mobile = ? AND name LIKE ? 
+                ORDER BY created_at DESC
+            """, (mobile, f"%{name}%"))
+        elif mobile:
+            c.execute("""
+                SELECT id, name, mobile, complaint, status, created_at 
+                FROM complaints 
+                WHERE mobile = ? 
+                ORDER BY created_at DESC
+            """, (mobile,))
+        elif name:
+            c.execute("""
+                SELECT id, name, mobile, complaint, status, created_at 
+                FROM complaints 
+                WHERE name LIKE ? 
+                ORDER BY created_at DESC
+            """, (f"%{name}%",))
+
         complaints = c.fetchall()
 
+        # Calculate worst status in terms of priority
+        status_priority = {"Registered": 0, "Pending": 1, "Assigned": 2, "Complete": 3, "Resolved": 3}
         if complaints:
-            # Use the most recent complaint status for progress bar
-            status = complaints[0][4]  # 'status' column
+            worst_status_value = max(status_priority.get(comp[4], 0) for comp in complaints)
+            status = [key for key, value in status_priority.items() if value == worst_status_value][0]
 
         conn.close()
 
