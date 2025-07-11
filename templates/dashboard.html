@@ -5,7 +5,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- ✅ Font Awesome (correct way to load latest icons) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
@@ -45,10 +44,10 @@
 <!-- 🕽️ CONTENT -->
 <div class="container">
     <div class="stats">
-    <div>📊<br>Total<br><span>{{ total }}</span></div>
-    <div>⚠️<br>Pending<br><span>{{ pending }}</span></div>
-    <div>✅<br>Resolved<br><span>{{ resolved }}</span></div>
-</div>
+        <div>📊<br>Total<br><span>{{ total }}</span></div>
+        <div>⚠️<br>Pending<br><span>{{ pending }}</span></div>
+        <div>✅<br>Resolved<br><span>{{ resolved }}</span></div>
+    </div>
 
     <div class="chart-container">
         <canvas id="statusChart"></canvas>
@@ -181,13 +180,13 @@
     const theme = localStorage.getItem('theme');
 
     if (theme === 'dark') {
-        body.classList.add('dark-theme');
+        body.classList.add('dark-mode');
         toggle.checked = true;
     }
 
     toggle.addEventListener('change', () => {
-        body.classList.toggle('dark-theme');
-        localStorage.setItem('theme', body.classList.contains('dark-theme') ? 'dark' : 'light');
+        body.classList.toggle('dark-mode');
+        localStorage.setItem('theme', body.classList.contains('dark-mode') ? 'dark' : 'light');
     });
 </script>
 
