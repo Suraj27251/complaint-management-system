@@ -179,10 +179,13 @@ input:checked + .slider:before {
     color: white;
     font-weight: 600;
     padding: 12px 20px;
-    margin: 4px;
+    margin: 4px 8px;
     transition: all 0.3s ease;
     position: relative;
     border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .topnav a::before {
@@ -208,6 +211,19 @@ input:checked + .slider:before {
     font-weight: 700;
 }
 
+/* Responsive fix for smaller screens */
+@media (max-width: 768px) {
+    .topnav {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .topnav a {
+        width: 100%;
+        text-align: center;
+        margin: 2px 0;
+    }
+}
 /* ===== COMPLAINT TRACKER STYLES (GREEN PROGRESS BAR) ===== */
 .complaint-tracker {
     display: flex;
