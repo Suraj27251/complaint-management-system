@@ -1,12 +1,11 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 import sqlite3
 from datetime import datetime
-import json as std_json
 from collections import defaultdict
 
 app = Flask(__name__)
 
-# ✅ Initialize the database
+# Initialize DB
 def init_db():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
@@ -39,39 +38,33 @@ def init_db():
         )
     ''')
 
-    c.execute('''
-    CREATE TABLE IF NOT EXISTS stock (
+    c.execute('''CREATE TABLE IF NOT EXISTS stock (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         item_type TEXT,
         description TEXT,
         quantity INTEGER,
         date TEXT
-    )
-''')
+    )''')
 
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS issued_stock (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            device TEXT,
-            recipient TEXT,
-            date TEXT,
-            note TEXT,
-            payment_mode TEXT,
-            status TEXT
-        )
-    ''')
+    c.execute('''CREATE TABLE IF NOT EXISTS issued_stock (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        device TEXT,
+        recipient TEXT,
+        date TEXT,
+        note TEXT,
+        payment_mode TEXT,
+        status TEXT
+    )''')
 
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS staff_attendance (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            first_name TEXT,
-            last_name TEXT,
-            date TEXT,
-            time TEXT,
-            action TEXT,
-            note TEXT
-        )
-    ''')
+    c.execute('''CREATE TABLE IF NOT EXISTS staff_attendance (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        first_name TEXT,
+        last_name TEXT,
+        date TEXT,
+        time TEXT,
+        action TEXT,
+        note TEXT
+    )''')
 
     conn.commit()
     conn.close()
@@ -83,6 +76,7 @@ def before_request():
 @app.route('/')
 def dashboard():
     conn = sqlite3.connect('complaints.db')
+    conn.row_factory = sqlite3.Row
     c = conn.cursor()
 
     c.execute('SELECT COUNT(*) FROM complaints')
@@ -94,20 +88,28 @@ def dashboard():
     c.execute("SELECT COUNT(*) FROM complaints WHERE status = 'Resolved'")
     resolved = c.fetchone()[0]
 
-    # Filter out 'Webhook' source complaints
-    c.execute("SELECT * FROM complaints WHERE source != 'Webhook' OR source IS NULL ORDER BY id DESC LIMIT 50")
+    c.execute('''
+        SELECT * FROM (
+            SELECT * FROM complaints
+            WHERE source != 'Webhook' OR source IS NULL
+            ORDER BY created_at DESC
+        )
+        GROUP BY mobile
+        ORDER BY created_at DESC
+        LIMIT 50
+    ''')
     recent_complaints_raw = c.fetchall()
 
     priority_complaints = []
     for comp in recent_complaints_raw:
-        mobile = comp[2]
+        mobile = comp['mobile']
         c.execute("""
             SELECT COUNT(*) FROM complaints
             WHERE mobile = ? AND date(created_at) >= date('now', '-30 day')
         """, (mobile,))
         count = c.fetchone()[0]
         priority = "High" if count >= 3 else "Medium" if count == 2 else "Low"
-        priority_complaints.append(comp + (priority,))
+        priority_complaints.append(dict(comp) | {'priority': priority})
 
     c.execute("SELECT id, name, mobile, area, status, created_at FROM connection_requests WHERE status = 'Pending' ORDER BY created_at DESC LIMIT 5")
     pending_connections = c.fetchall()
@@ -125,8 +127,11 @@ def dashboard():
         stock_summary[device] = {'stock': stock, 'issued': issued, 'available': stock - issued}
 
     conn.close()
-    return render_template('dashboard.html', total=total, pending=pending, resolved=resolved, recent_complaints=priority_complaints, pending_connections=pending_connections, pending_connection_count=pending_connection_count, stock_summary=stock_summary)
-
+    return render_template('dashboard.html', total=total, pending=pending, resolved=resolved,
+                           recent_complaints=priority_complaints,
+                           pending_connections=pending_connections,
+                           pending_connection_count=pending_connection_count,
+                           stock_summary=stock_summary)
 @app.route('/submit', methods=['POST'])
 def submit():
     name = request.form['name']
