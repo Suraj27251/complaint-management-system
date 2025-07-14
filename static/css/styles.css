@@ -643,32 +643,53 @@ form button:hover {
 /* ===== TABLE SECTION WRAPPER FIX ===== */
 .table-section {
     overflow-x: auto;
-    margin: 20px auto;
+    margin: 30px auto;
     width: 95%;
     background-color: #fff;
-    padding: 20px;
+    padding: 25px;
     border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-/* Align bulk buttons nicely inside table-section */
+/* ===== BULK BUTTONS ===== */
 .bulk-buttons {
     display: flex;
-    justify-content: center;  /* previously: flex-start */
+    justify-content: center;
     gap: 15px;
     margin-bottom: 20px;
+    flex-wrap: wrap;
 }
 
-/* Improve data-table spacing inside table-section */
-.data-table {
-    margin: 0 auto;
-    width: 100%;
+.button.bulk {
+    padding: 10px 20px;
+    font-weight: bold;
+    font-size: 14px;
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
 }
 
+.button.bulk:hover {
+    background-color: #0056b3;
+}
+
+.button.bulk.danger {
+    background-color: #dc3545;
+}
+
+.button.bulk.danger:hover {
+    background-color: #b52a3a;
+}
 
 /* ===== COMPLAINT TABLE ===== */
 .data-table {
     width: 100%;
+    margin: 0 auto;
     border-collapse: collapse;
     background: #fff;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -692,39 +713,6 @@ form button:hover {
 
 .data-table tr:hover {
     background-color: #f9f9f9;
-}
-
-/* ===== BULK BUTTONS ===== */
-.bulk-buttons {
-    display: flex;
-    justify-content: flex-start;
-    gap: 10px;
-    margin: 10px 0 20px 0;
-    padding-left: 5%;
-    flex-wrap: wrap;
-}
-
-.button.bulk {
-    padding: 8px 16px;
-    font-weight: bold;
-    font-size: 14px;
-    background-color: #007BFF;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.button.bulk:hover {
-    background-color: #0056b3;
-}
-
-.button.bulk.danger {
-    background-color: #dc3545;
-}
-
-.button.bulk.danger:hover {
-    background-color: #b52a3a;
 }
 
 /* ===== SOURCE BADGE STYLING ===== */
@@ -751,13 +739,12 @@ form button:hover {
 @media (max-width: 768px) {
     .bulk-buttons {
         flex-direction: column;
-        align-items: flex-start;
-        padding-left: 5%;
+        align-items: center;
     }
 
     .button.bulk {
         width: 100%;
-        max-width: 300px;
+        max-width: 280px;
     }
 
     .data-table th,
