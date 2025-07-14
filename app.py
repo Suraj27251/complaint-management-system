@@ -258,10 +258,54 @@ def flow_endpoint():
 def view_complaints():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
-    c.execute("SELECT id, name, mobile, complaint, status, created_at, source FROM complaints ORDER BY created_at DESC LIMIT 100")
+    c.execute("""
+        SELECT id, name, mobile, complaint, status, created_at, source 
+        FROM complaints 
+        WHERE source != 'WhatsApp'
+        ORDER BY created_at DESC LIMIT 100
+    """)
     complaints = c.fetchall()
     conn.close()
     return render_template('complaints.html', complaints=complaints)
+
+@app.route('/whatsapp')
+def whatsapp_complaints():
+    conn = sqlite3.connect('complaints.db')
+    c = conn.cursor()
+    c.execute("""
+        SELECT id, name, mobile, complaint, status, created_at 
+        FROM complaints 
+        WHERE source = 'WhatsApp' 
+        ORDER BY created_at DESC
+    """)
+    complaints = c.fetchall()
+    conn.close()
+
+    grouped = defaultdict(list)
+    for row in complaints:
+        complaint_id, name, mobile, complaint_text, status, created_at = row
+        date_key = created_at.split(" ")[0]
+        grouped[(mobile, date_key)].append({
+            "id": complaint_id,
+            "name": name,
+            "complaint": complaint_text,
+            "status": status,
+            "created_at": created_at
+        })
+
+    merged_complaints = []
+    for (mobile, date), entries in grouped.items():
+        merged_complaints.append({
+            "id": entries[0]["id"],
+            "name": entries[0]["name"],
+            "mobile": mobile,
+            "date": date,
+            "status": entries[-1]["status"],
+            "combined_entries": [e["complaint"] for e in entries],
+            "note": ""
+        })
+
+    return render_template("WhatsApp.html", complaints=merged_complaints)
 
 @app.route('/new-connections')
 def new_connections():
