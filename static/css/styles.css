@@ -640,5 +640,93 @@ form button:hover {
     background-color: #0056b3;
 }
 
+/* ===== TABLE SECTION WRAPPER ===== */
+.table-section {
+    overflow-x: auto;
+    margin: 20px auto;
+    width: 95%;
+}
+
+/* ===== COMPLAINT TABLE ===== */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.data-table th,
+.data-table td {
+    padding: 12px 15px;
+    text-align: center;
+    white-space: nowrap;
+    border-bottom: 1px solid #eee;
+}
+
+.data-table th {
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+}
+
+.data-table tr:hover {
+    background-color: #f9f9f9;
+}
+
+/* ===== BULK BUTTONS ===== */
+.bulk-buttons {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+    margin: 10px 0 20px 0;
+    padding-left: 5%;
+    flex-wrap: wrap;
+}
+
+.button.bulk {
+    padding: 8px 16px;
+    font-weight: bold;
+    font-size: 14px;
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.button.bulk:hover {
+    background-color: #0056b3;
+}
+
+.button.bulk.danger {
+    background-color: #dc3545;
+}
+
+.button.bulk.danger:hover {
+    background-color: #b52a3a;
+}
+
+/* ===== SOURCE BADGE STYLING ===== */
+.source-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #fff;
+}
+
+.source-badge.web {
+    background-color: #007BFF;
+}
+
+.source-badge.whatsapp {
+    background-color: #25D366;
+}
+
 /* ===== FontAwesome Support for Icons ===== */
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
