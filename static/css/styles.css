@@ -766,7 +766,7 @@ form button:hover {
         padding: 15px;
     }
 }
-/* ===== ANIMATED BUTTON STYLES FOR COMPLAINT ACTIONS ===== */
+/* ===== ANIMATED ACTION BUTTON STYLES ===== */
 .animated-button {
     transition: all 0.3s ease-in-out;
     transform-origin: center;
@@ -791,22 +791,32 @@ form button:hover {
     }
 }
 
-.btn-resolve {
-    background-color: #007bff !important;
-    color: white !important;
+/* ===== BUTTON STYLE ENHANCEMENT ===== */
+.btn {
+    padding: 8px 14px;
+    background-color: #007bff;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.3s;
 }
 
-.btn-delete {
-    background-color: #dc3545 !important;
-    color: white !important;
+.btn:hover {
+    background-color: #0056b3;
+}
+
+.btn-resolve {
+    background-color: #007bff !important;
+    color: #fff !important;
 }
 
 .btn-resolve:hover {
     background-color: #0056b3 !important;
-}
-
-.btn-delete:hover {
-    background-color: #b52a3a !important;
 }
 
 /* ===== FontAwesome Support for Icons ===== */
