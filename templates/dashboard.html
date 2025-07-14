@@ -58,14 +58,20 @@
 <div class="table-section centered-card">
     <form id="bulkActionForm" method="POST">
         <div class="bulk-buttons">
-            <button type="submit" class="button bulk animated-button btn-resolve pulse-on-hover"
+            <button type="submit"
+                    class="button bulk animated-button btn-resolve pulse-on-hover"
                     formaction="{{ url_for('update_whatsapp_bulk') }}"
-                    name="action" value="resolve">Mark Resolved</button>
+                    name="action" value="resolve">
+                Mark Resolved
+            </button>
 
-            <button type="submit" class="button bulk danger animated-button btn-delete pulse-on-hover"
+            <button type="submit"
+                    class="button bulk danger animated-button btn-delete pulse-on-hover"
                     formaction="{{ url_for('update_whatsapp_bulk') }}"
                     name="action" value="delete"
-                    onclick="return confirm('Are you sure to delete selected complaints?')">Delete</button>
+                    onclick="return confirm('Are you sure to delete selected complaints?')">
+                Delete
+            </button>
         </div>
 
         <table class="data-table">
@@ -120,6 +126,7 @@
         </table>
     </form>
 </div>
+
 
 
     <!-- ➕ Pending Connection Requests -->
