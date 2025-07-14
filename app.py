@@ -298,6 +298,7 @@ def whatsapp_complaints():
     for (mobile, date), entries in grouped.items():
         merged_complaints.append({
             "id": entries[0]["id"],
+            "ids": [str(e["id"]) for e in entries],  # ✅ Added: All grouped IDs
             "name": entries[0]["name"],
             "mobile": mobile,
             "date": date,
