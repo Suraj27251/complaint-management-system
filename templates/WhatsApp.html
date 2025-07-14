@@ -69,21 +69,21 @@
     <tbody id="complaintTable">
       {% for complaint in complaints %}
         <tr>
-          <td><input type="checkbox" class="selectCheckbox" value="{{ complaint.id }}"></td>
+          <td><input type="checkbox" class="selectCheckbox" value="{{ complaint.ids | join(',') }}"></td>
           <td>{{ complaint.date }}</td>
           <td>{{ complaint.name }}</td>
           <td>{{ complaint.mobile }}</td>
           <td>
-            <ul>
+            <ul class="mb-0 ps-3">
               {% for entry in complaint.combined_entries %}
                 <li>{{ entry }}</li>
               {% endfor %}
             </ul>
           </td>
           <td><span class="badge badge-status status-{{ complaint.status }}">{{ complaint.status }}</span></td>
-          <td>{{ complaint.note }}</td>
+          <td>{{ complaint.note or '' }}</td>
           <td>
-            <a href="/complaints/{{ complaint.mobile }}" class="btn btn-primary btn-sm">All Complaints</a>
+            <a href="/complaints?mobile={{ complaint.mobile }}" class="btn btn-primary btn-sm">All Complaints</a>
           </td>
         </tr>
       {% endfor %}
@@ -110,11 +110,13 @@
   function bulkResolve() {
     const selected = Array.from(document.querySelectorAll('.selectCheckbox:checked')).map(cb => cb.value);
     alert("Marking resolved for IDs: " + selected.join(", "));
+    // TODO: Add fetch() call to backend here
   }
 
   function bulkDelete() {
     const selected = Array.from(document.querySelectorAll('.selectCheckbox:checked')).map(cb => cb.value);
     alert("Deleting IDs: " + selected.join(", "));
+    // TODO: Add fetch() call to backend here
   }
 </script>
 
