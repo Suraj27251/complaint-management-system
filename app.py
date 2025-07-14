@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify
 import sqlite3
 from datetime import datetime
 import json as std_json
+from collections import defaultdict
 
 app = Flask(__name__)
 
