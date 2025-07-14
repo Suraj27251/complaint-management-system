@@ -490,6 +490,14 @@ def update_whatsapp_bulk():
     conn.close()
     return jsonify({"status": "success"})
 
+@app.route('/delete_complaint/<int:complaint_id>', methods=['DELETE'])
+def delete_complaint(complaint_id):
+    conn = sqlite3.connect('complaints.db')
+    c = conn.cursor()
+    c.execute("DELETE FROM complaints WHERE id=?", (complaint_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "success"})
 
 if __name__ == '__main__':
     app.run(debug=True)
