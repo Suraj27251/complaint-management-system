@@ -9,6 +9,23 @@
       background-color: #f4f6f9;
       font-family: 'Segoe UI', sans-serif;
     }
+    .header {
+      background-color: #ffffff;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .header img {
+      height: 40px;
+    }
+    .header h1 {
+      font-size: 22px;
+      font-weight: bold;
+      margin: 0;
+      color: #333;
+    }
     .container {
       margin-top: 40px;
     }
@@ -27,6 +44,7 @@
     }
     .status-Resolved {
       background-color: #28a745;
+      color: white;
     }
     .filter-section {
       margin-bottom: 20px;
@@ -39,9 +57,27 @@
       margin-right: 4px;
       vertical-align: text-bottom;
     }
+    .action-btn {
+      font-size: 16px;
+      margin-right: 8px;
+      cursor: pointer;
+    }
+    .delete-btn {
+      color: red;
+    }
+    .resolve-btn {
+      color: green;
+    }
   </style>
 </head>
 <body>
+
+<!-- Header -->
+<div class="header">
+  <img src="https://i.ibb.co/0Fb1YtC/logo-countrylink.png" alt="Countrylink Logo">
+  <h1>Countrylink Broadband</h1>
+  <div class="language-toggle">🌐</div>
+</div>
 
 <div class="container">
   <h2 class="mb-4 text-center">All Complaints Overview</h2>
@@ -71,11 +107,12 @@
           <th>Status</th>
           <th>Received At</th>
           <th>Source</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         {% for c in complaints %}
-        <tr>
+        <tr id="row-{{ c[0] }}">
           <td>{{ c[0] }}</td>
           <td>
             {% set source = c[6] if c|length > 6 else 'Web' %}
@@ -87,10 +124,14 @@
           <td>{{ c[2] }}</td>
           <td>{{ c[3] }}</td>
           <td>
-            <span class="badge badge-status status-{{ c[4] }}">{{ c[4] }}</span>
+            <span class="badge badge-status status-{{ c[4] }}" id="status-{{ c[0] }}">{{ c[4] }}</span>
           </td>
           <td>{{ c[5] }}</td>
           <td>{{ source }}</td>
+          <td>
+            <span class="action-btn resolve-btn" title="Mark as Resolved" onclick="markResolved({{ c[0] }})">✔️</span>
+            <span class="action-btn delete-btn" title="Delete Complaint" onclick="deleteComplaint({{ c[0] }})">🗑️</span>
+          </td>
         </tr>
         {% endfor %}
       </tbody>
@@ -136,6 +177,37 @@
     a.setAttribute("href", url);
     a.setAttribute("download", "complaints.csv");
     a.click();
+  }
+
+  function deleteComplaint(id) {
+    if (!confirm("Are you sure you want to delete this complaint?")) return;
+
+    fetch(`/delete_complaint/${id}`, {
+      method: 'DELETE'
+    }).then(res => res.json())
+    .then(data => {
+      if (data.status === 'success') {
+        document.getElementById(`row-${id}`).remove();
+      } else {
+        alert('Failed to delete complaint.');
+      }
+    }).catch(() => alert('Error deleting complaint.'));
+  }
+
+  function markResolved(id) {
+    if (!confirm("Mark this complaint as resolved?")) return;
+
+    fetch(`/update_status/${id}/Resolved`)
+      .then(response => {
+        if (response.redirected) {
+          // Update status without reload
+          const badge = document.getElementById(`status-${id}`);
+          badge.textContent = 'Resolved';
+          badge.classList.remove('status-Pending');
+          badge.classList.add('status-Resolved');
+        }
+      })
+      .catch(() => alert('Error updating status.'));
   }
 </script>
 
