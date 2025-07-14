@@ -20,7 +20,6 @@
             <option value="en">ENGLISH</option>
             <option value="hi">HINDI</option>
         </select>
-        <!-- 🌙 Theme Toggle -->
         <div class="theme-toggle" style="margin-left: 15px;">
             <label class="switch">
                 <input type="checkbox" id="themeToggle">
@@ -53,49 +52,66 @@
         <canvas id="statusChart"></canvas>
     </div>
 
-    <!-- 📝 Recent Complaints -->
-<h2 class="section-title">Recent Complaints</h2>
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Mobile</th>
-            <th>Complaint</th>
-            <th>Status</th>
-            <th>Priority</th>
-            <th>Source</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-{% for comp in recent_complaints %}
-{% set src = comp[7] if comp|length > 7 else 'Web' %}
-{% if src != 'Webhook' %}
-        <tr>
-            <td>{{ comp[0] }}</td>
-            <td>{{ comp[1] }}</td>
-            <td>{{ comp[2] }}</td>
-            <td>{{ comp[3] }}</td>
-            <td>{{ comp[4] }}</td>
-            <td>{{ comp[6] }}</td>
-            <td>
-                <span class="badge" style="background-color: {{ '#25D366' if src == 'WhatsApp' else '#007BFF' }}; color: white;">
-                    {{ src }}
-                </span>
-            </td>
-            <td>
-                {% if comp[4] != 'Resolved' %}
-                    <a class="button" href="{{ url_for('update_status', complaint_id=comp[0], status='Resolved') }}">Mark Resolved</a>
-                {% else %}
-                    <span style="color: green;">✔ Done</span>
-                {% endif %}
-            </td>
-        </tr>
-        {% endif %}
-        {% endfor %}
-    </tbody>
-</table>
+    <!-- 📝 Bulk Actions -->
+    <form id="bulkActionForm" method="POST" action="{{ url_for('update_whatsapp_bulk') }}">
+        <div style="margin: 10px 0;">
+            <button type="submit" name="action" value="resolve">Mark Resolved</button>
+            <button type="submit" name="action" value="delete" onclick="return confirm('Are you sure to delete selected complaints?')">Delete</button>
+        </div>
+
+        <!-- 📝 Recent Complaints -->
+        <h2 class="section-title">Recent Complaints</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="selectAll"></th>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Mobile</th>
+                    <th>Complaint</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Source</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for comp in recent_complaints %}
+            {% set src = comp['source'] if comp.get('source') else 'Web' %}
+            {% if src != 'Webhook' %}
+                <tr>
+                    <td><input type="checkbox" name="selected_ids[]" value="{{ comp['id'] }}"></td>
+                    <td>{{ comp['id'] }}</td>
+                    <td>{{ comp['name'] }}</td>
+                    <td>{{ comp['mobile'] }}</td>
+                    <td>{{ comp['complaint'] }}</td>
+                    <td>{{ comp['status'] }}</td>
+                    <td>{{ comp['priority'] }}</td>
+                    <td>
+                        {% if src == 'WhatsApp' %}
+                            <span class="badge" style="background-color: #25D366; color: white;">
+                                <i class="fab fa-whatsapp"></i> Quick Complaint
+                            </span>
+                        {% else %}
+                            <span class="badge" style="background-color: #007BFF; color: white;">
+                                Web
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if comp['status'] != 'Resolved' %}
+                            <a class="button" href="{{ url_for('update_status', complaint_id=comp['id'], status='Resolved') }}">Mark Resolved</a>
+                        {% else %}
+                            <span style="color: green;">✔ Done</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endif %}
+            {% endfor %}
+            </tbody>
+        </table>
+    </form>
+
     <!-- ➕ Pending Connection Requests -->
     {% if pending_connections %}
     <h2 class="section-title">Recent Open Connection Requests (Pending)</h2>
@@ -154,7 +170,7 @@
     </table>
 </div>
 
-<!-- 📊 CHART JS -->
+<!-- 📊 CHART JS + Bulk Checkbox Script -->
 <script>
     const ctx = document.getElementById('statusChart').getContext('2d');
     const statusChart = new Chart(ctx, {
@@ -179,15 +195,19 @@
     const toggle = document.getElementById('themeToggle');
     const body = document.body;
     const theme = localStorage.getItem('theme');
-
     if (theme === 'dark') {
         body.classList.add('dark-mode');
         toggle.checked = true;
     }
-
     toggle.addEventListener('change', () => {
         body.classList.toggle('dark-mode');
         localStorage.setItem('theme', body.classList.contains('dark-mode') ? 'dark' : 'light');
+    });
+
+    // ✅ Select/Deselect All Checkboxes
+    document.getElementById('selectAll').addEventListener('click', function () {
+        const checkboxes = document.querySelectorAll('input[name="selected_ids[]"]');
+        checkboxes.forEach(cb => cb.checked = this.checked);
     });
 </script>
 
