@@ -92,6 +92,7 @@
 </div>
 
 <script>
+  // Search Filter
   const searchInput = document.getElementById("searchInput");
   const table = document.getElementById("complaintTable");
 
@@ -103,10 +104,12 @@
     });
   });
 
+  // Select All
   function toggleAll(source) {
     document.querySelectorAll('.selectCheckbox').forEach(cb => cb.checked = source.checked);
   }
 
+  // Bulk Resolve or Delete
   function bulkAction(action) {
     const selectedCheckboxes = document.querySelectorAll('.selectCheckbox:checked');
     if (selectedCheckboxes.length === 0) {
@@ -114,7 +117,6 @@
       return;
     }
 
-    // Collect all selected complaint IDs and split if comma-separated (in case of merged entries)
     let selectedIds = [];
     selectedCheckboxes.forEach(cb => {
       const ids = cb.value.split(',');
@@ -140,9 +142,9 @@
         alert("Failed: " + data.message);
       }
     })
-    .catch(err => {
-      console.error(err);
-      alert("An error occurred while performing the bulk action.");
+    .catch(error => {
+      console.error("Error:", error);
+      alert("Something went wrong.");
     });
   }
 </script>
