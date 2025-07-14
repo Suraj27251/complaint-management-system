@@ -476,7 +476,7 @@ def update_whatsapp_bulk():
     ids = request.form.getlist('selected_ids[]')
 
     if not ids:
-        return jsonify({"status": "error", "message": "No IDs received"}), 400
+        return redirect(url_for('dashboard'))  # If no IDs, silently redirect
 
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
@@ -488,7 +488,7 @@ def update_whatsapp_bulk():
 
     conn.commit()
     conn.close()
-    return jsonify({"status": "success"})
+    return redirect(url_for('dashboard'))  # ✅ Final redirect to dashboard
 
 @app.route('/delete_complaint/<int:complaint_id>', methods=['DELETE'])
 def delete_complaint(complaint_id):
