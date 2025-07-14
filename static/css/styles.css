@@ -766,7 +766,48 @@ form button:hover {
         padding: 15px;
     }
 }
+/* ===== ANIMATED BUTTON STYLES FOR COMPLAINT ACTIONS ===== */
+.animated-button {
+    transition: all 0.3s ease-in-out;
+    transform-origin: center;
+    position: relative;
+    overflow: hidden;
+}
 
+.pulse-on-hover:hover {
+    transform: scale(1.05);
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+    }
+}
+
+.btn-resolve {
+    background-color: #007bff !important;
+    color: white !important;
+}
+
+.btn-delete {
+    background-color: #dc3545 !important;
+    color: white !important;
+}
+
+.btn-resolve:hover {
+    background-color: #0056b3 !important;
+}
+
+.btn-delete:hover {
+    background-color: #b52a3a !important;
+}
 
 /* ===== FontAwesome Support for Icons ===== */
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
