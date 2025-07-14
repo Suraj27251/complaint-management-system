@@ -52,24 +52,16 @@
         <canvas id="statusChart"></canvas>
     </div>
 
-    <!-- 📝 Bulk Actions -->
-    <form id="bulkActionForm" method="POST" action="{{ url_for('update_whatsapp_bulk') }}">
-        <div style="margin: 10px 0;">
-            <button type="submit" name="action" value="resolve">Mark Resolved</button>
-            <button type="submit" name="action" value="delete" onclick="return confirm('Are you sure to delete selected complaints?')">Delete</button>
-        </div>
+    <!-- 📝 Recent Complaints -->
+    <h2 class="section-title">Recent Complaints</h2>
 
-<!-- 📝 Recent Complaints -->
-<h2 class="section-title">Recent Complaints</h2>
+    <div class="table-section">
+        <form id="bulkActionForm" method="POST">
+            <div class="bulk-buttons">
+                <button type="submit" class="button bulk" formaction="{{ url_for('update_whatsapp_bulk') }}" name="action" value="resolve">Mark Resolved</button>
+                <button type="submit" class="button bulk danger" formaction="{{ url_for('update_whatsapp_bulk') }}" name="action" value="delete" onclick="return confirm('Are you sure to delete selected complaints?')">Delete</button>
+            </div>
 
-<div class="card-box">
-    <form id="bulkActionForm" method="POST">
-        <div class="button-group">
-            <button type="submit" class="btn" formaction="/update_whatsapp_bulk" name="action" value="resolve">Mark Resolved</button>
-            <button type="submit" class="btn delete" formaction="/update_whatsapp_bulk" name="action" value="delete" onclick="return confirm('Are you sure to delete selected complaints?')">Delete</button>
-        </div>
-
-        <div class="table-wrapper">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -117,9 +109,8 @@
                     {% endfor %}
                 </tbody>
             </table>
-        </div>
-    </form>
-</div>
+        </form>
+    </div>
 
     <!-- ➕ Pending Connection Requests -->
     {% if pending_connections %}
@@ -179,7 +170,7 @@
     </table>
 </div>
 
-<!-- 📊 CHART JS + Bulk Checkbox Script -->
+<!-- 📊 Chart and Theme Scripts -->
 <script>
     const ctx = document.getElementById('statusChart').getContext('2d');
     const statusChart = new Chart(ctx, {
