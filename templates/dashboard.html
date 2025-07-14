@@ -53,64 +53,74 @@
     </div>
 
     <!-- 📝 Recent Complaints -->
-    <h2 class="section-title">Recent Complaints</h2>
+<h2 class="section-title">Recent Complaints</h2>
 
-    <div class="table-section centered-card">
-        <form id="bulkActionForm" method="POST">
-            <div class="bulk-buttons">
-                <button type="submit" class="button bulk" formaction="{{ url_for('update_whatsapp_bulk') }}" name="action" value="resolve">Mark Resolved</button>
-                <button type="submit" class="button bulk danger" formaction="{{ url_for('update_whatsapp_bulk') }}" name="action" value="delete" onclick="return confirm('Are you sure to delete selected complaints?')">Delete</button>
-            </div>
+<div class="table-section centered-card">
+    <form id="bulkActionForm" method="POST">
+        <div class="bulk-buttons">
+            <button type="submit" class="button bulk animated-button btn-resolve pulse-on-hover"
+                    formaction="{{ url_for('update_whatsapp_bulk') }}"
+                    name="action" value="resolve">Mark Resolved</button>
 
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th><input type="checkbox" id="selectAll"></th>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Mobile</th>
-                        <th>Complaint</th>
-                        <th>Status</th>
-                        <th>Priority</th>
-                        <th>Source</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for comp in recent_complaints %}
-                    {% set src = comp['source'] %}
-                    {% if src != 'Webhook' %}
-                    <tr>
-                        <td><input type="checkbox" name="selected_ids[]" value="{{ comp['id'] }}"></td>
-                        <td>{{ comp['id'] }}</td>
-                        <td>{{ comp['name'] }}</td>
-                        <td>{{ comp['mobile'] }}</td>
-                        <td>{{ comp['complaint'] }}</td>
-                        <td>{{ comp['status'] }}</td>
-                        <td>{{ comp['priority'] }}</td>
-                        <td>
-                            <span class="badge source-badge {{ 'whatsapp' if src == 'WhatsApp' else 'web' }}">
-                                {% if src == 'WhatsApp' %}
-                                    <i class="fab fa-whatsapp"></i> <span>WhatsApp</span>
-                                {% else %}
-                                    <i class="fas fa-globe"></i> <span>Web</span>
-                                {% endif %}
-                            </span>
-                        </td>
-                        <td>
-                            {% if comp['status'] != 'Resolved' %}
-                            <a class="btn small" href="{{ url_for('update_status', complaint_id=comp['id'], status='Resolved') }}">Mark Resolved</a>
+            <button type="submit" class="button bulk danger animated-button btn-delete pulse-on-hover"
+                    formaction="{{ url_for('update_whatsapp_bulk') }}"
+                    name="action" value="delete"
+                    onclick="return confirm('Are you sure to delete selected complaints?')">Delete</button>
+        </div>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="selectAll"></th>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Mobile</th>
+                    <th>Complaint</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Source</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for comp in recent_complaints %}
+                {% set src = comp['source'] %}
+                {% if src != 'Webhook' %}
+                <tr>
+                    <td><input type="checkbox" name="selected_ids[]" value="{{ comp['id'] }}"></td>
+                    <td>{{ comp['id'] }}</td>
+                    <td>{{ comp['name'] }}</td>
+                    <td>{{ comp['mobile'] }}</td>
+                    <td>{{ comp['complaint'] }}</td>
+                    <td>{{ comp['status'] }}</td>
+                    <td>{{ comp['priority'] }}</td>
+                    <td>
+                        <span class="badge source-badge {{ 'whatsapp' if src == 'WhatsApp' else 'web' }}">
+                            {% if src == 'WhatsApp' %}
+                                <i class="fab fa-whatsapp"></i> <span>WhatsApp</span>
                             {% else %}
-                            <span style="color: green;">✔ Done</span>
+                                <i class="fas fa-globe"></i> <span>Web</span>
                             {% endif %}
-                        </td>
-                    </tr>
-                    {% endif %}
-                    {% endfor %}
-                </tbody>
-            </table>
-        </form>
-    </div>
+                        </span>
+                    </td>
+                    <td>
+                        {% if comp['status'] != 'Resolved' %}
+                        <a class="btn small animated-button btn-resolve pulse-on-hover"
+                           href="{{ url_for('update_status', complaint_id=comp['id'], status='Resolved') }}">
+                           Mark Resolved
+                        </a>
+                        {% else %}
+                        <span style="color: green;">✔ Done</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </form>
+</div>
+
 
     <!-- ➕ Pending Connection Requests -->
     {% if pending_connections %}
