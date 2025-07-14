@@ -74,7 +74,9 @@
 
 <!-- Header -->
 <div class="header">
-  <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="logo">
+  <a href="{{ url_for('dashboard') }}">
+    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="logo">
+  </a>
   <h1>Countrylink Broadband</h1>
   <div class="language-toggle">🌐</div>
 </div>
