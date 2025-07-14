@@ -640,18 +640,14 @@ form button:hover {
     background-color: #0056b3;
 }
 
-/* ===== TABLE SECTION WRAPPER FIX ===== */
-.table-section {
-    overflow-x: auto;
-    margin: 30px auto;
-    width: 95%;
-    background-color: #fff;
-    padding: 25px;
+/* ===== CENTERED CARD WRAPPER FOR COMPLAINTS ===== */
+.centered-card {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    background-color: #fff;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
 }
 
 /* ===== BULK BUTTONS ===== */
