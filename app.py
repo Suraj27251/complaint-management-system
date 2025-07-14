@@ -94,7 +94,7 @@ def dashboard():
     c.execute("SELECT COUNT(*) FROM complaints WHERE status = 'Resolved'")
     resolved = c.fetchone()[0]
 
-    c.execute("SELECT * FROM complaints ORDER BY id DESC LIMIT 50")
+   c.execute("SELECT * FROM complaints WHERE source != 'Webhook' OR source IS NULL ORDER BY id DESC LIMIT 50")
     recent_complaints_raw = c.fetchall()
 
     priority_complaints = []
