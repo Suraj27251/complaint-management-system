@@ -10,24 +10,19 @@
       font-family: 'Segoe UI', sans-serif;
     }
     .navbar {
-      background-color: #25d366;
-      padding: 10px 20px;
+      background-color: #fff;
+      border-bottom: 1px solid #ddd;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
-    .navbar-brand {
-      display: flex;
-      align-items: center;
-      color: white;
-      font-size: 1.4rem;
-      font-weight: bold;
-      text-decoration: none;
-    }
-    .navbar-brand img {
+    .navbar .navbar-brand img {
       height: 40px;
-      margin-right: 10px;
     }
-    .navbar-nav .nav-link {
-      color: white !important;
-      font-weight: 500;
+    .navbar-title {
+      flex-grow: 1;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #333;
     }
     .container {
       margin-top: 30px;
@@ -48,9 +43,6 @@
     .status-Resolved {
       background-color: #28a745;
     }
-    .filter-section {
-      margin-bottom: 20px;
-    }
     .search-input {
       max-width: 250px;
     }
@@ -62,17 +54,13 @@
 <body>
 
 <!-- Top Navbar -->
-<nav class="navbar navbar-expand-lg">
-  <a class="navbar-brand" href="/">
-  <img src="/static/img/logo.png" alt="Logo">
-  Countrylink Broadband
-</a>
+<nav class="navbar navbar-expand-lg px-3">
+  <a class="navbar-brand d-flex align-items-center" href="/">
+    <img src="/static/img/logo.png" alt="Logo">
+  </a>
+  <div class="navbar-title">Countrylink Broadband</div>
   <div class="ms-auto">
-    <ul class="navbar-nav">
-      <li class="nav-item">
-        <a class="nav-link" href="/">🏠 Home</a>
-      </li>
-    </ul>
+    <a class="btn btn-outline-primary btn-sm" href="/">🏠 Home</a>
   </div>
 </nav>
 
