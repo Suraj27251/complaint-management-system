@@ -728,5 +728,32 @@ form button:hover {
     background-color: #25D366;
 }
 
+/* ===== RESPONSIVE ADJUSTMENTS ===== */
+@media (max-width: 768px) {
+    .bulk-buttons {
+        flex-direction: column;
+        align-items: flex-start;
+        padding-left: 5%;
+    }
+
+    .button.bulk {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .data-table th,
+    .data-table td {
+        font-size: 13px;
+        padding: 10px 8px;
+    }
+
+    .data-table {
+        font-size: 13px;
+        display: block;
+        overflow-x: auto;
+    }
+}
+
+
 /* ===== FontAwesome Support for Icons ===== */
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
