@@ -47,8 +47,8 @@
   <!-- Bulk Action Section -->
   <div class="bulk-actions d-flex justify-content-between align-items-center">
     <div>
-      <button class="btn btn-success btn-sm" onclick="bulkResolve()">Mark as Resolved</button>
-      <button class="btn btn-danger btn-sm" onclick="bulkDelete()">Delete Selected</button>
+      <button class="btn btn-success btn-sm" onclick="bulkAction('resolve')">Mark as Resolved</button>
+      <button class="btn btn-danger btn-sm" onclick="bulkAction('delete')">Delete Selected</button>
     </div>
     <input type="text" id="searchInput" class="form-control search-input" placeholder="Search by Name, Mobile or Complaint">
   </div>
@@ -107,16 +107,43 @@
     document.querySelectorAll('.selectCheckbox').forEach(cb => cb.checked = source.checked);
   }
 
-  function bulkResolve() {
-    const selected = Array.from(document.querySelectorAll('.selectCheckbox:checked')).map(cb => cb.value);
-    alert("Marking resolved for IDs: " + selected.join(", "));
-    // TODO: Add fetch() call to backend here
-  }
+  function bulkAction(action) {
+    const selectedCheckboxes = document.querySelectorAll('.selectCheckbox:checked');
+    if (selectedCheckboxes.length === 0) {
+      alert("Please select at least one complaint.");
+      return;
+    }
 
-  function bulkDelete() {
-    const selected = Array.from(document.querySelectorAll('.selectCheckbox:checked')).map(cb => cb.value);
-    alert("Deleting IDs: " + selected.join(", "));
-    // TODO: Add fetch() call to backend here
+    // Collect all selected complaint IDs and split if comma-separated (in case of merged entries)
+    let selectedIds = [];
+    selectedCheckboxes.forEach(cb => {
+      const ids = cb.value.split(',');
+      selectedIds = selectedIds.concat(ids);
+    });
+
+    const params = new URLSearchParams();
+    params.append('action', action);
+    selectedIds.forEach(id => params.append('selected_ids[]', id.trim()));
+
+    fetch('/update_whatsapp_bulk', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: params
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === "success") {
+        location.reload();
+      } else {
+        alert("Failed: " + data.message);
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert("An error occurred while performing the bulk action.");
+    });
   }
 </script>
 
