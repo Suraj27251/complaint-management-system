@@ -463,5 +463,26 @@ def staff_attendance_webhook():
 def ping():
     return 'pong', 200
 
+@app.route('/update_whatsapp_bulk', methods=['POST'])
+def update_whatsapp_bulk():
+    action = request.form.get('action')
+    ids = request.form.getlist('selected_ids[]')
+
+    if not ids:
+        return jsonify({"status": "error", "message": "No IDs received"}), 400
+
+    conn = sqlite3.connect('complaints.db')
+    c = conn.cursor()
+
+    if action == 'resolve':
+        c.executemany("UPDATE complaints SET status = 'Resolved' WHERE id = ?", [(i,) for i in ids])
+    elif action == 'delete':
+        c.executemany("DELETE FROM complaints WHERE id = ?", [(i,) for i in ids])
+
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "success"})
+
+
 if __name__ == '__main__':
     app.run(debug=True)
