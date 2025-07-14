@@ -95,11 +95,22 @@
     <button class="btn btn-success" onclick="downloadCSV()">Download CSV</button>
   </div>
 
+  <!-- Bulk Action -->
+  <div class="mb-3 d-flex gap-2">
+    <select id="bulkAction" class="form-select w-auto">
+      <option value="">Bulk Action</option>
+      <option value="resolve">Mark as Resolved</option>
+      <option value="delete">Delete</option>
+    </select>
+    <button class="btn btn-primary" onclick="applyBulkAction()">Apply</button>
+  </div>
+
   {% if complaints %}
   <div class="table-responsive">
     <table class="table table-bordered table-hover align-middle" id="complaintsTable">
       <thead>
         <tr>
+          <th><input type="checkbox" id="selectAll"></th>
           <th>ID</th>
           <th>Name</th>
           <th>Mobile</th>
@@ -113,6 +124,7 @@
       <tbody>
         {% for c in complaints %}
         <tr id="row-{{ c[0] }}">
+          <td><input type="checkbox" class="selectComplaint" value="{{ c[0] }}"></td>
           <td>{{ c[0] }}</td>
           <td>
             {% set source = c[6] if c|length > 6 else 'Web' %}
@@ -123,9 +135,7 @@
           </td>
           <td>{{ c[2] }}</td>
           <td>{{ c[3] }}</td>
-          <td>
-            <span class="badge badge-status status-{{ c[4] }}" id="status-{{ c[0] }}">{{ c[4] }}</span>
-          </td>
+          <td><span class="badge badge-status status-{{ c[4] }}" id="status-{{ c[0] }}">{{ c[4] }}</span></td>
           <td>{{ c[5] }}</td>
           <td>{{ source }}</td>
           <td>
@@ -147,7 +157,7 @@
     const filter = this.value.toLowerCase();
     const rows = document.querySelectorAll('#complaintsTable tbody tr');
     rows.forEach(row => {
-      const status = row.children[4].textContent.toLowerCase();
+      const status = row.children[5].textContent.toLowerCase();
       row.style.display = (filter === '' || status === filter) ? '' : 'none';
     });
   });
@@ -156,10 +166,14 @@
     const search = this.value.toLowerCase();
     const rows = document.querySelectorAll('#complaintsTable tbody tr');
     rows.forEach(row => {
-      const name = row.children[1].textContent.toLowerCase();
-      const mobile = row.children[2].textContent.toLowerCase();
+      const name = row.children[2].textContent.toLowerCase();
+      const mobile = row.children[3].textContent.toLowerCase();
       row.style.display = (name.includes(search) || mobile.includes(search)) ? '' : 'none';
     });
+  });
+
+  document.getElementById('selectAll').addEventListener('change', function () {
+    document.querySelectorAll('.selectComplaint').forEach(cb => cb.checked = this.checked);
   });
 
   function downloadCSV() {
@@ -170,44 +184,61 @@
       const rowData = Array.from(cols).map(col => `"${col.textContent.trim()}"`).join(",");
       csv.push(rowData);
     });
-    const csvString = csv.join("\n");
-    const blob = new Blob([csvString], { type: "text/csv" });
+    const blob = new Blob([csv.join("\n")], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.setAttribute("href", url);
-    a.setAttribute("download", "complaints.csv");
+    a.href = url;
+    a.download = "complaints.csv";
     a.click();
   }
 
   function deleteComplaint(id) {
     if (!confirm("Are you sure you want to delete this complaint?")) return;
 
-    fetch(`/delete_complaint/${id}`, {
-      method: 'DELETE'
-    }).then(res => res.json())
-    .then(data => {
-      if (data.status === 'success') {
-        document.getElementById(`row-${id}`).remove();
-      } else {
-        alert('Failed to delete complaint.');
-      }
-    }).catch(() => alert('Error deleting complaint.'));
+    fetch(`/delete_complaint/${id}`, { method: 'DELETE' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') document.getElementById(`row-${id}`).remove();
+        else alert('Failed to delete complaint.');
+      }).catch(() => alert('Error deleting complaint.'));
   }
 
   function markResolved(id) {
     if (!confirm("Mark this complaint as resolved?")) return;
 
-    fetch(`/update_status/${id}/Resolved`)
-      .then(response => {
-        if (response.redirected) {
-          // Update status without reload
-          const badge = document.getElementById(`status-${id}`);
-          badge.textContent = 'Resolved';
-          badge.classList.remove('status-Pending');
-          badge.classList.add('status-Resolved');
-        }
+    fetch(`/update_status/${id}/Resolved`).then(response => {
+      if (response.redirected) {
+        const badge = document.getElementById(`status-${id}`);
+        badge.textContent = 'Resolved';
+        badge.classList.remove('status-Pending');
+        badge.classList.add('status-Resolved');
+      }
+    }).catch(() => alert('Error updating status.'));
+  }
+
+  function applyBulkAction() {
+    const action = document.getElementById('bulkAction').value;
+    const selected = Array.from(document.querySelectorAll('.selectComplaint:checked')).map(cb => cb.value);
+
+    if (!action || selected.length === 0) {
+      alert('Please select action and at least one complaint.');
+      return;
+    }
+
+    fetch('/update_whatsapp_bulk', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        action: action,
+        'selected_ids[]': selected
       })
-      .catch(() => alert('Error updating status.'));
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success') location.reload();
+      else alert('Bulk action failed: ' + data.message);
+    })
+    .catch(err => alert('Error: ' + err));
   }
 </script>
 
