@@ -294,7 +294,7 @@ def whatsapp_complaints():
             "created_at": created_at
         })
 
-merged_complaints = []
+    merged_complaints = []
     for (mobile, date), entries in grouped.items():
         merged_complaints.append({
             "id": entries[0]["id"],
