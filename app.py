@@ -294,17 +294,15 @@ def whatsapp_complaints():
             "created_at": created_at
         })
 
-    merged_complaints = []
-    for (mobile, date), entries in grouped.items():
-        merged_complaints.append({
-            "id": entries[0]["id"],
-            "name": entries[0]["name"],
-            "mobile": mobile,
-            "date": date,
-            "status": entries[-1]["status"],
-            "combined_entries": [e["complaint"] for e in entries],
-            "note": ""
-        })
+  merged_complaints.append({
+        "id": entries[0]["id"],  # ✅ Ensure 'id' is included
+        "name": entries[0]["name"],
+        "mobile": mobile,
+        "date": date,
+        "status": entries[-1]["status"],
+        "combined_entries": [e["complaint"] for e in entries],
+        "note": ""
+    })
 
     return render_template("WhatsApp.html", complaints=merged_complaints)
 
