@@ -38,7 +38,7 @@
     <div class="tab"><a href="{{ url_for('new_connections') }}"><i class="fas fa-user-plus"></i> New Connections</a></div>
     <div class="tab"><a href="{{ url_for('stock') }}"><i class="fas fa-boxes"></i> Stock</a></div>
     <div class="tab"><a href="{{ url_for('hr_dashboard') }}"><i class="fas fa-users"></i> Human Resource</a></div>
-    <a href="{{ url_for('whatsapp_complaints') }}" class="btn btn-outline-success">WhatsApp messages</a>
+    <div class="tab"><a href="{{ url_for('whatsapp_complaints') }}"><i class="fab fa-whatsapp"></i> WhatsApp messages</a></div>
 </div>
 
 <!-- 🕽️ CONTENT -->
@@ -54,47 +54,48 @@
     </div>
 
     <!-- 📝 Recent Complaints -->
-    <h2 class="section-title">Recent Complaints</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Mobile</th>
-                <th>Complaint</th>
-                <th>Status</th>
-                <th>Priority</th>
-                <th>Source</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for comp in recent_complaints %}
-            <tr>
-                <td>{{ comp[0] }}</td>
-                <td>{{ comp[1] }}</td>
-                <td>{{ comp[2] }}</td>
-                <td>{{ comp[3] }}</td>
-                <td>{{ comp[4] }}</td>
-                <td>{{ comp[6] }}</td>
-                <td>
-                    {% set src = comp[7] if comp|length > 7 else 'Web' %}
-                    <span class="badge" style="background-color: {{ '#25D366' if src == 'WhatsApp' else '#007BFF' }}; color: white;">
-                        {{ src }}
-                    </span>
-                </td>
-                <td>
-                    {% if comp[4] != 'Resolved' %}
-                        <a class="button" href="{{ url_for('update_status', complaint_id=comp[0], status='Resolved') }}">Mark Resolved</a>
-                    {% else %}
-                        <span style="color: green;">✔ Done</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
+<h2 class="section-title">Recent Complaints</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Mobile</th>
+            <th>Complaint</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Source</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for comp in recent_complaints %}
+        {% set src = comp[7] if comp|length > 7 else 'Web' %}
+        {% if src != 'Webhook' %}
+        <tr>
+            <td>{{ comp[0] }}</td>
+            <td>{{ comp[1] }}</td>
+            <td>{{ comp[2] }}</td>
+            <td>{{ comp[3] }}</td>
+            <td>{{ comp[4] }}</td>
+            <td>{{ comp[6] }}</td>
+            <td>
+                <span class="badge" style="background-color: {{ '#25D366' if src == 'WhatsApp' else '#007BFF' }}; color: white;">
+                    {{ src }}
+                </span>
+            </td>
+            <td>
+                {% if comp[4] != 'Resolved' %}
+                    <a class="button" href="{{ url_for('update_status', complaint_id=comp[0], status='Resolved') }}">Mark Resolved</a>
+                {% else %}
+                    <span style="color: green;">✔ Done</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
     <!-- ➕ Pending Connection Requests -->
     {% if pending_connections %}
     <h2 class="section-title">Recent Open Connection Requests (Pending)</h2>
