@@ -70,8 +70,8 @@
     </thead>
     <tbody>
 {% for comp in recent_complaints %}
-{% set src = (comp[7] if comp|length > 7 else 'Web') | string %}
-{% if 'webhook' not in src.lower() %}
+{% set src = comp[7] if comp|length > 7 else 'Web' %}
+{% if src != 'Webhook' %}
         <tr>
             <td>{{ comp[0] }}</td>
             <td>{{ comp[1] }}</td>
