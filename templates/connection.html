@@ -12,29 +12,37 @@
         }
 
         .header {
-            background-color: #007BFF;
+            background-color: #ffffff;
             padding: 15px 30px;
-            color: white;
+            color: #333;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 1px solid #ccc;
+            flex-wrap: wrap;
         }
 
-        .header .logo {
-            font-size: 20px;
-            font-weight: bold;
+        .header .logo img {
+            height: 40px;
+            width: auto;
         }
 
         .header .title {
-            font-size: 18px;
+            flex: 1;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
         }
 
         .header a.home-btn {
             color: white;
             text-decoration: none;
             background: #28a745;
-            padding: 8px 12px;
-            border-radius: 4px;
+            padding: 8px 14px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
         }
 
         .container {
@@ -46,12 +54,29 @@
             color: #333;
         }
 
+        .filters {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .filters input,
+        .filters select {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
             background: #fff;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            margin-top: 20px;
+            margin-top: 10px;
+            border-radius: 6px;
+            overflow: hidden;
         }
 
         th, td {
@@ -69,79 +94,151 @@
             background-color: #f1f1f1;
         }
 
-        .status-requested {
-            color: #ff9800;
+        .badge {
+            padding: 6px 10px;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
         }
 
-        .status-installed {
-            color: green;
+        .badge-pending {
+            background-color: #f0ad4e;
         }
 
-        select.status-dropdown {
-            padding: 5px;
-            border-radius: 4px;
+        .badge-hold {
+            background-color: #6c757d;
         }
 
-        button.save-btn {
+        .badge-completed {
+            background-color: #28a745;
+        }
+
+        button.save-btn, button.export-btn {
             padding: 6px 10px;
             background-color: #007BFF;
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            font-weight: bold;
         }
 
-        button.save-btn:hover {
+        button.save-btn:hover,
+        button.export-btn:hover {
             background-color: #0056b3;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .header .title {
+                order: 1;
+                width: 100%;
+                margin-top: 10px;
+            }
+
+            .header .logo {
+                order: 0;
+                margin-bottom: 10px;
+            }
+
+            .header a.home-btn {
+                order: 2;
+                margin-top: 10px;
+            }
+
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="logo">COUNTRYLINK BROADBAND</div>
-        <div class="title">New Connections</div>
-        <a href="{{ url_for('dashboard') }}" class="home-btn">🏠 Home</a>
+<div class="header">
+    <a href="{{ url_for('dashboard') }}" class="logo">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Countrylink Logo">
+    </a>
+    <div class="title">COUNTRYLINK BROADBAND</div>
+    <a href="{{ url_for('dashboard') }}" class="home-btn">🏠 Home</a>
+</div>
+
+<div class="container">
+    <h2>New Connection Requests</h2>
+
+    <div class="filters">
+        <input type="text" id="searchInput" placeholder="Search by name or mobile..." onkeyup="filterTable()">
+        <select id="statusFilter" onchange="filterTable()">
+            <option value="">All Status</option>
+            <option value="Pending">Pending</option>
+            <option value="Hold">Hold</option>
+            <option value="Completed">Completed</option>
+        </select>
+        <button class="export-btn" onclick="window.print()">🖨 Export as PDF</button>
     </div>
 
-    <div class="container">
-        <h2>New Connection Requests</h2>
+    <table id="connectionTable">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Mobile</th>
+            <th>Address</th>
+            <th>Status</th>
+            <th>Requested At</th>
+            <th>Update</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for conn in connections %}
+        <tr>
+            <form action="{{ url_for('update_connection_status', connection_id=conn[0]) }}" method="POST">
+                <td>{{ conn[0] }}</td>
+                <td>{{ conn[1] }}</td>
+                <td>{{ conn[2] }}</td>
+                <td>{{ conn[3] }}</td>
+                <td>
+                    <span class="badge badge-{{ conn[4]|lower }}">{{ conn[4] }}</span><br>
+                    <select name="status" class="status-dropdown">
+                        <option value="Pending" {% if conn[4] == 'Pending' %}selected{% endif %}>Pending</option>
+                        <option value="Hold" {% if conn[4] == 'Hold' %}selected{% endif %}>Hold</option>
+                        <option value="Completed" {% if conn[4] == 'Completed' %}selected{% endif %}>Completed</option>
+                    </select>
+                </td>
+                <td>{{ conn[5] }}</td>
+                <td><button type="submit" class="save-btn">Save</button></td>
+            </form>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Mobile</th>
-                    <th>Address</th>
-                    <th>Status</th>
-                    <th>Requested At</th>
-                    <th>Update</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for conn in connections %}
-                <tr>
-                    <form action="{{ url_for('update_connection_status', connection_id=conn[0]) }}" method="POST">
-                        <td>{{ conn[0] }}</td>
-                        <td>{{ conn[1] }}</td>
-                        <td>{{ conn[2] }}</td>
-                        <td>{{ conn[3] }}</td>
-                        <td>
-                            <select name="status" class="status-dropdown">
-                                <option value="Pending" {% if conn[4] == 'Pending' %}selected{% endif %}>Pending</option>
-                                <option value="Hold" {% if conn[4] == 'Hold' %}selected{% endif %}>Hold</option>
-                                <option value="Completed" {% if conn[4] == 'Completed' %}selected{% endif %}>Completed</option>
-                            </select>
-                        </td>
-                        <td>{{ conn[5] }}</td>
-                        <td><button type="submit" class="save-btn">Save</button></td>
-                    </form>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+<script>
+    function filterTable() {
+        const input = document.getElementById('searchInput').value.toLowerCase();
+        const status = document.getElementById('statusFilter').value;
+        const table = document.getElementById('connectionTable');
+        const rows = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < rows.length; i++) {
+            const cells = rows[i].getElementsByTagName('td');
+            const name = cells[1]?.textContent?.toLowerCase();
+            const mobile = cells[2]?.textContent?.toLowerCase();
+            const rowStatus = cells[4]?.textContent?.trim();
+
+            const matchesSearch = name?.includes(input) || mobile?.includes(input);
+            const matchesStatus = !status || rowStatus === status;
+
+            rows[i].style.display = matchesSearch && matchesStatus ? '' : 'none';
+        }
+    }
+</script>
 
 </body>
 </html>
