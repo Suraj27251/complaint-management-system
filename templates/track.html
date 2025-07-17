@@ -20,28 +20,65 @@
         }
         .no-data-animation-container {
             width: 80%;
-            max-width: 800px; /* Same as complaint-history-container */
-            margin: 20px auto;
+            max-width: 800px;
+            margin: 30px auto;
             text-align: center;
+            display: none; /* Hide by default */
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+        }
+        .no-data-animation-container.show {
+            display: block;
+            opacity: 1;
         }
         #no-data-animation {
             width: 100%;
-            height: 400px; /* Adjust height similar to table area */
+            height: 400px; /* Similar to complaint history */
             margin: 0 auto;
         }
-        .retry-btn {
-            background-color: #007BFF;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            margin-top: 15px;
-            font-size: 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.3s ease;
+
+        /* Custom button style (Uiverse.io) */
+        .btn {
+          position: relative;
+          font-size: 17px;
+          text-transform: uppercase;
+          text-decoration: none;
+          padding: 1em 2.5em;
+          display: inline-block;
+          cursor: pointer;
+          border-radius: 6em;
+          transition: all 0.2s;
+          border: none;
+          font-family: inherit;
+          font-weight: 500;
+          color: black;
+          background-color: white;
+          margin-top: 15px;
         }
-        .retry-btn:hover {
-            background-color: #0056b3;
+        .btn:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        .btn:active {
+          transform: translateY(-1px);
+          box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+        .btn::after {
+          content: "";
+          display: inline-block;
+          height: 100%;
+          width: 100%;
+          border-radius: 100px;
+          position: absolute;
+          top: 0;
+          left: 0;
+          z-index: -1;
+          transition: all 0.4s;
+          background-color: #fff;
+        }
+        .btn:hover::after {
+          transform: scaleX(1.4) scaleY(1.6);
+          opacity: 0;
         }
     </style>
 </head>
@@ -131,21 +168,25 @@
 </div>
 {% elif request.method == 'POST' %}
 <!-- ❌ NO DATA FOUND -->
-<div class="no-data-animation-container">
-    <p>No complaints found for the entered number.</p>
-    <!-- Animation container -->
+<div id="no-data-container" class="no-data-animation-container">
     <div id="no-data-animation"></div>
-    <button class="retry-btn" onclick="window.location.href='{{ url_for('track') }}'">Try Again</button>
+    <button class="btn" onclick="window.location.href='{{ url_for('track') }}'">Try Again</button>
 </div>
 
 <script>
-    // Load Lottie animation only when no data found
-    lottie.loadAnimation({
-        container: document.getElementById('no-data-animation'),
-        renderer: 'svg',
-        loop: true,
-        autoplay: true,
-        path: "{{ url_for('static', filename='animations/caveman.json') }}"
+    // Fade-in and animation load only after POST and no data
+    document.addEventListener("DOMContentLoaded", function() {
+        const container = document.getElementById('no-data-container');
+        if (container) {
+            container.classList.add('show'); // Show with fade effect
+            lottie.loadAnimation({
+                container: document.getElementById('no-data-animation'),
+                renderer: 'svg',
+                loop: true,
+                autoplay: true,
+                path: "{{ url_for('static', filename='animations/caveman.json') }}"
+            });
+        }
     });
 </script>
 {% endif %}
