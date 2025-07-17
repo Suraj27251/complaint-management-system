@@ -758,53 +758,83 @@ body.dark-mode .step::after {
     }
 }
 
-/* ===== TRACK PAGE INPUT & BUTTON (Modern Design) ===== */
-.input-group {
+/* ===== NEW TRACK FORM (Uiverse Design) ===== */
+.track-form-wrapper {
     display: flex;
     justify-content: center;
-    align-items: stretch; /* ensures same height alignment */
     margin: 20px auto;
-    max-width: 500px;
+    max-width: 400px;
 }
 
-#input-field {
-    background-color: #2E2E2E;
-    border-radius: 10px 0 0 10px;
-    border: none;
-    width: 70%;
-    padding: 0 15px;
-    color: white;
-    font-size: 16px;
+.track-form-wrapper .relative {
+    width: 100%;
+    background: #fff;
+    border-radius: 50px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.track-form-wrapper input {
+    background-color: transparent;
     outline: none;
-    display: block;
-    box-sizing: border-box;
-}
-
-.submit-button {
-    width: 30%;
-    font-size: 16px;
-    font-weight: bold;
     border: none;
-    background: #2E2E2E;
-    border-radius: 0 10px 10px 0;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    font-size: 16px;
+    padding-left: 20px;
+    padding-right: 60px;
+    height: 56px;
+    width: 100%;
+    color: #333;
+    font-weight: 500;
+}
+
+.track-form-wrapper input::placeholder {
+    color: #888;
+}
+
+.track-form-wrapper button {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #7c3aed;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     cursor: pointer;
-    transition: 0.3s ease;
-    margin: 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: none;
 }
 
-.submit-button:hover {
-    background: linear-gradient(90deg, #FC466B 0%, #3F5EFB 100%);
+.track-form-wrapper button:hover {
+    background-color: #6d28d9;
+    transform: scale(1.05);
 }
 
-.submit-button span {
-    color: white;
-    letter-spacing: 1.5px;
+.track-form-wrapper button svg {
+    width: 20px;
+    height: 20px;
+    stroke: white;
+    position: relative;
+    z-index: 2;
 }
 
+/* Hover animation overlay */
+.track-form-wrapper button .hover-overlay {
+    position: absolute;
+    inset: 0;
+    background: black;
+    transform: translate(100%, 100%);
+    transition: transform 0.8s ease-in-out;
+    z-index: 0;
+}
+
+.track-form-wrapper button:hover .hover-overlay {
+    transform: translate(0, 0);
+}
 /* ===== BUTTON STYLE ENHANCEMENT ===== */
 .btn {
     padding: 8px 14px;
