@@ -7,7 +7,7 @@
     <!-- FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Tailwind CSS for Uiverse Component -->
+    <!-- Tailwind CSS -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
     <!-- Custom Styles -->
@@ -26,6 +26,7 @@
             text-align: center;
             margin: 20px 0;
         }
+        /* Spinner */
         .loading-spinner {
             border: 3px solid #f3f3f3;
             border-top: 3px solid #fff;
@@ -93,7 +94,7 @@
 <h1>Track Your Complaint</h1>
 
 <!-- TRACK FORM -->
-<form method="POST" action="{{ url_for('track') }}" onsubmit="startLoading()">
+<form id="trackForm" method="POST" action="{{ url_for('track') }}">
     <div class="flex justify-center my-6">
         <div class="relative rounded-full overflow-hidden bg-white shadow-xl w-72">
             <input
@@ -109,15 +110,7 @@
                     type="submit"
                     class="w-14 h-14 rounded-full bg-violet-500 group shadow-xl flex items-center justify-center relative overflow-hidden"
                 >
-                    <svg
-                        id="trackIcon"
-                        class="relative z-10"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 64 64"
-                        height="30"
-                        width="30"
-                    >
+                    <svg id="trackIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 64 64" height="30" width="30">
                         <path fill-opacity="0.01" fill="white" d="M63.6689 29.0491L34.6198 63.6685L0.00043872 34.6194L29.0496 1.67708e-05L63.6689 29.0491Z"></path>
                         <path stroke-linejoin="round" stroke-linecap="round" stroke-width="3.76603" stroke="white" d="M42.8496 18.7067L21.0628 44.6712"></path>
                         <path stroke-linejoin="round" stroke-linecap="round" stroke-width="3.76603" stroke="white" d="M26.9329 20.0992L42.85 18.7067L44.2426 34.6238"></path>
@@ -202,16 +195,20 @@
 
 <!-- JS FOR BUTTON LOADING -->
 <script>
-    function startLoading() {
-        const btn = document.getElementById('trackButton');
-        const icon = document.getElementById('trackIcon');
+document.getElementById("trackForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+    const btn = document.getElementById('trackButton');
+    const icon = document.getElementById('trackIcon');
 
-        // Replace icon with spinner
-        icon.outerHTML = '<div class="loading-spinner"></div>';
+    // Replace icon with spinner
+    icon.outerHTML = '<div class="loading-spinner"></div>';
+    btn.disabled = true;
 
-        // Disable button
-        btn.disabled = true;
-    }
+    // Submit after short delay (1s)
+    setTimeout(() => {
+        event.target.submit();
+    }, 1000);
+});
 </script>
 
 </body>
