@@ -762,7 +762,7 @@ body.dark-mode .step::after {
 .input-group {
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: center; /* ensures vertical alignment */
     margin: 20px auto;
     max-width: 500px;
 }
@@ -771,22 +771,19 @@ body.dark-mode .step::after {
     background-color: #2E2E2E;
     border-radius: 10px 0 0 10px;
     border: none;
-    width: 70%; /* proportional width */
-    height: 55px;
+    width: 70%;
+    height: 55px; /* same as button */
     padding: 0 15px;
     color: white;
     font-size: 16px;
     outline: none;
+    display: inline-block;
     box-sizing: border-box;
 }
 
-#input-field::placeholder {
-    color: rgb(184, 184, 184);
-}
-
 .submit-button {
-    width: 30%; /* proportional width */
-    height: 55px;
+    width: 30%;
+    height: 55px; /* match input height */
     font-size: 16px;
     font-weight: bold;
     border: none;
@@ -798,6 +795,7 @@ body.dark-mode .step::after {
     justify-content: center;
     cursor: pointer;
     transition: 0.3s ease;
+    margin: 0; /* remove extra margins */
 }
 
 .submit-button:hover {
