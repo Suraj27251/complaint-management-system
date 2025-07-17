@@ -26,7 +26,19 @@
             text-align: center;
             margin: 20px 0;
         }
-        /* No Data Animation Container */
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* No Data Animation */
         .no-data-animation-container {
             width: 80%;
             max-width: 800px;
@@ -55,7 +67,7 @@
 </head>
 <body>
 
-<!-- 🔷 HEADER -->
+<!-- HEADER -->
 <div class="header">
     <div class="logo">
         <a href="{{ url_for('dashboard') }}">
@@ -70,20 +82,19 @@
     </div>
 </div>
 
-<!-- 💂️ TABS -->
+<!-- TABS -->
 <div class="tabs">
     <div class="tab"><a href="/complaints"><i class="fas fa-code-branch"></i> Complaints</a></div>
     <div class="tab"><a href="https://countrylinks.in" target="_blank"><i class="fas fa-globe"></i> Internet Plans</a></div>
     <div class="tab"><a href="#"><i class="fas fa-star"></i> Review</a></div>
 </div>
 
-<!-- 🕵️‍♂️ MAIN TITLE -->
+<!-- MAIN TITLE -->
 <h1>Track Your Complaint</h1>
 
-<!-- 🔍 NEW STYLISH TRACK FORM -->
-<form method="POST" action="{{ url_for('track') }}">
+<!-- TRACK FORM -->
+<form method="POST" action="{{ url_for('track') }}" onsubmit="startLoading()">
     <div class="flex justify-center my-6">
-        <!-- Uiverse Component -->
         <div class="relative rounded-full overflow-hidden bg-white shadow-xl w-72">
             <input
                 class="bg-transparent outline-none border-none pl-6 pr-10 py-5 w-full font-sans text-lg font-semibold"
@@ -94,10 +105,12 @@
             />
             <div class="absolute right-2 top-[0.4em]">
                 <button
+                    id="trackButton"
                     type="submit"
                     class="w-14 h-14 rounded-full bg-violet-500 group shadow-xl flex items-center justify-center relative overflow-hidden"
                 >
                     <svg
+                        id="trackIcon"
                         class="relative z-10"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
@@ -105,35 +118,17 @@
                         height="30"
                         width="30"
                     >
-                        <path
-                            fill-opacity="0.01"
-                            fill="white"
-                            d="M63.6689 29.0491L34.6198 63.6685L0.00043872 34.6194L29.0496 1.67708e-05L63.6689 29.0491Z"
-                        ></path>
-                        <path
-                            stroke-linejoin="round"
-                            stroke-linecap="round"
-                            stroke-width="3.76603"
-                            stroke="white"
-                            d="M42.8496 18.7067L21.0628 44.6712"
-                        ></path>
-                        <path
-                            stroke-linejoin="round"
-                            stroke-linecap="round"
-                            stroke-width="3.76603"
-                            stroke="white"
-                            d="M26.9329 20.0992L42.85 18.7067L44.2426 34.6238"
-                        ></path>
+                        <path fill-opacity="0.01" fill="white" d="M63.6689 29.0491L34.6198 63.6685L0.00043872 34.6194L29.0496 1.67708e-05L63.6689 29.0491Z"></path>
+                        <path stroke-linejoin="round" stroke-linecap="round" stroke-width="3.76603" stroke="white" d="M42.8496 18.7067L21.0628 44.6712"></path>
+                        <path stroke-linejoin="round" stroke-linecap="round" stroke-width="3.76603" stroke="white" d="M26.9329 20.0992L42.85 18.7067L44.2426 34.6238"></path>
                     </svg>
-                    <div class="w-full h-full rotate-45 absolute left-[32%] top-[32%] bg-black group-hover:-left-[100%] group-hover:-top-[100%] duration-1000"></div>
-                    <div class="w-full h-full -rotate-45 absolute -left-[32%] -top-[32%] group-hover:left-[100%] group-hover:top-[100%] bg-black duration-1000"></div>
                 </button>
             </div>
         </div>
     </div>
 </form>
 
-<!-- 🟢 COMPLAINT TRACKER BAR -->
+<!-- TRACKER BAR -->
 {% if status %}
 <div class="complaint-tracker">
     <div class="step {{ 'active' if status in ['Registered', 'Pending', 'Assigned', 'Complete'] else '' }}">
@@ -155,7 +150,7 @@
 </div>
 {% endif %}
 
-<!-- 📜 COMPLAINT HISTORY -->
+<!-- COMPLAINT HISTORY -->
 {% if complaints %}
 <div class="complaint-history-container">
     <h2><i class="fas fa-clock"></i> Complaint History</h2>
@@ -183,7 +178,7 @@
     </table>
 </div>
 {% elif request.method == 'POST' and not complaints %}
-<!-- ❌ NO DATA FOUND -->
+<!-- NO DATA FOUND -->
 <div id="no-data-container" class="no-data-animation-container">
     <div id="no-data-animation"></div>
     <p class="no-data-text">No complaint found. Please type a valid mobile number.</p>
@@ -204,6 +199,20 @@
     });
 </script>
 {% endif %}
+
+<!-- JS FOR BUTTON LOADING -->
+<script>
+    function startLoading() {
+        const btn = document.getElementById('trackButton');
+        const icon = document.getElementById('trackIcon');
+
+        // Replace icon with spinner
+        icon.outerHTML = '<div class="loading-spinner"></div>';
+
+        // Disable button
+        btn.disabled = true;
+    }
+</script>
 
 </body>
 </html>
