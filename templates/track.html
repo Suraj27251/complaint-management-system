@@ -10,13 +10,18 @@
     <!-- Custom Styles -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+
+    <!-- Lottie Animation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.10.1/lottie.min.js"></script>
 </head>
 <body>
 
 <!-- 🔷 HEADER -->
 <div class="header">
     <div class="logo">
-        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Countrylink Logo">
+        <a href="{{ url_for('dashboard') }}">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Countrylink Logo">
+        </a>
     </div>
     <div class="title">COUNTRYLINK BROADBAND</div>
     <div class="language">
@@ -39,7 +44,7 @@
 <!-- 🔍 TRACK FORM -->
 <form method="POST" action="{{ url_for('track') }}">
     <input type="text" name="mobile" placeholder="Enter your mobile number" required>
-    <button type="submit">Track</button>
+    <button type="submit" id="trackBtn">Track</button>
 </form>
 
 <!-- 🟢 COMPLAINT TRACKER BAR -->
@@ -95,9 +100,23 @@
 </div>
 {% elif request.method == 'POST' %}
 <!-- ❌ NO DATA FOUND -->
-<div class="no-data">
+<div class="no-data" style="text-align:center; margin-top:20px;">
     <p>No complaints found for the entered number.</p>
+    <!-- Animation container -->
+    <div id="no-data-animation" style="width:300px; height:300px; margin:auto;"></div>
 </div>
+<script>
+    // Load Lottie animation after page renders (since POST happened and no data found)
+    document.addEventListener("DOMContentLoaded", function() {
+        lottie.loadAnimation({
+            container: document.getElementById('no-data-animation'),
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: "{{ url_for('static', filename='animations/caveman.json') }}" // Lottie animation file
+        });
+    });
+</script>
 {% endif %}
 
 </body>
