@@ -13,6 +13,37 @@
 
     <!-- Lottie Animation Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.10.1/lottie.min.js"></script>
+
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+        .no-data-animation-container {
+            width: 80%;
+            max-width: 800px; /* Same as complaint-history-container */
+            margin: 20px auto;
+            text-align: center;
+        }
+        #no-data-animation {
+            width: 100%;
+            height: 400px; /* Adjust height similar to table area */
+            margin: 0 auto;
+        }
+        .retry-btn {
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 15px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .retry-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
 
@@ -100,21 +131,21 @@
 </div>
 {% elif request.method == 'POST' %}
 <!-- ❌ NO DATA FOUND -->
-<div class="no-data" style="text-align:center; margin-top:20px;">
+<div class="no-data-animation-container">
     <p>No complaints found for the entered number.</p>
     <!-- Animation container -->
-    <div id="no-data-animation" style="width:300px; height:300px; margin:auto;"></div>
+    <div id="no-data-animation"></div>
+    <button class="retry-btn" onclick="window.location.href='{{ url_for('track') }}'">Try Again</button>
 </div>
+
 <script>
-    // Load Lottie animation after page renders (since POST happened and no data found)
-    document.addEventListener("DOMContentLoaded", function() {
-        lottie.loadAnimation({
-            container: document.getElementById('no-data-animation'),
-            renderer: 'svg',
-            loop: true,
-            autoplay: true,
-            path: "{{ url_for('static', filename='animations/caveman.json') }}" // Lottie animation file
-        });
+    // Load Lottie animation only when no data found
+    lottie.loadAnimation({
+        container: document.getElementById('no-data-animation'),
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: "{{ url_for('static', filename='animations/caveman.json') }}"
     });
 </script>
 {% endif %}
