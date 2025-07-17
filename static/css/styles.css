@@ -771,8 +771,8 @@ body.dark-mode .step::after {
     background-color: #2E2E2E;
     border-radius: 10px 0 0 10px;
     border: none;
-    width: 320px;
-    height: 55px; /* Same height as button */
+    width: 70%; /* proportional width */
+    height: 55px;
     padding: 0 15px;
     color: white;
     font-size: 16px;
@@ -785,8 +785,8 @@ body.dark-mode .step::after {
 }
 
 .submit-button {
-    height: 55px; /* Match input height */
-    min-width: 120px; /* Fixed width for button */
+    width: 30%; /* proportional width */
+    height: 55px;
     font-size: 16px;
     font-weight: bold;
     border: none;
