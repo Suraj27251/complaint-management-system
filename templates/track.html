@@ -166,7 +166,7 @@
         </tbody>
     </table>
 </div>
-{% elif request.method == 'POST' %}
+{% elif request.method == 'POST' and not complaints %}
 <!-- ❌ NO DATA FOUND -->
 <div id="no-data-container" class="no-data-animation-container">
     <div id="no-data-animation"></div>
@@ -174,11 +174,10 @@
 </div>
 
 <script>
-    // Fade-in and animation load only after POST and no data
     document.addEventListener("DOMContentLoaded", function() {
         const container = document.getElementById('no-data-container');
         if (container) {
-            container.classList.add('show'); // Show with fade effect
+            container.classList.add('show'); // Fade-in effect
             lottie.loadAnimation({
                 container: document.getElementById('no-data-animation'),
                 renderer: 'svg',
@@ -190,6 +189,5 @@
     });
 </script>
 {% endif %}
-
 </body>
 </html>
