@@ -758,95 +758,108 @@ body.dark-mode .step::after {
     }
 }
 
-/* ===== NEW TRACK FORM (Perfect Alignment) ===== */
+/* ===== TRACK FORM (Modern Search + Round Gradient Button) ===== */
+#trackForm {
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 20px auto; /* top spacing under title */
+    max-width: none;
+    border-radius: 0;
+}
+
+/* Outer wrapper used in track.html */
 .track-form-wrapper {
     display: flex;
     justify-content: center;
-    margin: 40px auto;
     width: 100%;
-    max-width: 420px;
 }
 
-.track-form-wrapper .relative {
-    width: 100%;
-    background: #fff;
-    border-radius: 50px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    position: relative;
+/* White pill container */
+.track-form-wrapper .form-box {
     display: flex;
-    align-items: center; /* Vertical align input text */
-    padding: 0; /* Remove padding to prevent offset */
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+    background: #ffffff;
+    border-radius: 50px;
+    padding: 6px 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+    box-sizing: border-box;
 }
 
-.track-form-wrapper input {
-    flex: 1;
-    background: transparent;
+/* Text input */
+.track-form-wrapper .form-box input {
+    flex: 1 1 auto;
     border: none;
     outline: none;
+    background: transparent;
+    padding: 12px 15px;
     font-size: 16px;
-    padding: 0 70px 0 20px; /* Space for button on the right */
-    height: 56px; /* Fixed height for container match */
+    line-height: 1.2;
     color: #333;
+    min-width: 0; /* fixes flex overflow in Safari */
 }
 
-.track-form-wrapper input::placeholder {
+.track-form-wrapper .form-box input::placeholder {
     color: #888;
 }
 
-.track-form-wrapper button {
-    position: absolute;
-    top: 50%;
-    right: 12px;
-    transform: translateY(-50%);
+/* Round animated submit button */
+.track-form-wrapper .form-box #trackButton {
+    flex: 0 0 auto;
     width: 50px;
     height: 50px;
-    border-radius: 50%;
-    background: linear-gradient(45deg, #6d28d9, #9333ea, #a855f7);
+    margin-left: 8px;
     border: none;
+    border-radius: 50%;
+    cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    color: #ffffff;
+    background: linear-gradient(135deg,#6d28d9,#9333ea,#a855f7);
+    background-size: 200% 200%;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    animation: trackBtnGradient 3s linear infinite;
 }
 
-.track-form-wrapper button:hover {
-    transform: translateY(-50%) scale(1.05);
+.track-form-wrapper .form-box #trackButton:hover:not(:disabled) {
+    transform: scale(1.08);
+    box-shadow: 0 5px 15px rgba(109,40,217,0.30);
 }
 
-.track-form-wrapper button svg {
+.track-form-wrapper .form-box #trackButton:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.track-form-wrapper .form-box #trackButton svg {
     width: 24px;
     height: 24px;
-    stroke: white;
 }
 
-/* ===== BUTTON STYLE ENHANCEMENT ===== */
-.btn {
-    padding: 8px 14px;
-    background-color: #007bff;
-    border: none;
-    border-radius: 6px;
-    color: white;
-    font-weight: bold;
-    font-size: 14px;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-block;
-    transition: background-color 0.3s;
+/* Spinner used on submit */
+.track-form-wrapper .form-box #trackButton .loading-spinner {
+    width: 22px;
+    height: 22px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: trackBtnSpin 0.8s linear infinite;
 }
 
-.btn:hover {
-    background-color: #0056b3;
+/* Gradient animation */
+@keyframes trackBtnGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
-.btn-resolve {
-    background-color: #007bff !important;
-    color: #fff !important;
-}
-
-.btn-resolve:hover {
-    background-color: #0056b3 !important;
+/* Spin animation */
+@keyframes trackBtnSpin {
+    to { transform: rotate(360deg); }
 }
 
 
