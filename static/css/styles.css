@@ -758,12 +758,13 @@ body.dark-mode .step::after {
     }
 }
 
-/* ===== NEW TRACK FORM (Uiverse Design) ===== */
+/* ===== NEW TRACK FORM (Fixed Alignment & Styling) ===== */
 .track-form-wrapper {
     display: flex;
     justify-content: center;
-    margin: 20px auto;
-    max-width: 400px;
+    margin: 40px auto;
+    width: 100%;
+    max-width: 420px;
 }
 
 .track-form-wrapper .relative {
@@ -771,20 +772,20 @@ body.dark-mode .step::after {
     background: #fff;
     border-radius: 50px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding-right: 70px;
 }
 
 .track-form-wrapper input {
-    background-color: transparent;
-    outline: none;
+    background: transparent;
     border: none;
+    outline: none;
     font-size: 16px;
-    padding-left: 20px;
-    padding-right: 60px;
-    height: 56px;
+    padding: 15px 20px;
     width: 100%;
     color: #333;
-    font-weight: 500;
 }
 
 .track-form-wrapper input::placeholder {
@@ -793,48 +794,31 @@ body.dark-mode .step::after {
 
 .track-form-wrapper button {
     position: absolute;
-    right: 8px;
-    top: 8px;
-    width: 40px;
-    height: 40px;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
-    background-color: #7c3aed;
+    background: linear-gradient(45deg, #6d28d9, #9333ea, #a855f7);
+    border: none;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    overflow: hidden;
     transition: all 0.3s ease;
-    border: none;
 }
 
 .track-form-wrapper button:hover {
-    background-color: #6d28d9;
-    transform: scale(1.05);
+    transform: translateY(-50%) scale(1.05);
 }
 
 .track-form-wrapper button svg {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     stroke: white;
-    position: relative;
-    z-index: 2;
 }
 
-/* Hover animation overlay */
-.track-form-wrapper button .hover-overlay {
-    position: absolute;
-    inset: 0;
-    background: black;
-    transform: translate(100%, 100%);
-    transition: transform 0.8s ease-in-out;
-    z-index: 0;
-}
-
-.track-form-wrapper button:hover .hover-overlay {
-    transform: translate(0, 0);
-}
 /* ===== BUTTON STYLE ENHANCEMENT ===== */
 .btn {
     padding: 8px 14px;
