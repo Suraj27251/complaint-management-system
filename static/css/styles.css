@@ -758,7 +758,7 @@ body.dark-mode .step::after {
     }
 }
 
-/* ===== NEW TRACK FORM (Fixed Alignment & Styling) ===== */
+/* ===== NEW TRACK FORM (Perfect Alignment & Styling) ===== */
 .track-form-wrapper {
     display: flex;
     justify-content: center;
@@ -768,55 +768,63 @@ body.dark-mode .step::after {
 }
 
 .track-form-wrapper .relative {
+    position: relative;
     width: 100%;
     background: #fff;
-    border-radius: 50px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 999px; /* smooth pill shape */
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
     display: flex;
     align-items: center;
-    position: relative;
-    padding-right: 70px;
+    padding: 0 70px 0 20px; /* space for button */
+    min-height: 64px; /* consistent pill height */
+    box-sizing: border-box;
 }
 
 .track-form-wrapper input {
+    width: 100%;
+    height: 100%;
     background: transparent;
     border: none;
     outline: none;
-    font-size: 16px;
-    padding: 15px 20px;
-    width: 100%;
     color: #333;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.2;
+    box-sizing: border-box;
 }
 
 .track-form-wrapper input::placeholder {
     color: #888;
 }
 
+/* ===== Action Button ===== */
 .track-form-wrapper button {
     position: absolute;
-    right: 10px;
     top: 50%;
+    right: 10px;
     transform: translateY(-50%);
-    width: 50px;
-    height: 50px;
+    width: 48px;
+    height: 48px;
+    border: none;
     border-radius: 50%;
     background: linear-gradient(45deg, #6d28d9, #9333ea, #a855f7);
-    border: none;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease, filter 0.2s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.track-form-wrapper button:hover {
-    transform: translateY(-50%) scale(1.05);
+.track-form-wrapper button:hover:not(:disabled) {
+    transform: translateY(-50%) scale(1.08);
+    filter: brightness(1.05);
 }
 
 .track-form-wrapper button svg {
-    width: 24px;
-    height: 24px;
-    stroke: white;
+    width: 22px;
+    height: 22px;
+    stroke: #fff;
 }
 
 /* ===== BUTTON STYLE ENHANCEMENT ===== */
@@ -846,6 +854,7 @@ body.dark-mode .step::after {
 .btn-resolve:hover {
     background-color: #0056b3 !important;
 }
+
 
 /* ===== FontAwesome Support for Icons ===== */
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
