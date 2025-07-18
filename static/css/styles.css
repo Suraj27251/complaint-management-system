@@ -672,12 +672,23 @@ body.dark-mode .step::after {
 }
 
 /* ===== Complaint Table Base Styles ===== */
+.data-table {
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    overflow: hidden;
+    table-layout: auto; /* ✅ Let browser adjust column widths */
+}
+
 .data-table th,
 .data-table td {
     padding: 12px 15px;
     text-align: center;
-    white-space: nowrap;
     border-bottom: 1px solid #eee;
+    word-break: break-word; /* ✅ Handle long words gracefully */
 }
 
 .data-table th {
@@ -692,10 +703,17 @@ body.dark-mode .step::after {
 
 /* ✅ Allow complaint column (5th column) to wrap and align left */
 .data-table td:nth-child(5) {
+    text-align: left;
     white-space: normal;           /* Allow wrapping */
-    text-align: left;             /* Improve readability */
-    max-width: 300px;             /* Restrict width */
-    overflow-wrap: break-word;    /* Handle long words */
+    max-width: 250px;              /* Restrict width */
+    overflow-wrap: break-word;     /* Handle long words */
+}
+
+/* ✅ Keep status, priority, action columns in single line */
+.data-table td:nth-child(4),
+.data-table td:nth-child(6),
+.data-table td:nth-child(7) {
+    white-space: nowrap;
 }
 
 /* ===== SOURCE BADGE STYLING ===== */
@@ -717,6 +735,7 @@ body.dark-mode .step::after {
 .source-badge.whatsapp {
     background-color: #25D366;
 }
+
 
 /* ===== RESPONSIVE ADJUSTMENTS ===== */
 @media (max-width: 768px) {
