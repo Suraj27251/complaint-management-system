@@ -758,7 +758,7 @@ body.dark-mode .step::after {
     }
 }
 
-/* ===== NEW TRACK FORM (Perfect Alignment & Styling) ===== */
+/* ===== NEW TRACK FORM (Perfect Alignment) ===== */
 .track-form-wrapper {
     display: flex;
     justify-content: center;
@@ -768,64 +768,57 @@ body.dark-mode .step::after {
 }
 
 .track-form-wrapper .relative {
-    position: relative;
     width: 100%;
     background: #fff;
-    border-radius: 999px; /* smooth pill shape */
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    border-radius: 50px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    position: relative;
     display: flex;
-    align-items: center;
-    padding: 0 70px 0 20px; /* space for button */
-    min-height: 64px; /* consistent pill height */
-    box-sizing: border-box;
+    align-items: center; /* Vertical align input text */
+    padding: 0; /* Remove padding to prevent offset */
 }
 
 .track-form-wrapper input {
-    width: 100%;
-    height: 100%;
+    flex: 1;
     background: transparent;
     border: none;
     outline: none;
-    color: #333;
     font-size: 16px;
-    font-weight: 500;
-    line-height: 1.2;
-    box-sizing: border-box;
+    padding: 0 70px 0 20px; /* Space for button on the right */
+    height: 56px; /* Fixed height for container match */
+    color: #333;
 }
 
 .track-form-wrapper input::placeholder {
     color: #888;
 }
 
-/* ===== Action Button ===== */
 .track-form-wrapper button {
     position: absolute;
     top: 50%;
-    right: 15px; /* Keep balanced spacing */
+    right: 12px;
     transform: translateY(-50%);
     width: 50px;
     height: 50px;
-    border: none;
     border-radius: 50%;
     background: linear-gradient(45deg, #6d28d9, #9333ea, #a855f7);
+    border: none;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    transition: transform 0.2s ease, filter 0.2s ease;
+    transition: all 0.3s ease;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    z-index: 2;
 }
 
-.track-form-wrapper button:hover:not(:disabled) {
-    transform: translateY(-50%) scale(1.08);
-    filter: brightness(1.05);
+.track-form-wrapper button:hover {
+    transform: translateY(-50%) scale(1.05);
 }
 
 .track-form-wrapper button svg {
-    width: 22px;
-    height: 22px;
-    stroke: #fff;
+    width: 24px;
+    height: 24px;
+    stroke: white;
 }
 
 /* ===== BUTTON STYLE ENHANCEMENT ===== */
