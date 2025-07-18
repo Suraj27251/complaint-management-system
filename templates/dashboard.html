@@ -53,79 +53,95 @@
     </div>
 
     <!-- 📝 Recent Complaints -->
-<h2 class="section-title">Recent Complaints</h2>
+    <h2 class="section-title">Recent Complaints</h2>
 
-<div class="table-section centered-card">
-    <form id="bulkActionForm" method="POST">
-        <div class="bulk-buttons">
-            <button type="submit"
-                    class="button bulk animated-button btn-resolve pulse-on-hover"
-                    formaction="{{ url_for('update_whatsapp_bulk') }}"
-                    name="action" value="resolve">
-                Mark Resolved
-            </button>
+    <!-- NOTE: Added .recent-complaints-card wrapper to lock width + center -->
+    <div class="table-section centered-card recent-complaints-card">
+        <form id="bulkActionForm" method="POST">
+            <div class="bulk-buttons recent-complaints-actions">
+                <button type="submit"
+                        class="button bulk animated-button btn-resolve pulse-on-hover"
+                        formaction="{{ url_for('update_whatsapp_bulk') }}"
+                        name="action" value="resolve">
+                    Mark Resolved
+                </button>
 
-            <button type="submit"
-                    class="button bulk danger animated-button btn-delete pulse-on-hover"
-                    formaction="{{ url_for('update_whatsapp_bulk') }}"
-                    name="action" value="delete"
-                    onclick="return confirm('Are you sure to delete selected complaints?')">
-                Delete
-            </button>
-        </div>
+                <button type="submit"
+                        class="button bulk danger animated-button btn-delete pulse-on-hover"
+                        formaction="{{ url_for('update_whatsapp_bulk') }}"
+                        name="action" value="delete"
+                        onclick="return confirm('Are you sure to delete selected complaints?')">
+                    Delete
+                </button>
+            </div>
 
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th><input type="checkbox" id="selectAll"></th>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Mobile</th>
-                    <th>Complaint</th>
-                    <th>Status</th>
-                    <th>Priority</th>
-                    <th>Source</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for comp in recent_complaints %}
-                {% set src = comp['source'] %}
-                {% if src != 'Webhook' %}
-                <tr>
-                    <td><input type="checkbox" name="selected_ids[]" value="{{ comp['id'] }}"></td>
-                    <td>{{ comp['id'] }}</td>
-                    <td>{{ comp['name'] }}</td>
-                    <td>{{ comp['mobile'] }}</td>
-                    <td>{{ comp['complaint'] }}</td>
-                    <td>{{ comp['status'] }}</td>
-                    <td>{{ comp['priority'] }}</td>
-                    <td>
-                        <span class="badge source-badge {{ 'whatsapp' if src == 'WhatsApp' else 'web' }}">
-                            {% if src == 'WhatsApp' %}
-                                <i class="fab fa-whatsapp"></i> <span>WhatsApp</span>
-                            {% else %}
-                                <i class="fas fa-globe"></i> <span>Web</span>
-                            {% endif %}
-                        </span>
-                    </td>
-                    <td>
-                        {% if comp['status'] != 'Resolved' %}
-                        <a class="btn small animated-button btn-resolve pulse-on-hover"
-                           href="{{ url_for('update_status', complaint_id=comp['id'], status='Resolved') }}">
-                           Mark Resolved
-                        </a>
-                        {% else %}
-                        <span style="color: green;">✔ Done</span>
+            <!-- Responsive wrapper prevents card shift on long text -->
+            <div class="recent-complaints-table-wrapper">
+                <table class="data-table recent-complaints-table">
+                    <colgroup>
+                        <col style="width:40px;">    <!-- select -->
+                        <col style="width:60px;">    <!-- id -->
+                        <col style="width:180px;">   <!-- name -->
+                        <col style="width:140px;">   <!-- mobile -->
+                        <col class="col-complaint">  <!-- complaint flex -->
+                        <col style="width:120px;">   <!-- status -->
+                        <col style="width:90px;">    <!-- priority -->
+                        <col style="width:110px;">   <!-- source -->
+                        <col style="width:130px;">   <!-- action -->
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selectAll"></th>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Mobile</th>
+                            <th>Complaint</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Source</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for comp in recent_complaints %}
+                        {% set src = comp['source'] %}
+                        {% if src != 'Webhook' %}
+                        <tr>
+                            <td><input type="checkbox" name="selected_ids[]" value="{{ comp['id'] }}"></td>
+                            <td>{{ comp['id'] }}</td>
+                            <td>{{ comp['name'] }}</td>
+                            <td>{{ comp['mobile'] }}</td>
+                            <!-- Truncate & tooltip full complaint -->
+                            <td class="td-complaint" title="{{ comp['complaint'] }}">{{ comp['complaint'] }}</td>
+                            <td>{{ comp['status'] }}</td>
+                            <td>{{ comp['priority'] }}</td>
+                            <td>
+                                <span class="badge source-badge {{ 'whatsapp' if src == 'WhatsApp' else 'web' }}">
+                                    {% if src == 'WhatsApp' %}
+                                        <i class="fab fa-whatsapp"></i> <span>WhatsApp</span>
+                                    {% else %}
+                                        <i class="fas fa-globe"></i> <span>Web</span>
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                {% if comp['status'] != 'Resolved' %}
+                                <a class="btn small animated-button btn-resolve pulse-on-hover"
+                                   href="{{ url_for('update_status', complaint_id=comp['id'], status='Resolved') }}">
+                                   Mark Resolved
+                                </a>
+                                {% else %}
+                                <span style="color: green;">✔ Done</span>
+                                {% endif %}
+                            </td>
+                        </tr>
                         {% endif %}
-                    </td>
-                </tr>
-                {% endif %}
-                {% endfor %}
-            </tbody>
-        </table>
-    </form>
-</div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div><!-- /.recent-complaints-table-wrapper -->
+        </form>
+    </div><!-- /.recent-complaints-card -->
 
 
 
