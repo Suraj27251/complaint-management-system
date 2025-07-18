@@ -618,11 +618,13 @@ body.dark-mode .step::after {
     display: flex;
     flex-direction: column;
     align-items: center;
+    overflow-x: auto; /* ✅ Horizontal scroll for wide tables */
 }
 
 .centered-card form {
     width: 100%;
 }
+
 
 /* ===== BULK BUTTONS ===== */
 .bulk-buttons {
@@ -665,8 +667,11 @@ body.dark-mode .step::after {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     border-radius: 8px;
     overflow: hidden;
+    table-layout: fixed; /* ✅ Added */
+    word-wrap: break-word; /* ✅ Added */
 }
 
+/* ===== Complaint Table Base Styles ===== */
 .data-table th,
 .data-table td {
     padding: 12px 15px;
@@ -683,6 +688,14 @@ body.dark-mode .step::after {
 
 .data-table tr:hover {
     background-color: #f9f9f9;
+}
+
+/* ✅ Allow complaint column (5th column) to wrap and align left */
+.data-table td:nth-child(5) {
+    white-space: normal;           /* Allow wrapping */
+    text-align: left;             /* Improve readability */
+    max-width: 300px;             /* Restrict width */
+    overflow-wrap: break-word;    /* Handle long words */
 }
 
 /* ===== SOURCE BADGE STYLING ===== */
@@ -726,13 +739,22 @@ body.dark-mode .step::after {
     .data-table {
         font-size: 13px;
         display: block;
-        overflow-x: auto;
+        overflow-x: auto; /* Enables horizontal scroll on small screens */
+    }
+
+    /* ✅ Allow complaint text to wrap on small screens */
+    .data-table td:nth-child(5) {
+        white-space: normal;
+        text-align: left;
+        max-width: 180px; /* reduced width for mobile */
+        overflow-wrap: break-word;
     }
 
     .centered-card {
         padding: 15px;
     }
 }
+
 /* ===== ANIMATED ACTION BUTTON STYLES ===== */
 .animated-button {
     transition: all 0.3s ease-in-out;
