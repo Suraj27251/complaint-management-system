@@ -21,84 +21,72 @@
     body { background:#fff; font-family:'Roboto',sans-serif; }
     h1 { text-align:center; margin:20px 0; }
 
-    /* Input & Button Wrapper */
+    /* Modern Search Bar Wrapper */
     .track-form-wrapper {
         display:flex;
         justify-content:center;
-        margin-top:20px;
+        margin-top:30px;
+        width:100%;
     }
-    .track-form-wrapper .form-box {
+    .form-box {
         display:flex;
         align-items:center;
         background:#fff;
         border-radius:50px;
-        box-shadow:0 5px 20px rgba(0,0,0,0.1);
-        padding:8px 12px;
-        width:350px;
+        box-shadow:0 4px 12px rgba(0,0,0,0.1);
+        padding:6px 12px;
+        width:100%;
+        max-width:400px;
     }
-    .track-form-wrapper input {
+    .form-box input {
         flex:1;
         border:none;
         outline:none;
         font-size:16px;
-        padding:10px 12px;
+        padding:12px 15px;
         border-radius:50px;
+        color:#333;
+    }
+    .form-box input::placeholder {
+        color:#888;
     }
 
-    /* Spinner inside button */
-    .loading-spinner {
-        border:3px solid rgba(255,255,255,0.3);
-        border-top-color:#fff;
-        border-radius:50%;
-        width:20px; height:20px;
-        animation:spin .8s linear infinite;
-    }
-    @keyframes spin { to { transform:rotate(360deg);} }
-
-    /* Button gradient + ripple */
+    /* Stylish Button */
     #trackButton {
-        position:relative;
-        overflow:hidden;
-        background:linear-gradient(45deg,#6d28d9,#9333ea,#a855f7);
+        width:50px; height:50px;
+        border-radius:50%;
+        border:none;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        cursor:pointer;
+        background:linear-gradient(135deg,#6d28d9,#9333ea,#a855f7);
         background-size:200% 200%;
         color:#fff;
-        border:none;
-        cursor:pointer;
-        transition:all .3s ease;
-        width:56px; height:56px;
-        border-radius:50%;
-        display:flex; justify-content:center; align-items:center;
-        z-index:1;
-        animation:pulse 3s infinite linear;
+        font-size:20px;
         margin-left:8px;
+        transition:all 0.3s ease;
+        animation:gradientMove 3s infinite;
     }
-    #trackButton svg {
-        width:30px; height:30px;
+    #trackButton:hover {
+        transform:scale(1.08);
+        box-shadow:0 5px 15px rgba(109,40,217,0.3);
     }
-    #trackButton::after {
-        content:"";
-        position:absolute;
-        width:200%;
-        height:200%;
-        top:-50%;
-        left:-50%;
-        background:radial-gradient(circle,rgba(255,255,255,0.3) 10%,transparent 10.01%);
-        opacity:0;
-        transform:scale(0);
-        transition:transform .4s ease, opacity .4s ease;
-        border-radius:50%;
-        z-index:0;
-    }
-    #trackButton:active::after {
-        opacity:1;
-        transform:scale(1);
-        transition:none;
-    }
-    @keyframes pulse {
+    @keyframes gradientMove {
         0% { background-position:0% 50%; }
         50% { background-position:100% 50%; }
         100% { background-position:0% 50%; }
     }
+
+    /* Loading Spinner */
+    .loading-spinner {
+        border:3px solid rgba(255,255,255,0.3);
+        border-top-color:#fff;
+        border-radius:50%;
+        width:22px; height:22px;
+        animation:spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
 
     /* No Data Animation */
     .no-data-animation-container {
@@ -151,7 +139,6 @@
             required
         >
         <button id="trackButton" type="submit">
-            <!-- Original Arrow SVG -->
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 64 64" id="trackIcon">
                 <path fill-opacity="0.01" fill="white" d="M63.6689 29.0491L34.6198 63.6685L0.00043872 34.6194L29.0496 1.67708e-05L63.6689 29.0491Z"></path>
                 <path stroke-linejoin="round" stroke-linecap="round" stroke-width="3.76603" stroke="white" d="M42.8496 18.7067L21.0628 44.6712"></path>
