@@ -89,15 +89,15 @@ def dashboard():
     resolved = c.fetchone()[0]
 
     c.execute('''
-        SELECT * FROM (
-            SELECT * FROM complaints
-            WHERE source != 'Webhook' OR source IS NULL
-            ORDER BY created_at DESC
-        )
-        GROUP BY mobile
+    SELECT * FROM (
+        SELECT * FROM complaints
+        WHERE source != 'WhatsApp' OR source IS NULL
         ORDER BY created_at DESC
-        LIMIT 50
-    ''')
+    )
+    GROUP BY mobile
+    ORDER BY created_at DESC
+    LIMIT 50
+''')
     recent_complaints_raw = c.fetchall()
 
     priority_complaints = []
