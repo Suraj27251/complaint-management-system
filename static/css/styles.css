@@ -666,15 +666,15 @@ body.dark-mode .step::after {
 
 /* ===== COMPLAINT TABLE ===== */
 .data-table {
-    width: 100% !important;
-    margin: 0 !important;
+    width: 100%;
+    margin: 0;
     border-collapse: collapse;
     background: #fff;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     border-radius: 8px;
     overflow: hidden;
-    table-layout: fixed;          /* Keep fixed layout for better control */
-    word-wrap: break-word;        /* Break long words */
+    table-layout: fixed;   /* Keeps column widths consistent */
+    word-wrap: break-word; /* Break long words */
 }
 
 /* ===== Complaint Table Base Styles ===== */
@@ -683,7 +683,8 @@ body.dark-mode .step::after {
     padding: 12px 15px;
     text-align: center;
     border-bottom: 1px solid #eee;
-    word-break: break-word;       /* Handle long words gracefully */
+    word-break: break-word;
+    white-space: normal;
 }
 
 .data-table th {
@@ -701,17 +702,19 @@ body.dark-mode .step::after {
 .data-table .col-complaint {
     text-align: left;
     white-space: normal;
-    max-width: 350px;
+    max-width: 300px;
     overflow-wrap: break-word;
+    line-height: 1.4;
 }
 
-/* ✅ Keep status, priority, action columns in single line */
-.data-table td:nth-child(4),
-.data-table td:nth-child(6),
-.data-table td:nth-child(7) {
+/* ✅ Keep mobile, status, priority, source, action columns in single line */
+.data-table td:nth-child(4),  /* Mobile */
+.data-table td:nth-child(6),  /* Status */
+.data-table td:nth-child(7),  /* Priority */
+.data-table td:nth-child(8),  /* Source */
+.data-table td:nth-child(9) { /* Action */
     white-space: nowrap;
 }
-
 
 /* ===== SOURCE BADGE STYLING ===== */
 .source-badge {
@@ -732,7 +735,6 @@ body.dark-mode .step::after {
 .source-badge.whatsapp {
     background-color: #25D366;
 }
-
 
 /* ===== RESPONSIVE ADJUSTMENTS ===== */
 @media (max-width: 768px) {
@@ -762,7 +764,7 @@ body.dark-mode .step::after {
     .data-table td:nth-child(5) {
         white-space: normal;
         text-align: left;
-        max-width: 180px; /* reduced width for mobile */
+        max-width: 180px;
         overflow-wrap: break-word;
     }
 
