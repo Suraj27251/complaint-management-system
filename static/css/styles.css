@@ -667,28 +667,17 @@ body.dark-mode .step::after {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     border-radius: 8px;
     overflow: hidden;
-    table-layout: fixed; /* ✅ Added */
-    word-wrap: break-word; /* ✅ Added */
+    table-layout: fixed;          /* Keep fixed layout for better control */
+    word-wrap: break-word;        /* Break long words */
 }
 
 /* ===== Complaint Table Base Styles ===== */
-.data-table {
-    width: 100%;
-    margin: 0;
-    border-collapse: collapse;
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    border-radius: 8px;
-    overflow: hidden;
-    table-layout: auto; /* ✅ Let browser adjust column widths */
-}
-
 .data-table th,
 .data-table td {
     padding: 12px 15px;
     text-align: center;
     border-bottom: 1px solid #eee;
-    word-break: break-word; /* ✅ Handle long words gracefully */
+    word-break: break-word;       /* Handle long words gracefully */
 }
 
 .data-table th {
@@ -704,9 +693,9 @@ body.dark-mode .step::after {
 /* ✅ Allow complaint column (5th column) to wrap and align left */
 .data-table td:nth-child(5) {
     text-align: left;
-    white-space: normal;           /* Allow wrapping */
-    max-width: 250px;              /* Restrict width */
-    overflow-wrap: break-word;     /* Handle long words */
+    white-space: normal;          /* Allow wrapping */
+    max-width: 350px;             /* Increased width for better readability */
+    overflow-wrap: break-word;    /* Handle long words */
 }
 
 /* ✅ Keep status, priority, action columns in single line */
@@ -715,6 +704,7 @@ body.dark-mode .step::after {
 .data-table td:nth-child(7) {
     white-space: nowrap;
 }
+
 
 /* ===== SOURCE BADGE STYLING ===== */
 .source-badge {
