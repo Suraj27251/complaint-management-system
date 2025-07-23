@@ -253,7 +253,13 @@ input:checked + .slider:before {
         text-align: center;
         margin: 2px 0;
     }
+
+    /* ✅ Complaint column width adjustment on mobile */
+    .data-table .col-complaint {
+        max-width: 200px;
+    }
 }
+
 /* ===== COMPLAINT TRACKER STYLES (GREEN PROGRESS BAR) ===== */
 .complaint-tracker {
     display: flex;
