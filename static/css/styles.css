@@ -615,7 +615,7 @@ body.dark-mode .step::after {
 
 /* ===== CENTERED CARD WRAPPER FOR COMPLAINTS ===== */
 .centered-card {
-    max-width: 1000px;
+    max-width: 95%;               /* Use % width for better horizontal space */
     margin: 0 auto;
     padding: 20px;
     border-radius: 10px;
@@ -624,13 +624,12 @@ body.dark-mode .step::after {
     display: flex;
     flex-direction: column;
     align-items: center;
-    overflow-x: auto; /* ✅ Horizontal scroll for wide tables */
+    overflow-x: auto;             /* Horizontal scroll only if content overflows */
 }
 
 .centered-card form {
     width: 100%;
 }
-
 
 /* ===== BULK BUTTONS ===== */
 .bulk-buttons {
@@ -667,14 +666,15 @@ body.dark-mode .step::after {
 /* ===== COMPLAINT TABLE ===== */
 .data-table {
     width: 100%;
+    min-width: 950px;             /* Table expands horizontally when needed */
     margin: 0;
     border-collapse: collapse;
     background: #fff;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     border-radius: 8px;
     overflow: hidden;
-    table-layout: fixed;   /* Keeps column widths consistent */
-    word-wrap: break-word; /* Break long words */
+    table-layout: auto;           /* Auto layout to prevent unnecessary scroll */
+    word-wrap: break-word;
 }
 
 /* ===== Complaint Table Base Styles ===== */
@@ -702,17 +702,17 @@ body.dark-mode .step::after {
 .data-table .col-complaint {
     text-align: left;
     white-space: normal;
-    max-width: 300px;
+    max-width: 450px;             /* Increased width for complaint text */
     overflow-wrap: break-word;
     line-height: 1.4;
 }
 
 /* ✅ Keep mobile, status, priority, source, action columns in single line */
-.data-table td:nth-child(4),  /* Mobile */
-.data-table td:nth-child(6),  /* Status */
-.data-table td:nth-child(7),  /* Priority */
-.data-table td:nth-child(8),  /* Source */
-.data-table td:nth-child(9) { /* Action */
+.data-table td:nth-child(4),
+.data-table td:nth-child(6),
+.data-table td:nth-child(7),
+.data-table td:nth-child(8),
+.data-table td:nth-child(9) {
     white-space: nowrap;
 }
 
@@ -757,14 +757,14 @@ body.dark-mode .step::after {
     .data-table {
         font-size: 13px;
         display: block;
-        overflow-x: auto; /* Enables horizontal scroll on small screens */
+        overflow-x: auto;
     }
 
     /* ✅ Allow complaint text to wrap on small screens */
     .data-table td:nth-child(5) {
         white-space: normal;
         text-align: left;
-        max-width: 180px;
+        max-width: 220px;
         overflow-wrap: break-word;
     }
 
