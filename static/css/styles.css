@@ -691,11 +691,12 @@ body.dark-mode .step::after {
 }
 
 /* ✅ Allow complaint column (5th column) to wrap and align left */
-.data-table td:nth-child(5) {
+.data-table td:nth-child(5),
+.data-table .col-complaint {
     text-align: left;
-    white-space: normal;          /* Allow wrapping */
-    max-width: 350px;             /* Increased width for better readability */
-    overflow-wrap: break-word;    /* Handle long words */
+    white-space: normal;
+    max-width: 350px;
+    overflow-wrap: break-word;
 }
 
 /* ✅ Keep status, priority, action columns in single line */
