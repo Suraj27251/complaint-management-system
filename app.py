@@ -1,30 +1,9 @@
-from flask import (
-    Flask,
-    render_template,
-    request,
-    redirect,
-    url_for,
-    jsonify,
-    session,
-)
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 import sqlite3
 from datetime import datetime
 from collections import defaultdict
-from functools import wraps
-from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.secret_key = "change-this-secret"
-
-
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not session.get("user_id"):
-            return redirect(url_for("login"))
-        return f(*args, **kwargs)
-
-    return decorated_function
 
 # Initialize DB
 def init_db():
@@ -87,14 +66,6 @@ def init_db():
         note TEXT
     )''')
 
-    c.execute(
-        '''CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL
-    )'''
-    )
-
     conn.commit()
     conn.close()
 
@@ -102,57 +73,7 @@ def init_db():
 def before_request():
     init_db()
 
-
-@app.route("/signup", methods=["GET", "POST"])
-def signup():
-    if request.method == "POST":
-        username = request.form.get("username", "").strip()
-        password = request.form.get("password", "")
-        if not username or not password:
-            return render_template("signup.html", error="All fields are required")
-        conn = sqlite3.connect("complaints.db")
-        c = conn.cursor()
-        try:
-            c.execute(
-                "INSERT INTO users (username, password) VALUES (?, ?)",
-                (username, generate_password_hash(password)),
-            )
-            conn.commit()
-        except sqlite3.IntegrityError:
-            conn.close()
-            return render_template(
-                "signup.html", error="Username already exists"
-            )
-        conn.close()
-        return redirect(url_for("login"))
-    return render_template("signup.html")
-
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        username = request.form.get("username", "").strip()
-        password = request.form.get("password", "")
-        conn = sqlite3.connect("complaints.db")
-        c = conn.cursor()
-        c.execute("SELECT id, password FROM users WHERE username = ?", (username,))
-        user = c.fetchone()
-        conn.close()
-        if user and check_password_hash(user[1], password):
-            session["user_id"] = user[0]
-            session["username"] = username
-            return redirect(url_for("dashboard"))
-        return render_template("login.html", error="Invalid credentials")
-    return render_template("login.html")
-
-
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect(url_for("login"))
-
 @app.route('/')
-@login_required
 def dashboard():
     conn = sqlite3.connect('complaints.db')
     conn.row_factory = sqlite3.Row
@@ -270,7 +191,6 @@ def track():
     return render_template('track.html', complaints=complaints, status=status)
 
 @app.route('/update_status/<int:complaint_id>/<status>')
-@login_required
 def update_status(complaint_id, status):
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
@@ -342,7 +262,6 @@ def flow_endpoint():
     return jsonify({"status": "received"}), 200
 
 @app.route('/complaints', endpoint='complaints_page')
-@login_required
 def view_complaints():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
@@ -357,7 +276,6 @@ def view_complaints():
     return render_template('complaints.html', complaints=complaints)
 
 @app.route('/whatsapp')
-@login_required
 def whatsapp_complaints():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
@@ -398,7 +316,6 @@ def whatsapp_complaints():
     return render_template("WhatsApp.html", complaints=merged_complaints)
 
 @app.route('/new-connections')
-@login_required
 def new_connections():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
@@ -425,7 +342,6 @@ def api_new_connection_request():
     return jsonify({"status": "received"}), 200
 
 @app.route('/update-connection-status/<int:connection_id>', methods=['POST'])
-@login_required
 def update_connection_status(connection_id):
     new_status = request.form['status']
     conn = sqlite3.connect('complaints.db')
@@ -436,7 +352,6 @@ def update_connection_status(connection_id):
     return redirect(url_for('new_connections'))
 
 @app.route('/stock', methods=['GET', 'POST'])
-@login_required
 def stock():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
@@ -492,7 +407,6 @@ def stock():
     return render_template('stock.html', stock_items=stock_items, issued_items=issued_items)
     # HR dashboard
 @app.route('/hr', endpoint='hr_dashboard')
-@login_required
 def hr_page():
     conn = sqlite3.connect('complaints.db')
     conn.row_factory = sqlite3.Row
@@ -517,7 +431,6 @@ def hr_page():
     return render_template('hr.html', records=records, summary=summary)
 
 @app.route('/update_salary', methods=['POST'])
-@login_required
 def update_salary():
     return redirect(url_for('hr_dashboard'))
 
@@ -558,7 +471,6 @@ def ping():
     return 'pong', 200
 
 @app.route('/update_whatsapp_bulk', methods=['POST'])
-@login_required
 def update_whatsapp_bulk():
     action = request.form.get('action')
     ids = request.form.getlist('selected_ids[]')
@@ -579,7 +491,6 @@ def update_whatsapp_bulk():
     return redirect(url_for('dashboard'))  # ✅ Final redirect to dashboard
 
 @app.route('/delete_complaint/<int:complaint_id>', methods=['DELETE'])
-@login_required
 def delete_complaint(complaint_id):
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
