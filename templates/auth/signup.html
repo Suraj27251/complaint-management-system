@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign Up</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth/login.css') }}">
+</head>
+<body>
+  <div class="container">
+    <form class="card" method="POST">
+      <!-- Optional logo (auto-hides if missing) -->
+      <img class="brand" src="{{ url_for('static', filename='img/logo.png') }}" alt="Brand" onerror="this.style.display='none'">
+
+      <h2>Create Account</h2>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <ul class="flash">
+            {% for cat,msg in messages %}
+              <li class="{{ cat }}">{{ msg }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+
+      <div class="input">
+        <input type="text" name="name" placeholder="Full name" required>
+      </div>
+
+      <div class="input">
+        <input type="email" name="email" placeholder="Email" required>
+      </div>
+
+      <div class="input">
+        <input type="password" name="password" placeholder="Password" required>
+      </div>
+
+      <button type="submit" class="btn">Create account</button>
+
+      <p class="muted">
+        Have an account? <a href="{{ url_for('auth.login') }}">Login</a>
+      </p>
+    </form>
+  </div>
+</body>
+</html>
