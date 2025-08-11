@@ -1,154 +1,53 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Track Complaint</title>
-
-<!-- FontAwesome for icons -->
+{% extends 'layout.html' %}
+{% block title %}Track Complaint{% endblock %}
+{% block extra_head %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-<!-- Tailwind CSS -->
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-
-<!-- Custom Styles -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
-
-<!-- Lottie Animation -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.10.1/lottie.min.js"></script>
-
 <style>
     body { background:#fff; font-family:'Roboto',sans-serif; }
     h1 { text-align:center; margin:20px 0; }
-
-    /* Modern Search Bar Wrapper */
-    .track-form-wrapper {
-        display:flex;
-        justify-content:center;
-        margin-top:30px;
-        width:100%;
-    }
-    .form-box {
-        display:flex;
-        align-items:center;
-        background:#fff;
-        border-radius:50px;
-        box-shadow:0 4px 12px rgba(0,0,0,0.1);
-        padding:6px 12px;
-        width:100%;
-        max-width:400px;
-    }
-    .form-box input {
-        flex:1;
-        border:none;
-        outline:none;
-        font-size:16px;
-        padding:12px 15px;
-        border-radius:50px;
-        color:#333;
-    }
-    .form-box input::placeholder {
-        color:#888;
-    }
-
-    /* Stylish Button */
-    #trackButton {
-        width:50px; height:50px;
-        border-radius:50%;
-        border:none;
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        cursor:pointer;
-        background:linear-gradient(135deg,#6d28d9,#9333ea,#a855f7);
-        background-size:200% 200%;
-        color:#fff;
-        font-size:20px;
-        margin-left:8px;
-        transition:all 0.3s ease;
-        animation:gradientMove 3s infinite;
-    }
-    #trackButton:hover {
-        transform:scale(1.08);
-        box-shadow:0 5px 15px rgba(109,40,217,0.3);
-    }
-    @keyframes gradientMove {
-        0% { background-position:0% 50%; }
-        50% { background-position:100% 50%; }
-        100% { background-position:0% 50%; }
-    }
-
-    /* Loading Spinner */
-    .loading-spinner {
-        border:3px solid rgba(255,255,255,0.3);
-        border-top-color:#fff;
-        border-radius:50%;
-        width:22px; height:22px;
-        animation:spin 0.8s linear infinite;
-    }
+    .track-form-wrapper { display:flex; justify-content:center; margin-top:30px; width:100%; }
+    .form-box { display:flex; align-items:center; background:#fff; border-radius:50px; box-shadow:0 4px 12px rgba(0,0,0,0.1); padding:6px 12px; width:100%; max-width:400px; }
+    .form-box input { flex:1; border:none; outline:none; font-size:16px; padding:12px 15px; border-radius:50px; color:#333; }
+    .form-box input::placeholder { color:#888; }
+    #trackButton { width:50px; height:50px; border-radius:50%; border:none; display:flex; justify-content:center; align-items:center; cursor:pointer; background:linear-gradient(135deg,#6d28d9,#9333ea,#a855f7); background-size:200% 200%; color:#fff; font-size:20px; margin-left:8px; transition:all 0.3s ease; animation:gradientMove 3s infinite; }
+    #trackButton:hover { transform:scale(1.08); box-shadow:0 5px 15px rgba(109,40,217,0.3); }
+    @keyframes gradientMove { 0% { background-position:0% 50%; } 50% { background-position:100% 50%; } 100% { background-position:0% 50%; } }
+    .loading-spinner { border:3px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; width:22px; height:22px; animation:spin 0.8s linear infinite; }
     @keyframes spin { to { transform:rotate(360deg); } }
-
-    /* No Data Animation */
-    .no-data-animation-container {
-        width:80%; max-width:800px;
-        margin:30px auto;
-        text-align:center;
-        display:none;
-        opacity:0;
-        transition:opacity .8s ease-in-out;
-    }
+    .no-data-animation-container { width:80%; max-width:800px; margin:30px auto; text-align:center; display:none; opacity:0; transition:opacity .8s ease-in-out; }
     .no-data-animation-container.show { display:block; opacity:1; }
     #no-data-animation { width:100%; height:350px; margin:0 auto; }
     .no-data-text { font-size:18px; font-weight:500; color:#cc0000; margin-top:15px; }
 </style>
-</head>
-<body>
-
-<!-- HEADER -->
-<div class="header">
-    <div class="logo">
-        <a href="{{ url_for('dashboard') }}">
-            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Countrylink Logo">
-        </a>
-    </div>
-    <div class="title">COUNTRYLINK BROADBAND</div>
-    <div class="language">
-        <button class="button" onclick="window.open('https://maps.google.com?q=Countrylink+Broadband+Office', '_blank')">
-            <i class="fas fa-map-marker-alt"></i>
-        </button>
-    </div>
-</div>
-
-<!-- TABS -->
-<div class="tabs">
+{% endblock %}
+{% block header_actions %}
+<button class="button" onclick="window.open('https://maps.google.com?q=Countrylink+Broadband+Office', '_blank')">
+    <i class="fas fa-map-marker-alt"></i>
+</button>
+{% endblock %}
+{% block tabs %}
     <div class="tab"><a href="/complaints"><i class="fas fa-code-branch"></i> Complaints</a></div>
     <div class="tab"><a href="https://countrylinks.in" target="_blank"><i class="fas fa-globe"></i> Internet Plans</a></div>
     <div class="tab"><a href="#"><i class="fas fa-star"></i> Review</a></div>
-</div>
-
-<!-- MAIN TITLE -->
+{% endblock %}
+{% block content %}
 <h1>Track Your Complaint</h1>
-
-<!-- TRACK FORM -->
 <form id="trackForm" method="POST" action="{{ url_for('track') }}" class="track-form-wrapper">
     <div class="form-box">
-        <input
-            type="text"
-            name="mobile"
-            placeholder="Enter Mobile Number"
-            required
-        >
+        <input type="text" name="mobile" placeholder="Enter Mobile Number" required>
         <button id="trackButton" type="submit">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 64 64" id="trackIcon">
-                <path fill-opacity="0.01" fill="white" d="M63.6689 29.0491L34.6198 63.6685L0.00043872 34.6194L29.0496 1.67708e-05L63.6689 29.0491Z"></path>
+                <path fill-opacity="0.01" fill="white" d="M63.6689 29.0491L34.6198 63.6685L0.00043872 34.6194L29.0496 0L63.6689 29.0491Z"></path>
                 <path stroke-linejoin="round" stroke-linecap="round" stroke-width="3.76603" stroke="white" d="M42.8496 18.7067L21.0628 44.6712"></path>
                 <path stroke-linejoin="round" stroke-linecap="round" stroke-width="3.76603" stroke="white" d="M26.9329 20.0992L42.85 18.7067L44.2426 34.6238"></path>
             </svg>
         </button>
     </div>
 </form>
-
-<!-- TRACKER BAR -->
 {% if status %}
 <div class="complaint-tracker">
     <div class="step {{ 'active' if status in ['Registered','Pending','Assigned','Complete'] else '' }}">
@@ -169,8 +68,6 @@
     </div>
 </div>
 {% endif %}
-
-<!-- COMPLAINT HISTORY -->
 {% if complaints %}
 <div class="complaint-history-container">
     <h2><i class="fas fa-clock"></i> Complaint History</h2>
@@ -194,11 +91,13 @@
     </table>
 </div>
 {% elif request.method == 'POST' and not complaints %}
-<!-- NO DATA FOUND -->
 <div id="no-data-container" class="no-data-animation-container">
     <div id="no-data-animation"></div>
     <p class="no-data-text">No complaint found. Please type a valid mobile number.</p>
 </div>
+{% endif %}
+{% endblock %}
+{% block extra_scripts %}
 <script>
 document.addEventListener("DOMContentLoaded",function(){
     const c=document.getElementById('no-data-container');
@@ -213,24 +112,16 @@ document.addEventListener("DOMContentLoaded",function(){
     }
 });
 </script>
-{% endif %}
-
-<!-- JS for Button Animation + Delayed Submit -->
 <script>
 document.getElementById("trackForm").addEventListener("submit", function(e){
     e.preventDefault();
     const form=this;
     const btn=document.getElementById('trackButton');
     const icon=document.getElementById('trackIcon');
-
     if(icon) icon.outerHTML='<div class="loading-spinner"></div>';
-
     btn.disabled=true;
     btn.classList.add('opacity-70','cursor-not-allowed');
-
     setTimeout(()=>form.submit(),1000);
 });
 </script>
-
-</body>
-</html>
+{% endblock %}
