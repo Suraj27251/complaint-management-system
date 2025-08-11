@@ -4,11 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sign Up</title>
+  <!-- uses your updated path -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/auth/login.css') }}">
 </head>
 <body>
   <div class="container">
-    <form class="card" method="POST">
+    <form class="card" method="POST" action="{{ url_for('auth.signup') }}">
       <!-- Optional logo (auto-hides if missing) -->
       <img class="brand" src="{{ url_for('static', filename='img/logo.png') }}" alt="Brand" onerror="this.style.display='none'">
 
@@ -25,15 +26,17 @@
       {% endwith %}
 
       <div class="input">
-        <input type="text" name="name" placeholder="Full name" required>
+        <input type="text" name="name" placeholder="Full name" autocomplete="name" required>
       </div>
 
       <div class="input">
-        <input type="email" name="email" placeholder="Email" required>
+        <input type="email" name="email" placeholder="Email" autocomplete="email" required>
       </div>
 
       <div class="input">
-        <input type="password" name="password" placeholder="Password" required>
+        <input type="password" name="password" placeholder="Password" autocomplete="new-password" required>
+        <!-- optional show/hide button (works with main.js) -->
+        <button type="button" class="pw-toggle" data-toggle="password" aria-label="Show password">👁</button>
       </div>
 
       <button type="submit" class="btn">Create account</button>
@@ -43,5 +46,8 @@
       </p>
     </form>
   </div>
+
+  <!-- animated UX helpers -->
+  <script src="{{ url_for('static', filename='js/auth/main.js') }}"></script>
 </body>
 </html>
