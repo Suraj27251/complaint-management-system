@@ -1,1 +1,103 @@
+.container {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(
+        135deg,
+        rgba(14, 165, 233, .85),
+        rgba(99, 102, 241, .85)
+    ),
+    url('/static/css/auth/login-bg.png') center/cover no-repeat;
+    padding: 24px;
+}
+
+.card {
+    width: min(420px, 92vw);
+    background: white;
+    border-radius: 16px;
+    padding: 28px 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
+}
+
+h2 {
+    margin: 0 0 12px 0;
+    text-align: center;
+}
+
+.input {
+    margin: 12px 0;
+}
+
+.input input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 16px;
+}
+
+.btn {
+    width: 100%;
+    padding: 12px 14px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    background: #0ea5e9;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s ease-in-out;
+}
+
+.btn:hover {
+    background: #0284c7;
+}
+
+.muted {
+    font-size: 14px;
+    color: #6b7280;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.flash {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 8px 0;
+}
+
+.flash li {
+    padding: 8px 10px;
+    border-radius: 8px;
+    margin: 4px 0;
+    font-size: 14px;
+}
+
+.flash .error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.flash .success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.flash .warning {
+    background: #fef9c3;
+    color: #854d0e;
+}
+
+.flash .info {
+    background: #e0f2fe;
+    color: #075985;
+}
+
+/* Optional brand logo above the form */
+.brand {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    margin: 0 auto 8px auto;
+    display: block;
+}
 
