@@ -1,103 +1,179 @@
-.container {
-    min-height: 100vh;
-    display: grid;
-    place-items: center;
-    background: linear-gradient(
-        135deg,
-        rgba(14, 165, 233, .85),
-        rgba(99, 102, 241, .85)
+/* === Base Reset === */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  min-height: 100vh;
+  background: linear-gradient(
+      135deg,
+      rgba(14,165,233,.85),
+      rgba(99,102,241,.85)
     ),
     url('/static/css/auth/login-bg.png') center/cover no-repeat;
-    padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* === Container & Card === */
+.container {
+  width: 100%;
+  max-width: 420px;
+  padding: 15px;
 }
 
 .card {
-    width: min(420px, 92vw);
-    background: white;
-    border-radius: 16px;
-    padding: 28px 24px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 2rem 2.5rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  animation: fadeIn 0.6s ease forwards;
 }
 
-h2 {
-    margin: 0 0 12px 0;
-    text-align: center;
+.card h2 {
+  text-align: center;
+  margin-bottom: 0.5rem;
 }
 
+.brand {
+  max-width: 120px;
+  margin: 0 auto 1rem;
+  display: block;
+}
+
+/* === Inputs === */
 .input {
-    margin: 12px 0;
+  position: relative;
 }
 
 .input input {
-    width: 100%;
-    padding: 12px 14px;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    font-size: 16px;
+  width: 100%;
+  padding: 12px 14px;
+  padding-right: 40px; /* space for toggle button */
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
 }
 
+.input.focused input {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3);
+}
+
+.input.filled input {
+  border-color: #93c5fd;
+}
+
+/* === Password Toggle Button === */
+.pw-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  translate: 0 -50%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  opacity: 0.6;
+}
+
+.pw-toggle:hover {
+  opacity: 1;
+}
+
+/* === Buttons === */
 .btn {
-    width: 100%;
-    padding: 12px 14px;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    background: #0ea5e9;
-    color: white;
-    cursor: pointer;
-    transition: background 0.2s ease-in-out;
+  padding: 12px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
 .btn:hover {
-    background: #0284c7;
+  background: #2563eb;
 }
 
-.muted {
-    font-size: 14px;
-    color: #6b7280;
-    text-align: center;
-    margin-top: 10px;
+.btn:disabled {
+  background: #93c5fd;
+  cursor: not-allowed;
 }
 
+/* === Flash messages === */
 .flash {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 8px 0;
+  list-style: none;
+  font-size: 14px;
+  padding: 0;
 }
 
 .flash li {
-    padding: 8px 10px;
-    border-radius: 8px;
-    margin: 4px 0;
-    font-size: 14px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-bottom: 6px;
 }
 
 .flash .error {
-    background: #fee2e2;
-    color: #991b1b;
+  background: #fee2e2;
+  color: #b91c1c;
 }
 
 .flash .success {
-    background: #dcfce7;
-    color: #166534;
-}
-
-.flash .warning {
-    background: #fef9c3;
-    color: #854d0e;
+  background: #dcfce7;
+  color: #166534;
 }
 
 .flash .info {
-    background: #e0f2fe;
-    color: #075985;
+  background: #dbeafe;
+  color: #1e3a8a;
 }
 
-/* Optional brand logo above the form */
-.brand {
-    width: 64px;
-    height: 64px;
-    object-fit: contain;
-    margin: 0 auto 8px auto;
-    display: block;
+.flash .warning {
+  background: #fef3c7;
+  color: #92400e;
 }
 
+/* === Texts === */
+.muted {
+  font-size: 14px;
+  color: #555;
+  text-align: center;
+}
+
+.muted a {
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.muted a:hover {
+  text-decoration: underline;
+}
+
+/* === Animations === */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shakeX {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60% { transform: translateX(4px); }
+}
+
+.card.shake {
+  animation: shakeX 0.45s ease-in-out;
+}
