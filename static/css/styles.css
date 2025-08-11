@@ -627,6 +627,12 @@ body.dark-mode .step::after {
     overflow-x: auto;             /* Horizontal scroll only if content overflows */
 }
 
+.recent-complaints-card {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .centered-card form {
     width: 100%;
 }
