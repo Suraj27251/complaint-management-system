@@ -1,14 +1,41 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+import os
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash
 import sqlite3
 from datetime import datetime
 from collections import defaultdict
+from functools import wraps
 
 app = Flask(__name__)
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-change-me')
+
+# --- Auth helpers ---
+def login_required(view):
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        if not session.get('user_id'):
+            flash('Please log in to continue.', 'warning')
+            return redirect(url_for('auth.login'))
+        return view(*args, **kwargs)
+    return wrapped
+
+# --- Register auth blueprint (requires auth.py in project root) ---
+from auth import auth_bp
+app.register_blueprint(auth_bp)
 
 # Initialize DB
 def init_db():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
+
+    # Users table for login system
+    c.execute('''CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        role TEXT DEFAULT 'user',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )''')
 
     c.execute('''
         CREATE TABLE IF NOT EXISTS complaints (
@@ -74,6 +101,7 @@ def before_request():
     init_db()
 
 @app.route('/')
+@login_required
 def dashboard():
     conn = sqlite3.connect('complaints.db')
     conn.row_factory = sqlite3.Row
@@ -132,6 +160,7 @@ def dashboard():
                            pending_connections=pending_connections,
                            pending_connection_count=pending_connection_count,
                            stock_summary=stock_summary)
+
 @app.route('/submit', methods=['POST'])
 def submit():
     name = request.form['name']
@@ -144,6 +173,7 @@ def submit():
     conn.close()
     return redirect(url_for('dashboard'))
 
+# PUBLIC for fast UX
 @app.route('/track', methods=['GET', 'POST'])
 def track():
     complaints = []
@@ -191,6 +221,7 @@ def track():
     return render_template('track.html', complaints=complaints, status=status)
 
 @app.route('/update_status/<int:complaint_id>/<status>')
+@login_required
 def update_status(complaint_id, status):
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
@@ -262,6 +293,7 @@ def flow_endpoint():
     return jsonify({"status": "received"}), 200
 
 @app.route('/complaints', endpoint='complaints_page')
+@login_required
 def view_complaints():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
@@ -276,6 +308,7 @@ def view_complaints():
     return render_template('complaints.html', complaints=complaints)
 
 @app.route('/whatsapp')
+@login_required
 def whatsapp_complaints():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
@@ -304,7 +337,7 @@ def whatsapp_complaints():
     for (mobile, date), entries in grouped.items():
         merged_complaints.append({
             "id": entries[0]["id"],
-            "ids": [str(e["id"]) for e in entries],  # ✅ Added: All grouped IDs
+            "ids": [str(e["id"]) for e in entries],  # keeps grouped IDs
             "name": entries[0]["name"],
             "mobile": mobile,
             "date": date,
@@ -316,6 +349,7 @@ def whatsapp_complaints():
     return render_template("WhatsApp.html", complaints=merged_complaints)
 
 @app.route('/new-connections')
+@login_required
 def new_connections():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
@@ -325,6 +359,7 @@ def new_connections():
     return render_template('connection.html', connections=connections)
 
 @app.route('/api/new-connection-request', methods=['POST'])
+@login_required
 def api_new_connection_request():
     data = request.get_json()
     name = data.get("name")
@@ -342,6 +377,7 @@ def api_new_connection_request():
     return jsonify({"status": "received"}), 200
 
 @app.route('/update-connection-status/<int:connection_id>', methods=['POST'])
+@login_required
 def update_connection_status(connection_id):
     new_status = request.form['status']
     conn = sqlite3.connect('complaints.db')
@@ -352,6 +388,7 @@ def update_connection_status(connection_id):
     return redirect(url_for('new_connections'))
 
 @app.route('/stock', methods=['GET', 'POST'])
+@login_required
 def stock():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
@@ -405,8 +442,10 @@ def stock():
 
     conn.close()
     return render_template('stock.html', stock_items=stock_items, issued_items=issued_items)
-    # HR dashboard
+
+# HR dashboard
 @app.route('/hr', endpoint='hr_dashboard')
+@login_required
 def hr_page():
     conn = sqlite3.connect('complaints.db')
     conn.row_factory = sqlite3.Row
@@ -431,6 +470,7 @@ def hr_page():
     return render_template('hr.html', records=records, summary=summary)
 
 @app.route('/update_salary', methods=['POST'])
+@login_required
 def update_salary():
     return redirect(url_for('hr_dashboard'))
 
@@ -471,6 +511,7 @@ def ping():
     return 'pong', 200
 
 @app.route('/update_whatsapp_bulk', methods=['POST'])
+@login_required
 def update_whatsapp_bulk():
     action = request.form.get('action')
     ids = request.form.getlist('selected_ids[]')
@@ -491,6 +532,7 @@ def update_whatsapp_bulk():
     return redirect(url_for('dashboard'))  # ✅ Final redirect to dashboard
 
 @app.route('/delete_complaint/<int:complaint_id>', methods=['DELETE'])
+@login_required
 def delete_complaint(complaint_id):
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
