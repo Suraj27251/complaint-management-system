@@ -15,7 +15,7 @@
         <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Countrylink Logo">
     </div>
     <div class="title">COUNTRYLINK BROADBAND</div>
-    <div class="language">
+    <div class="language" style="display:flex; align-items:center; gap:12px;">
         <select>
             <option value="en">ENGLISH</option>
             <option value="hi">HINDI</option>
@@ -27,6 +27,18 @@
             </label>
             <span class="theme-label"><i class="fas fa-moon"></i></span>
         </div>
+
+        <!-- 👉 Logout button (top-right) -->
+        <a href="{{ url_for('auth.logout') }}"
+           style="
+             margin-left: 12px;
+             background:#ef4444; color:#fff;
+             padding:8px 14px; border-radius:6px;
+             text-decoration:none; font-size:14px; display:inline-flex; align-items:center; gap:6px;"
+           onmouseover="this.style.background='#dc2626'"
+           onmouseout="this.style.background='#ef4444'">
+           <i class="fas fa-right-from-bracket"></i> Logout
+        </a>
     </div>
 </div>
 
