@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}CMS{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth/login.css') }}">
+<style>
+nav {
+  padding: 10px 16px;
+  background: #111827;
+  color: white;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+nav a {
+  color: white;
+  text-decoration: none;
+}
+nav a:hover {
+  text-decoration: underline;
+}
+nav .spacer {
+  flex: 1;
+}
+</style>
+</head>
+<body>
+<nav>
+  <strong>CMS</strong>
+  {% if session.get('user_id') %}
+    <a href="{{ url_for('dashboard') }}">Dashboard</a>
+    <div class="spacer"></div>
+    <a href="{{ url_for('auth.logout') }}">Logout</a>
+  {% else %}
+    <div class="spacer"></div>
+    <a href="{{ url_for('auth.login') }}">Login</a>
+    <a href="{{ url_for('auth.signup') }}">Sign Up</a>
+  {% endif %}
+</nav>
+
+<main style="padding:16px">
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>
