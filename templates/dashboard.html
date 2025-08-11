@@ -1,161 +1,130 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Complaint Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+{% extends 'layout.html' %}
+{% block title %}Complaint Dashboard{% endblock %}
+{% block extra_head %}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-</head>
-<body>
-
-<!-- 🔷 HEADER -->
-<div class="header">
-    <div class="logo">
-        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Countrylink Logo">
+{% endblock %}
+{% block header_actions %}
+    <select>
+        <option value="en">ENGLISH</option>
+        <option value="hi">HINDI</option>
+    </select>
+    <div class="theme-toggle" style="margin-left:15px;">
+        <label class="switch">
+            <input type="checkbox" id="themeToggle">
+            <span class="slider"></span>
+        </label>
+        <span class="theme-label"><i class="fas fa-moon"></i></span>
     </div>
-    <div class="title">COUNTRYLINK BROADBAND</div>
-    <div class="language" style="display:flex; align-items:center; gap:12px;">
-        <select>
-            <option value="en">ENGLISH</option>
-            <option value="hi">HINDI</option>
-        </select>
-        <div class="theme-toggle" style="margin-left: 15px;">
-            <label class="switch">
-                <input type="checkbox" id="themeToggle">
-                <span class="slider"></span>
-            </label>
-            <span class="theme-label"><i class="fas fa-moon"></i></span>
-        </div>
-
-        <!-- 👉 Logout button (top-right) -->
-        <a href="{{ url_for('auth.logout') }}"
-           style="
-             margin-left: 12px;
-             background:#ef4444; color:#fff;
-             padding:8px 14px; border-radius:6px;
-             text-decoration:none; font-size:14px; display:inline-flex; align-items:center; gap:6px;"
-           onmouseover="this.style.background='#dc2626'"
-           onmouseout="this.style.background='#ef4444'">
-           <i class="fas fa-right-from-bracket"></i> Logout
-        </a>
-    </div>
-</div>
-
-<!-- 💂️ TABS -->
-<div class="tabs">
-    <div class="tab active"><a href="#"><i class="fas fa-gauge"></i> Dashboard</a></div>
+    <a href="{{ url_for('auth.logout') }}"
+       class="ml-3 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded flex items-center gap-2 text-sm">
+       <i class="fas fa-right-from-bracket"></i> Logout
+    </a>
+{% endblock %}
+{% block tabs %}
+    <div class="tab active"><a href="{{ url_for('dashboard') }}"><i class="fas fa-gauge"></i> Dashboard</a></div>
     <div class="tab"><a href="{{ url_for('complaints_page') }}"><i class="fas fa-code-branch"></i> Complaints</a></div>
     <div class="tab"><a href="{{ url_for('new_connections') }}"><i class="fas fa-user-plus"></i> New Connections</a></div>
     <div class="tab"><a href="{{ url_for('stock') }}"><i class="fas fa-boxes"></i> Stock</a></div>
     <div class="tab"><a href="{{ url_for('hr_dashboard') }}"><i class="fas fa-users"></i> Human Resource</a></div>
     <div class="tab"><a href="{{ url_for('whatsapp_complaints') }}"><i class="fab fa-whatsapp"></i> WhatsApp messages</a></div>
-</div>
+{% endblock %}
+{% block content %}
+    <section class="stats grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded shadow p-4 text-center">📊<br>Total<br><span>{{ total }}</span></div>
+        <div class="bg-white rounded shadow p-4 text-center">⚠️<br>Pending<br><span>{{ pending }}</span></div>
+        <div class="bg-white rounded shadow p-4 text-center">✅<br>Resolved<br><span>{{ resolved }}</span></div>
+    </section>
 
-<!-- 🕽️ CONTENT -->
-<div class="container">
-    <div class="stats">
-        <div>📊<br>Total<br><span>{{ total }}</span></div>
-        <div>⚠️<br>Pending<br><span>{{ pending }}</span></div>
-        <div>✅<br>Resolved<br><span>{{ resolved }}</span></div>
-    </div>
-
-    <div class="chart-container">
-        <canvas id="statusChart"></canvas>
-    </div>
-
-   <!-- 📝 Recent Complaints -->
-<h2 class="section-title">Recent Complaints</h2>
-
-<div class="table-section centered-card recent-complaints-card">
-    <form id="bulkActionForm" method="POST">
-        <div class="bulk-buttons recent-complaints-actions">
-            <button type="submit"
-                    class="button bulk animated-button btn-resolve pulse-on-hover"
-                    formaction="{{ url_for('update_whatsapp_bulk') }}"
-                    name="action" value="resolve">
-                Mark Resolved
-            </button>
-
-            <button type="submit"
-                    class="button bulk danger animated-button btn-delete pulse-on-hover"
-                    formaction="{{ url_for('update_whatsapp_bulk') }}"
-                    name="action" value="delete"
-                    onclick="return confirm('Are you sure to delete selected complaints?')">
-                Delete
-            </button>
+    <section class="bg-white rounded shadow p-4 mb-8">
+        <div class="chart-container" style="height:300px;">
+            <canvas id="statusChart"></canvas>
         </div>
+    </section>
 
-        <!-- Responsive wrapper -->
-        <div class="table-responsive">
-            <table class="data-table recent-complaints-table">
-                <colgroup>
-                    <col style="width:40px;">    <!-- select -->
-                    <col style="width:50px;">    <!-- id -->
-                    <col style="width:120px;">   <!-- name -->
-                    <col style="width:130px;">   <!-- mobile -->
-                    <col style="width:260px;">   <!-- complaint -->
-                    <col style="width:110px;">   <!-- status -->
-                    <col style="width:80px;">    <!-- priority -->
-                    <col style="width:100px;">   <!-- source -->
-                    <col style="width:110px;">   <!-- action -->
-                </colgroup>
-                <thead>
-                    <tr>
-                        <th><input type="checkbox" id="selectAll"></th>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Mobile</th>
-                        <th>Complaint</th>
-                        <th>Status</th>
-                        <th>Priority</th>
-                        <th>Source</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for comp in recent_complaints %}
-                    {% set src = comp['source'] %}
-                    {% if src != 'Webhook' %}
-                    <tr>
-                        <td><input type="checkbox" name="selected_ids[]" value="{{ comp['id'] }}"></td>
-                        <td>{{ comp['id'] }}</td>
-                        <td>{{ comp['name'] }}</td>
-                        <td>{{ comp['mobile'] }}</td>
-                        <td class="td-complaint" title="{{ comp['complaint'] }}">{{ comp['complaint'] }}</td>
-                        <td>{{ comp['status'] }}</td>
-                        <td>{{ comp['priority'] }}</td>
-                        <td>
-                            <span class="badge source-badge {{ 'whatsapp' if src == 'WhatsApp' else 'web' }}">
-                                {% if src == 'WhatsApp' %}
-                                    <i class="fab fa-whatsapp"></i> <span>WhatsApp</span>
+    <h2 class="section-title">Recent Complaints</h2>
+    <div class="table-section centered-card recent-complaints-card">
+        <form id="bulkActionForm" method="POST">
+            <div class="bulk-buttons recent-complaints-actions">
+                <button type="submit"
+                        class="button bulk animated-button btn-resolve pulse-on-hover"
+                        formaction="{{ url_for('update_whatsapp_bulk') }}"
+                        name="action" value="resolve">
+                    Mark Resolved
+                </button>
+                <button type="submit"
+                        class="button bulk danger animated-button btn-delete pulse-on-hover"
+                        formaction="{{ url_for('update_whatsapp_bulk') }}"
+                        name="action" value="delete"
+                        onclick="return confirm('Are you sure to delete selected complaints?')">
+                    Delete
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table recent-complaints-table">
+                    <colgroup>
+                        <col style="width:40px;">
+                        <col style="width:50px;">
+                        <col style="width:120px;">
+                        <col style="width:130px;">
+                        <col style="width:260px;">
+                        <col style="width:110px;">
+                        <col style="width:80px;">
+                        <col style="width:100px;">
+                        <col style="width:110px;">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selectAll"></th>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Mobile</th>
+                            <th>Complaint</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Source</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for comp in recent_complaints %}
+                        {% set src = comp['source'] %}
+                        {% if src != 'Webhook' %}
+                        <tr>
+                            <td><input type="checkbox" name="selected_ids[]" value="{{ comp['id'] }}"></td>
+                            <td>{{ comp['id'] }}</td>
+                            <td>{{ comp['name'] }}</td>
+                            <td>{{ comp['mobile'] }}</td>
+                            <td class="td-complaint" title="{{ comp['complaint'] }}">{{ comp['complaint'] }}</td>
+                            <td>{{ comp['status'] }}</td>
+                            <td>{{ comp['priority'] }}</td>
+                            <td>
+                                <span class="badge source-badge {{ 'whatsapp' if src == 'WhatsApp' else 'web' }}">
+                                    {% if src == 'WhatsApp' %}
+                                        <i class="fab fa-whatsapp"></i> <span>WhatsApp</span>
+                                    {% else %}
+                                        <i class="fas fa-globe"></i> <span>Web</span>
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                {% if comp['status'] != 'Resolved' %}
+                                <a class="btn small animated-button btn-resolve pulse-on-hover"
+                                   href="{{ url_for('update_status', complaint_id=comp['id'], status='Resolved') }}">
+                                   Mark Resolved
+                                </a>
                                 {% else %}
-                                    <i class="fas fa-globe"></i> <span>Web</span>
+                                <span style="color: green;">✔ Done</span>
                                 {% endif %}
-                            </span>
-                        </td>
-                        <td>
-                            {% if comp['status'] != 'Resolved' %}
-                            <a class="btn small animated-button btn-resolve pulse-on-hover"
-                               href="{{ url_for('update_status', complaint_id=comp['id'], status='Resolved') }}">
-                               Mark Resolved
-                            </a>
-                            {% else %}
-                            <span style="color: green;">✔ Done</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endif %}
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </form>
-</div>
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    </div>
 
-
-
-    <!-- ➕ Pending Connection Requests -->
     {% if pending_connections %}
     <h2 class="section-title">Recent Open Connection Requests (Pending)</h2>
     <table>
@@ -182,14 +151,13 @@
             {% endfor %}
         </tbody>
     </table>
-    <div style="margin-top: 10px;">
+    <div style="margin-top:10px;">
         <a href="{{ url_for('new_connections') }}">
             <button>View All Connections</button>
         </a>
     </div>
     {% endif %}
 
-    <!-- 📦 CURRENT STOCK SUMMARY -->
     <h2 class="section-title">Current Stock Summary</h2>
     <table>
         <thead>
@@ -211,9 +179,8 @@
             {% endfor %}
         </tbody>
     </table>
-</div>
-
-<!-- 📊 Chart and Theme Scripts -->
+{% endblock %}
+{% block extra_scripts %}
 <script>
     const ctx = document.getElementById('statusChart').getContext('2d');
     const statusChart = new Chart(ctx, {
@@ -233,8 +200,6 @@
             maintainAspectRatio: false
         }
     });
-
-    // 🌙 Theme Toggle Script
     const toggle = document.getElementById('themeToggle');
     const body = document.body;
     const theme = localStorage.getItem('theme');
@@ -246,13 +211,9 @@
         body.classList.toggle('dark-mode');
         localStorage.setItem('theme', body.classList.contains('dark-mode') ? 'dark' : 'light');
     });
-
-    // ✅ Select/Deselect All Checkboxes
     document.getElementById('selectAll').addEventListener('click', function () {
         const checkboxes = document.querySelectorAll('input[name="selected_ids[]"]');
         checkboxes.forEach(cb => cb.checked = this.checked);
     });
 </script>
-
-</body>
-</html>
+{% endblock %}
