@@ -1,12 +1,68 @@
 import os
+import csv
+import pickle
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash
 import sqlite3
 from datetime import datetime
 from collections import defaultdict
 from functools import wraps
 
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-change-me')
+
+# ---- AI categorization setup ----
+MODEL_PATH = 'complaint_model.pkl'
+CATEGORIES = ["Speed Issue", "Connection Down", "Billing", "Installation", "Other"]
+_model = None
+_vectorizer = None
+
+def _load_or_train_model():
+    """Load a trained model or train a new one from sample data."""
+    global _model, _vectorizer
+    if _model and _vectorizer:
+        return
+    if os.path.exists(MODEL_PATH):
+        with open(MODEL_PATH, 'rb') as f:
+            _model, _vectorizer = pickle.load(f)
+        return
+
+    training_file = os.path.join('setup', 'complaint_training_data.csv')
+    if not os.path.exists(training_file):
+        return
+
+    texts, labels = [], []
+    with open(training_file, newline='', encoding='utf-8') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            texts.append(row.get('complaint', ''))
+            labels.append(row.get('category', 'Other'))
+
+    if not texts:
+        return
+
+    _vectorizer = TfidfVectorizer()
+    X = _vectorizer.fit_transform(texts)
+    _model = MultinomialNB()
+    _model.fit(X, labels)
+
+    with open(MODEL_PATH, 'wb') as f:
+        pickle.dump((_model, _vectorizer), f)
+
+
+def predict_category(text: str) -> str:
+    """Predict complaint category with confidence threshold."""
+    _load_or_train_model()
+    if not _model or not _vectorizer:
+        return 'Other'
+
+    probs = _model.predict_proba(_vectorizer.transform([text]))[0]
+    max_prob = probs.max()
+    if max_prob < 0.5:
+        return 'Other'
+    return _model.classes_[probs.argmax()]
 
 # Make {{ current_year }} available in all templates (for your footers)
 @app.context_processor
@@ -48,6 +104,7 @@ def init_db():
             name TEXT NOT NULL,
             mobile TEXT NOT NULL,
             complaint TEXT NOT NULL,
+            category TEXT DEFAULT 'Other',
             status TEXT DEFAULT 'Pending',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             source TEXT DEFAULT 'Web'
@@ -56,6 +113,10 @@ def init_db():
 
     try:
         c.execute("ALTER TABLE complaints ADD COLUMN source TEXT DEFAULT 'Web'")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        c.execute("ALTER TABLE complaints ADD COLUMN category TEXT DEFAULT 'Other'")
     except sqlite3.OperationalError:
         pass
 
@@ -160,20 +221,30 @@ def dashboard():
         stock_summary[device] = {'stock': stock, 'issued': issued, 'available': stock - issued}
 
     conn.close()
-    return render_template('dashboard.html', total=total, pending=pending, resolved=resolved,
-                           recent_complaints=priority_complaints,
-                           pending_connections=pending_connections,
-                           pending_connection_count=pending_connection_count,
-                           stock_summary=stock_summary)
+    return render_template(
+        'dashboard.html',
+        total=total,
+        pending=pending,
+        resolved=resolved,
+        recent_complaints=priority_complaints,
+        pending_connections=pending_connections,
+        pending_connection_count=pending_connection_count,
+        stock_summary=stock_summary,
+        categories=CATEGORIES,
+    )
 
 @app.route('/submit', methods=['POST'])
 def submit():
     name = request.form['name']
     mobile = request.form['mobile']
     complaint = request.form['complaint']
+    category = predict_category(complaint)
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
-    c.execute("INSERT INTO complaints (name, mobile, complaint, source) VALUES (?, ?, ?, ?)", (name, mobile, complaint, 'Web'))
+    c.execute(
+        "INSERT INTO complaints (name, mobile, complaint, category, source) VALUES (?, ?, ?, ?, ?)",
+        (name, mobile, complaint, category, 'Web')
+    )
     conn.commit()
     conn.close()
     return redirect(url_for('dashboard'))
@@ -261,12 +332,16 @@ def webhook():
                         created_at = datetime.fromtimestamp(int(timestamp_unix)).strftime('%Y-%m-%d %H:%M:%S') if timestamp_unix else datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
                         if name.strip() and name.strip() != '.' and mobile.strip() and message.strip():
+                            category = predict_category(message)
                             conn = sqlite3.connect('complaints.db')
                             c = conn.cursor()
-                            c.execute("""
-                                INSERT INTO complaints (name, mobile, complaint, status, created_at, source)
-                                VALUES (?, ?, ?, ?, ?, ?)
-                            """, (name, mobile, message, 'Pending', created_at, 'WhatsApp'))
+                            c.execute(
+                                """
+                                INSERT INTO complaints (name, mobile, complaint, category, status, created_at, source)
+                                VALUES (?, ?, ?, ?, ?, ?, ?)
+                                """,
+                                (name, mobile, message, category, 'Pending', created_at, 'WhatsApp')
+                            )
                             conn.commit()
                             conn.close()
             return jsonify({"status": "Message received"}), 200
@@ -290,9 +365,13 @@ def flow_endpoint():
     if not all([name, mobile, complaint]):
         return jsonify({"error": "Missing required fields"}), 400
 
+    category = predict_category(complaint)
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
-    c.execute("INSERT INTO complaints (name, mobile, complaint) VALUES (?, ?, ?)", (name, mobile, complaint))
+    c.execute(
+        "INSERT INTO complaints (name, mobile, complaint, category) VALUES (?, ?, ?, ?)",
+        (name, mobile, complaint, category)
+    )
     conn.commit()
     conn.close()
     return jsonify({"status": "received"}), 200

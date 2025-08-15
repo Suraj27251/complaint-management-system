@@ -43,6 +43,12 @@
 
     <div class="table-section centered-card recent-complaints-card">
         <h2 class="section-title text-center w-full">Recent Complaints</h2>
+        <div class="category-filters">
+            <button type="button" class="button filter-btn" data-category="All">All</button>
+            {% for cat in categories %}
+            <button type="button" class="button filter-btn" data-category="{{ cat }}">{{ cat }}</button>
+            {% endfor %}
+        </div>
         <form id="bulkActionForm" method="POST">
             <div class="bulk-buttons recent-complaints-actions">
                 <button type="submit"
@@ -67,6 +73,7 @@
                         <col style="width:120px;">
                         <col style="width:130px;">
                         <col style="width:260px;">
+                        <col style="width:120px;">
                         <col style="width:110px;">
                         <col style="width:80px;">
                         <col style="width:100px;">
@@ -79,6 +86,7 @@
                             <th>Name</th>
                             <th>Mobile</th>
                             <th>Complaint</th>
+                            <th>Category</th>
                             <th>Status</th>
                             <th>Priority</th>
                             <th>Source</th>
@@ -89,12 +97,15 @@
                         {% for comp in recent_complaints %}
                         {% set src = comp['source'] %}
                         {% if src != 'Webhook' %}
-                        <tr>
+                        <tr data-category="{{ comp['category'] }}">
                             <td><input type="checkbox" name="selected_ids[]" value="{{ comp['id'] }}"></td>
                             <td>{{ comp['id'] }}</td>
                             <td>{{ comp['name'] }}</td>
                             <td>{{ comp['mobile'] }}</td>
                             <td class="td-complaint" title="{{ comp['complaint'] }}">{{ comp['complaint'] }}</td>
+                            <td>
+                                <span class="badge category-{{ comp['category']|lower|replace(' ', '-') }}">{{ comp['category'] }}</span>
+                            </td>
                             <td>{{ comp['status'] }}</td>
                             <td>{{ comp['priority'] }}</td>
                             <td>
@@ -214,6 +225,19 @@
     document.getElementById('selectAll').addEventListener('click', function () {
         const checkboxes = document.querySelectorAll('input[name="selected_ids[]"]');
         checkboxes.forEach(cb => cb.checked = this.checked);
+    });
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const category = btn.getAttribute('data-category');
+            document.querySelectorAll('.recent-complaints-table tbody tr').forEach(row => {
+                const rowCat = row.getAttribute('data-category');
+                if (category === 'All' || rowCat === category) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
     });
 </script>
 {% endblock %}

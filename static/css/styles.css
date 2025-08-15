@@ -717,8 +717,8 @@ body.dark-mode .step::after {
 .data-table td:nth-child(4),
 .data-table td:nth-child(6),
 .data-table td:nth-child(7),
-.data-table td:nth-child(8),
-.data-table td:nth-child(9) {
+.data-table td:nth-child(9),
+.data-table td:nth-child(10) {
     white-space: nowrap;
 }
 
@@ -740,6 +740,22 @@ body.dark-mode .step::after {
 
 .source-badge.whatsapp {
     background-color: #25D366;
+}
+
+/* ===== CATEGORY BADGE COLORS ===== */
+.category-speed-issue { background-color: #FF9800; }
+.category-connection-down { background-color: #e74c3c; }
+.category-billing { background-color: #007BFF; }
+.category-installation { background-color: #2ecc71; }
+.category-other { background-color: #7f8c8d; }
+
+/* ===== CATEGORY FILTER BUTTONS ===== */
+.category-filters {
+    margin-bottom: 10px;
+}
+.category-filters .button {
+    margin-top: 0;
+    margin-right: 5px;
 }
 
 /* ===== RESPONSIVE ADJUSTMENTS ===== */
