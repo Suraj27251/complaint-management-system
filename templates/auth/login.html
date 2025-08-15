@@ -6,7 +6,12 @@
   <title>Login</title>
   <!-- uses your updated path -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/auth/login.css') }}">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    footer.dev-footer { margin-top: 30px; padding: 15px; background: linear-gradient(135deg, #0d47a1, #1976d2); color: white; text-align: center; font-size: 14px; font-family: 'Roboto', sans-serif; }
+    footer.dev-footer a { color: #ffeb3b; text-decoration: none; }
+    footer.dev-footer a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -45,24 +50,13 @@
   </div>
 
   <!-- 🌟 Footer -->
-  <footer style="
-      margin-top: 30px;
-      padding: 15px;
-      background: linear-gradient(135deg, #0d47a1, #1976d2);
-      color: white;
-      text-align: center;
-      font-size: 14px;
-      font-family: 'Roboto', sans-serif;
-  ">
+  <footer class="dev-footer">
       <div style="margin-bottom: 6px;">
           <i class="fas fa-code"></i> Developed with ❤️ by 
-          <strong><a href="https://www.linkedin.com/in/suraj-sonawane-76495564/" target="_blank" style="color:#ffeb3b; text-decoration:none;">Suraj Sonawane</a></strong>
+          <a href="https://www.linkedin.com/in/suraj-sonawane-76495564/" target="_blank"><strong>Suraj Sonawane</strong></a>
       </div>
       <div>
-          &copy; {{ current_year }} Countrylink Broadband | 
-          <i class="fas fa-envelope"></i> <a href="mailto:youremail@example.com" style="color:#ffeb3b; text-decoration:none;">Contact</a>
-          &nbsp; | &nbsp;
-          <i class="fab fa-github"></i> <a href="https://github.com/yourgithub" target="_blank" style="color:#ffeb3b; text-decoration:none;">GitHub</a>
+          &copy; {{ current_year }} Countrylink Broadband
       </div>
   </footer>
 
