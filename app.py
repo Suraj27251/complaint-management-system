@@ -8,6 +8,11 @@ from functools import wraps
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-change-me')
 
+# Make {{ current_year }} available in all templates (for your footers)
+@app.context_processor
+def inject_year():
+    return {'current_year': datetime.now().year}
+
 # --- Auth helpers ---
 def login_required(view):
     @wraps(view)
