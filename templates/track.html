@@ -22,6 +22,9 @@
     .no-data-animation-container.show { display:block; opacity:1; }
     #no-data-animation { width:100%; height:350px; margin:0 auto; }
     .no-data-text { font-size:18px; font-weight:500; color:#cc0000; margin-top:15px; }
+    footer.dev-footer { margin-top: 30px; padding: 15px; background: linear-gradient(135deg, #0d47a1, #1976d2); color: white; text-align: center; font-size: 14px; font-family: 'Roboto', sans-serif; }
+    footer.dev-footer a { color: #ffeb3b; text-decoration: none; }
+    footer.dev-footer a:hover { text-decoration: underline; }
 </style>
 {% endblock %}
 {% block header_actions %}
@@ -96,6 +99,18 @@
     <p class="no-data-text">No complaint found. Please type a valid mobile number.</p>
 </div>
 {% endif %}
+
+<!-- 🌟 Footer -->
+<footer class="dev-footer">
+    <div style="margin-bottom: 6px;">
+        <i class="fas fa-code"></i> Developed with ❤️ by 
+        <a href="https://www.linkedin.com/in/suraj-sonawane-76495564/" target="_blank"><strong>Suraj Sonawane</strong></a>
+    </div>
+    <div>
+        &copy; {{ current_year }} Countrylink Broadband
+    </div>
+</footer>
+
 {% endblock %}
 {% block extra_scripts %}
 <script>
