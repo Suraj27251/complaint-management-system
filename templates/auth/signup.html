@@ -8,10 +8,17 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/auth/login.css') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    body { padding-bottom: 80px; }
     footer.dev-footer {
-      margin-top: 30px; padding: 15px;
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      padding: 15px;
       background: linear-gradient(135deg, #0d47a1, #1976d2);
-      color: white; text-align: center; font-size: 14px;
+      color: white;
+      text-align: center;
+      font-size: 14px;
       font-family: 'Roboto', sans-serif;
     }
     footer.dev-footer a { color: #ffeb3b; text-decoration: none; }
