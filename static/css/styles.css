@@ -21,6 +21,7 @@ h1, h2 {
     background-color: #ffffff;
     border-bottom: 1px solid #ddd;
     flex-wrap: wrap;
+    position: relative;
 }
 
 .header .logo {
@@ -35,7 +36,9 @@ h1, h2 {
 }
 
 .header .title {
-    flex: 1;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     text-align: center;
     font-size: 22px;
     font-weight: bold;
