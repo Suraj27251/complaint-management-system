@@ -45,6 +45,13 @@ h1, h2 {
     color: #333;
 }
 
+/* Hide header title on mobile and tablet to prevent overlap with logo */
+@media (max-width: 1024px) {
+    .header .title {
+        display: none;
+    }
+}
+
 .header .language,
 .header .theme-toggle {
     display: flex;
