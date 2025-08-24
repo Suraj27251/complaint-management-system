@@ -1,7 +1,7 @@
 import os
 import csv
 import pickle
-import subprocess
+import socket
 import threading
 import time
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash
@@ -28,25 +28,27 @@ ping_results = {ip: "Checking..." for ip in PING_IPS}
 
 
 def ping_host(ip: str) -> str:
-    """Return 'Online' or 'Offline' depending on ping result."""
+    """Check reachability via TCP (port 80) instead of ICMP ping."""
     try:
-        result = subprocess.run(
-            ["ping", "-c", "1", "-W", "1", ip] if os.name != "nt" else ["ping", "-n", "1", ip],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        return "Online" if result.returncode == 0 else "Offline"
+        sock = socket.create_connection((ip, 80), timeout=2)
+        sock.close()
+        return "Online"
     except Exception:
-        return "Error"
+        return "Offline"
 
 
 def ping_loop():
-    """Background thread: continuously ping IPs and update results."""
+    """Background thread: continuously check IPs and update results."""
     while True:
         for ip in PING_IPS:
             ping_results[ip] = ping_host(ip)
         time.sleep(10)  # refresh every 10s
 
+
+# Start ping loop only once (in main process)
+if __name__ == '__main__':
+    threading.Thread(target=ping_loop, daemon=True).start()
+    
 
 # start background thread
 threading.Thread(target=ping_loop, daemon=True).start()
