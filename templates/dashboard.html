@@ -29,15 +29,6 @@
     <div class="tab"><a href="{{ url_for('whatsapp_complaints') }}"><i class="fab fa-whatsapp"></i> WhatsApp messages</a></div>
 {% endblock %}
 {% block content %}
-    <section class="bg-white rounded shadow p-4 mb-6">
-        <h2 class="section-title mb-2">Network Status</h2>
-        <ul id="ip-status-list" class="space-y-1">
-            <li data-ip="103.149.126.10">103.149.126.10 <i class="fas fa-circle-notch fa-spin"></i></li>
-            <li data-ip="36.50.163.244">36.50.163.244 <i class="fas fa-circle-notch fa-spin"></i></li>
-            <li data-ip="154.84.251.178">154.84.251.178 <i class="fas fa-circle-notch fa-spin"></i></li>
-        </ul>
-    </section>
-
     <section class="stats grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div class="bg-white rounded shadow p-4 text-center">📊<br>Total<br><span>{{ total }}</span></div>
         <div class="bg-white rounded shadow p-4 text-center">⚠️<br>Pending<br><span>{{ pending }}</span></div>
@@ -248,23 +239,5 @@
             });
         });
     });
-
-    async function updateIpStatus() {
-        try {
-            const res = await fetch('{{ url_for('ping_status') }}');
-            const data = await res.json();
-            Object.entries(data).forEach(([ip, isUp]) => {
-                const icon = document.querySelector(`#ip-status-list li[data-ip="${ip}"] i`);
-                if (!icon) return;
-                icon.className = isUp
-                    ? 'fas fa-check-circle text-green-500'
-                    : 'fas fa-times-circle text-red-500';
-            });
-        } catch (err) {
-            console.error('Failed to update IP status', err);
-        }
-    }
-    updateIpStatus();
-    setInterval(updateIpStatus, 5000);
 </script>
 {% endblock %}
