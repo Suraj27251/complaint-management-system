@@ -242,18 +242,51 @@ input:checked + .slider:before {
 }
 
 /* ===== NETWORK STATUS SECTION ===== */
-#ip-status-list li {
+#ip-status-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+}
+
+.network-card {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: #f9fafb;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     font-size: 14px;
 }
 
-#ip-status-list li .status-icon {
-    margin-left: 6px;
+.network-card .status-icon {
+    margin-left: 8px;
 }
 
-#ip-status-list li .fa-server {
+.network-card .fa-server {
     color: #6b7280; /* Tailwind gray-500 */
+}
+
+.stat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.stat-card .label {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-card .value {
+    font-size: 28px;
+    font-weight: bold;
+    margin-top: 4px;
 }
 
 #networkChart {

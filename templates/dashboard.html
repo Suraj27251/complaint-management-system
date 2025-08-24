@@ -32,21 +32,48 @@
     <section class="bg-white rounded shadow p-4 mb-6">
         <h2 class="section-title mb-2">Network Status</h2>
         <div class="flex flex-col sm:flex-row sm:items-start sm:space-x-8">
-            <ul id="ip-status-list" class="space-y-1 flex-1">
-                <li data-ip="103.149.126.10"><i class="fas fa-server mr-2 text-gray-500"></i>103.149.126.10 <i class="status-icon fas fa-circle-notch fa-spin"></i></li>
-                <li data-ip="36.50.163.244"><i class="fas fa-server mr-2 text-gray-500"></i>36.50.163.244 <i class="status-icon fas fa-circle-notch fa-spin"></i></li>
-                <li data-ip="154.84.251.178"><i class="fas fa-server mr-2 text-gray-500"></i>154.84.251.178 <i class="status-icon fas fa-circle-notch fa-spin"></i></li>
-            </ul>
-            <div class="mt-4 sm:mt-0 w-full sm:w-48 h-32">
+            <div id="ip-status-list" class="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1">
+                <div data-ip="103.149.126.10" class="network-card">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-server text-gray-500"></i>
+                        <span class="font-medium">Vishrantwadi</span>
+                    </div>
+                    <i class="status-icon fas fa-circle-notch fa-spin text-gray-400"></i>
+                </div>
+                <div data-ip="36.50.163.244" class="network-card">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-server text-gray-500"></i>
+                        <span class="font-medium">Dhanori</span>
+                    </div>
+                    <i class="status-icon fas fa-circle-notch fa-spin text-gray-400"></i>
+                </div>
+                <div data-ip="154.84.251.178" class="network-card">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-server text-gray-500"></i>
+                        <span class="font-medium">Tingrenagar</span>
+                    </div>
+                    <i class="status-icon fas fa-circle-notch fa-spin text-gray-400"></i>
+                </div>
+            </div>
+            <div class="mt-4 sm:mt-0 w-full sm:w-48 h-40 sm:h-32">
                 <canvas id="networkChart"></canvas>
             </div>
         </div>
     </section>
 
-    <section class="stats grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div class="bg-white rounded shadow p-4 text-center">📊<br>Total<br><span>{{ total }}</span></div>
-        <div class="bg-white rounded shadow p-4 text-center">⚠️<br>Pending<br><span>{{ pending }}</span></div>
-        <div class="bg-white rounded shadow p-4 text-center">✅<br>Resolved<br><span>{{ resolved }}</span></div>
+    <section class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="stat-card bg-blue-500 text-white">
+            <div class="label">Total</div>
+            <div class="value">{{ total }}</div>
+        </div>
+        <div class="stat-card bg-yellow-500 text-white">
+            <div class="label">Pending</div>
+            <div class="value">{{ pending }}</div>
+        </div>
+        <div class="stat-card bg-green-500 text-white">
+            <div class="label">Resolved</div>
+            <div class="value">{{ resolved }}</div>
+        </div>
     </section>
 
     <section class="bg-white rounded shadow p-4 mb-8">
@@ -281,7 +308,7 @@
             const data = await res.json();
             let up = 0, down = 0;
             Object.entries(data).forEach(([ip, isUp]) => {
-                const icon = document.querySelector(`#ip-status-list li[data-ip="${ip}"] i.status-icon`);
+                const icon = document.querySelector(`#ip-status-list [data-ip="${ip}"] .status-icon`);
                 if (!icon) return;
                 if (isUp) {
                     icon.className = 'status-icon fas fa-check-circle text-green-500';
