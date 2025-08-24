@@ -257,7 +257,6 @@
     const networkChart = new Chart(networkCtx, {
         type: 'doughnut',
         data: {
-            labels: ['Up', 'Down'],
             datasets: [{
                 data: [0, 0],
                 backgroundColor: ['#16A34A', '#DC2626'],
@@ -268,7 +267,7 @@
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    position: 'bottom'
+                    display: false
                 }
             }
         }
