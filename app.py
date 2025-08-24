@@ -209,8 +209,16 @@ def before_request():
 @app.route('/ping-status')
 @login_required
 def ping_status():
-    return jsonify(ping_results)
-
+    """Return normalized ping results as Online / Offline / Error."""
+    statuses = {}
+    for ip, result in ping_results.items():
+        if result == "Online":
+            statuses[ip] = "Online"
+        elif result == "Offline":
+            statuses[ip] = "Offline"
+        else:
+            statuses[ip] = "Error"
+    return jsonify(statuses)
 
 # ==============================
 #   EXISTING ROUTES
