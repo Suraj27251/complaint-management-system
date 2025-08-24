@@ -1,6 +1,7 @@
 import os
 import csv
 import pickle
+import subprocess
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash
 import sqlite3
 from datetime import datetime
@@ -18,6 +19,18 @@ MODEL_PATH = 'complaint_model.pkl'
 CATEGORIES = ["Speed Issue", "Connection Down", "Billing", "Installation", "Other"]
 _model = None
 _vectorizer = None
+
+PING_IPS = ["103.149.126.10", "36.50.163.244", "154.84.251.178"]
+
+
+def ping(ip: str) -> bool:
+    """Return True if the given IP responds to a ping."""
+    result = subprocess.run(
+        ["ping", "-c", "1", "-W", "1", ip],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    return result.returncode == 0
 
 def _load_or_train_model():
     """Load a trained model or train a new one from sample data."""
@@ -165,6 +178,13 @@ def init_db():
 @app.before_request
 def before_request():
     init_db()
+
+
+@app.route('/ping-status')
+@login_required
+def ping_status():
+    statuses = {ip: ping(ip) for ip in PING_IPS}
+    return jsonify(statuses)
 
 @app.route('/')
 @login_required
