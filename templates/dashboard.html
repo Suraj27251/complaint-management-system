@@ -31,11 +31,16 @@
 {% block content %}
     <section class="bg-white rounded shadow p-4 mb-6">
         <h2 class="section-title mb-2">Network Status</h2>
-        <ul id="ip-status-list" class="space-y-1">
-            <li data-ip="103.149.126.10">103.149.126.10 <i class="fas fa-circle-notch fa-spin"></i></li>
-            <li data-ip="36.50.163.244">36.50.163.244 <i class="fas fa-circle-notch fa-spin"></i></li>
-            <li data-ip="154.84.251.178">154.84.251.178 <i class="fas fa-circle-notch fa-spin"></i></li>
-        </ul>
+        <div class="flex flex-col sm:flex-row sm:items-start sm:space-x-8">
+            <ul id="ip-status-list" class="space-y-1 flex-1">
+                <li data-ip="103.149.126.10"><i class="fas fa-server mr-2 text-gray-500"></i>103.149.126.10 <i class="status-icon fas fa-circle-notch fa-spin"></i></li>
+                <li data-ip="36.50.163.244"><i class="fas fa-server mr-2 text-gray-500"></i>36.50.163.244 <i class="status-icon fas fa-circle-notch fa-spin"></i></li>
+                <li data-ip="154.84.251.178"><i class="fas fa-server mr-2 text-gray-500"></i>154.84.251.178 <i class="status-icon fas fa-circle-notch fa-spin"></i></li>
+            </ul>
+            <div class="mt-4 sm:mt-0 w-full sm:w-48 h-32">
+                <canvas id="networkChart"></canvas>
+            </div>
+        </div>
     </section>
 
     <section class="stats grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
@@ -220,6 +225,27 @@
             maintainAspectRatio: false
         }
     });
+
+    const networkCtx = document.getElementById('networkChart').getContext('2d');
+    const networkChart = new Chart(networkCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Up', 'Down'],
+            datasets: [{
+                data: [0, 0],
+                backgroundColor: ['#16A34A', '#DC2626'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
     const toggle = document.getElementById('themeToggle');
     const body = document.body;
     const theme = localStorage.getItem('theme');
@@ -253,13 +279,20 @@
         try {
             const res = await fetch('{{ url_for('ping_status') }}');
             const data = await res.json();
+            let up = 0, down = 0;
             Object.entries(data).forEach(([ip, isUp]) => {
-                const icon = document.querySelector(`#ip-status-list li[data-ip="${ip}"] i`);
+                const icon = document.querySelector(`#ip-status-list li[data-ip="${ip}"] i.status-icon`);
                 if (!icon) return;
-                icon.className = isUp
-                    ? 'fas fa-check-circle text-green-500'
-                    : 'fas fa-times-circle text-red-500';
+                if (isUp) {
+                    icon.className = 'status-icon fas fa-check-circle text-green-500';
+                    up++;
+                } else {
+                    icon.className = 'status-icon fas fa-times-circle text-red-500';
+                    down++;
+                }
             });
+            networkChart.data.datasets[0].data = [up, down];
+            networkChart.update();
         } catch (err) {
             console.error('Failed to update IP status', err);
         }

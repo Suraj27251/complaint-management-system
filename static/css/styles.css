@@ -241,6 +241,26 @@ input:checked + .slider:before {
     color: #007BFF;
 }
 
+/* ===== NETWORK STATUS SECTION ===== */
+#ip-status-list li {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+}
+
+#ip-status-list li .status-icon {
+    margin-left: 6px;
+}
+
+#ip-status-list li .fa-server {
+    color: #6b7280; /* Tailwind gray-500 */
+}
+
+#networkChart {
+    width: 100% !important;
+    height: 100% !important;
+}
+
 /* Responsive fix for smaller screens */
 @media (max-width: 768px) {
     .topnav {
