@@ -22,6 +22,22 @@
     .no-data-animation-container.show { display:block; opacity:1; }
     #no-data-animation { width:100%; height:350px; margin:0 auto; }
     .no-data-text { font-size:18px; font-weight:500; color:#cc0000; margin-top:15px; }
+
+    .complaint-history-container { width:90%; max-width:1000px; margin:40px auto; overflow-x:auto; }
+    .complaint-history-container table { width:100%; border-collapse:collapse; }
+    .complaint-history-container th, .complaint-history-container td { padding:10px 12px; text-align:left; }
+
+    .fade-in-up { animation:fadeInUp .6s ease-out both; }
+    @keyframes fadeInUp { from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);} }
+
+    .step.active .circle { background-color:#28a745; transform:scale(1.1); animation:pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(40,167,69,0.6);} 50%{box-shadow:0 0 0 10px rgba(40,167,69,0);} }
+
+    @media (max-width:640px){
+      .form-box{max-width:90%;}
+      .complaint-tracker{flex-direction:column; gap:20px;}
+      .complaint-history-container th, .complaint-history-container td{font-size:14px;}
+    }
     footer.dev-footer {
       position: fixed;
       left: 0;
@@ -63,7 +79,7 @@
     </div>
 </form>
 {% if status %}
-<div class="complaint-tracker">
+<div class="complaint-tracker fade-in-up">
     <div class="step {{ 'active' if status in ['Registered','Pending','Assigned','Complete'] else '' }}">
         <div class="circle"><i class="fas fa-check"></i></div>
         <div class="label">Registered</div>
@@ -83,7 +99,7 @@
 </div>
 {% endif %}
 {% if complaints %}
-<div class="complaint-history-container">
+<div class="complaint-history-container fade-in-up">
     <h2><i class="fas fa-clock"></i> Complaint History</h2>
     <table>
         <thead>
@@ -105,7 +121,7 @@
     </table>
 </div>
 {% elif request.method == 'POST' and not complaints %}
-<div id="no-data-container" class="no-data-animation-container">
+<div id="no-data-container" class="no-data-animation-container fade-in-up">
     <div id="no-data-animation"></div>
     <p class="no-data-text">No complaint found. Please type a valid mobile number.</p>
 </div>
