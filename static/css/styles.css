@@ -292,11 +292,6 @@ input:checked + .slider:before {
     margin-top: 4px;
 }
 
-#networkChart {
-    width: 100% !important;
-    height: 100% !important;
-}
-
 /* Responsive fix for smaller screens */
 @media (max-width: 768px) {
     .topnav {

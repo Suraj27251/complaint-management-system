@@ -55,9 +55,6 @@
                     <i class="status-icon fas fa-circle-notch fa-spin text-gray-400"></i>
                 </div>
             </div>
-            <div class="mt-4 sm:mt-0 w-full sm:w-48 h-40 sm:h-32">
-                <canvas id="networkChart"></canvas>
-            </div>
         </div>
     </section>
 
@@ -253,25 +250,6 @@
         }
     });
 
-    const networkCtx = document.getElementById('networkChart').getContext('2d');
-    const networkChart = new Chart(networkCtx, {
-        type: 'doughnut',
-        data: {
-            datasets: [{
-                data: [0, 0],
-                backgroundColor: ['#16A34A', '#DC2626'],
-                borderWidth: 0
-            }]
-        },
-        options: {
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            }
-        }
-    });
     const toggle = document.getElementById('themeToggle');
     const body = document.body;
     const theme = localStorage.getItem('theme');
@@ -305,20 +283,15 @@
         try {
             const res = await fetch('{{ url_for('ping_status') }}');
             const data = await res.json();
-            let up = 0, down = 0;
             Object.entries(data).forEach(([ip, isUp]) => {
                 const icon = document.querySelector(`#ip-status-list [data-ip="${ip}"] .status-icon`);
                 if (!icon) return;
                 if (isUp) {
                     icon.className = 'status-icon fas fa-check-circle text-green-500';
-                    up++;
                 } else {
                     icon.className = 'status-icon fas fa-times-circle text-red-500';
-                    down++;
                 }
             });
-            networkChart.data.datasets[0].data = [up, down];
-            networkChart.update();
         } catch (err) {
             console.error('Failed to update IP status', err);
         }
