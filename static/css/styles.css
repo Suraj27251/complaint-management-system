@@ -241,6 +241,56 @@ input:checked + .slider:before {
     color: #007BFF;
 }
 
+/* ===== NETWORK STATUS SECTION ===== */
+#ip-status-list {
+    display: grid;
+    gap: 12px;
+}
+
+.status-card {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    background: #f3f4f6; /* gray-100 */
+    border: 1px solid #e5e7eb; /* gray-200 */
+    border-radius: 8px;
+}
+
+.status-card .server-icon {
+    font-size: 20px;
+    margin-right: 10px;
+    color: #6b7280; /* gray-500 */
+}
+
+.status-card .server-name {
+    font-weight: 600;
+}
+
+.status-card .server-ip {
+    font-size: 13px;
+    color: #6b7280; /* gray-500 */
+}
+
+.status-card .status-icon {
+    margin-left: auto;
+    font-size: 18px;
+}
+
+.status-card.up {
+    background-color: #dcfce7; /* green-100 */
+    border-color: #16a34a; /* green-600 */
+}
+
+.status-card.down {
+    background-color: #fee2e2; /* red-100 */
+    border-color: #dc2626; /* red-600 */
+}
+
+#networkChart {
+    width: 100% !important;
+    height: 100% !important;
+}
+
 /* Responsive fix for smaller screens */
 @media (max-width: 768px) {
     .topnav {
