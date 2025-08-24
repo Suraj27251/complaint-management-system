@@ -511,9 +511,11 @@ def new_connections():
 
 
 @app.route('/api/new-connection-request', methods=['POST'])
-@login_required
 def api_new_connection_request():
-    data = request.get_json()
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({"error": "Invalid or missing JSON"}), 400
+
     name = data.get("name")
     mobile = data.get("mobile")
     area = data.get("area")
@@ -523,9 +525,13 @@ def api_new_connection_request():
 
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
-    c.execute("INSERT INTO connection_requests (name, mobile, area) VALUES (?, ?, ?)", (name, mobile, area))
+    c.execute(
+        "INSERT INTO connection_requests (name, mobile, area) VALUES (?, ?, ?)",
+        (name, mobile, area)
+    )
     conn.commit()
     conn.close()
+
     return jsonify({"status": "received"}), 200
 
 
@@ -539,7 +545,6 @@ def update_connection_status(connection_id):
     conn.commit()
     conn.close()
     return redirect(url_for('new_connections'))
-
 
 @app.route('/stock', methods=['GET', 'POST'])
 @login_required
