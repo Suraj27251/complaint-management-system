@@ -2,6 +2,8 @@ import os
 import csv
 import pickle
 import subprocess
+import threading
+import time
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash
 import sqlite3
 from datetime import datetime
@@ -20,17 +22,35 @@ CATEGORIES = ["Speed Issue", "Connection Down", "Billing", "Installation", "Othe
 _model = None
 _vectorizer = None
 
+# --- Pinging setup ---
 PING_IPS = ["103.149.126.10", "36.50.163.244", "154.84.251.178"]
+ping_results = {ip: "Checking..." for ip in PING_IPS}
 
 
-def ping(ip: str) -> bool:
-    """Return True if the given IP responds to a ping."""
-    result = subprocess.run(
-        ["ping", "-c", "1", "-W", "1", ip],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-    return result.returncode == 0
+def ping_host(ip: str) -> str:
+    """Return 'Online' or 'Offline' depending on ping result."""
+    try:
+        result = subprocess.run(
+            ["ping", "-c", "1", "-W", "1", ip] if os.name != "nt" else ["ping", "-n", "1", ip],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        return "Online" if result.returncode == 0 else "Offline"
+    except Exception:
+        return "Error"
+
+
+def ping_loop():
+    """Background thread: continuously ping IPs and update results."""
+    while True:
+        for ip in PING_IPS:
+            ping_results[ip] = ping_host(ip)
+        time.sleep(10)  # refresh every 10s
+
+
+# start background thread
+threading.Thread(target=ping_loop, daemon=True).start()
+
 
 def _load_or_train_model():
     """Load a trained model or train a new one from sample data."""
@@ -77,10 +97,12 @@ def predict_category(text: str) -> str:
         return 'Other'
     return _model.classes_[probs.argmax()]
 
-# Make {{ current_year }} available in all templates (for your footers)
+
+# Make {{ current_year }} available in all templates
 @app.context_processor
 def inject_year():
     return {'current_year': datetime.now().year}
+
 
 # --- Auth helpers ---
 def login_required(view):
@@ -92,16 +114,18 @@ def login_required(view):
         return view(*args, **kwargs)
     return wrapped
 
+
 # --- Register auth blueprint (requires auth.py in project root) ---
 from auth import auth_bp
 app.register_blueprint(auth_bp)
+
 
 # Initialize DB
 def init_db():
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
 
-    # Users table for login system
+    # Users table
     c.execute('''CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
@@ -175,16 +199,22 @@ def init_db():
     conn.commit()
     conn.close()
 
+
 @app.before_request
 def before_request():
     init_db()
 
 
+# --- updated ping status route ---
 @app.route('/ping-status')
 @login_required
 def ping_status():
-    statuses = {ip: ping(ip) for ip in PING_IPS}
-    return jsonify(statuses)
+    return jsonify(ping_results)
+
+
+# ==============================
+#   EXISTING ROUTES
+# ==============================
 
 @app.route('/')
 @login_required
@@ -253,6 +283,7 @@ def dashboard():
         categories=CATEGORIES,
     )
 
+
 @app.route('/submit', methods=['POST'])
 def submit():
     name = request.form['name']
@@ -269,7 +300,7 @@ def submit():
     conn.close()
     return redirect(url_for('dashboard'))
 
-# PUBLIC for fast UX
+
 @app.route('/track', methods=['GET', 'POST'])
 def track():
     complaints = []
@@ -306,7 +337,6 @@ def track():
 
         complaints = c.fetchall()
 
-        # Calculate worst status in terms of priority
         status_priority = {"Registered": 0, "Pending": 1, "Assigned": 2, "Complete": 3, "Resolved": 3}
         if complaints:
             worst_status_value = max(status_priority.get(comp[4], 0) for comp in complaints)
@@ -315,6 +345,7 @@ def track():
         conn.close()
 
     return render_template('track.html', complaints=complaints, status=status)
+
 
 @app.route('/update_status/<int:complaint_id>/<status>')
 @login_required
@@ -325,6 +356,7 @@ def update_status(complaint_id, status):
     conn.commit()
     conn.close()
     return redirect(url_for('dashboard'))
+
 
 @app.route('/webhook', methods=['GET', 'POST'])
 def webhook():
@@ -366,14 +398,16 @@ def webhook():
                             conn.close()
             return jsonify({"status": "Message received"}), 200
 
-        except Exception as e:
+        except Exception:
             return jsonify({"error": "Webhook processing failed"}), 500
+
 
 @app.after_request
 def set_default_json_header(response):
     if request.path.startswith('/webhook') or request.path.startswith('/flow-endpoint'):
         response.headers['Content-Type'] = 'application/json'
     return response
+
 
 @app.route('/flow-endpoint', methods=['POST'])
 def flow_endpoint():
@@ -396,6 +430,7 @@ def flow_endpoint():
     conn.close()
     return jsonify({"status": "received"}), 200
 
+
 @app.route('/complaints', endpoint='complaints_page')
 @login_required
 def view_complaints():
@@ -410,6 +445,7 @@ def view_complaints():
     complaints = c.fetchall()
     conn.close()
     return render_template('complaints.html', complaints=complaints)
+
 
 @app.route('/whatsapp')
 @login_required
@@ -441,7 +477,7 @@ def whatsapp_complaints():
     for (mobile, date), entries in grouped.items():
         merged_complaints.append({
             "id": entries[0]["id"],
-            "ids": [str(e["id"]) for e in entries],  # keeps grouped IDs
+            "ids": [str(e["id"]) for e in entries],
             "name": entries[0]["name"],
             "mobile": mobile,
             "date": date,
@@ -452,6 +488,7 @@ def whatsapp_complaints():
 
     return render_template("WhatsApp.html", complaints=merged_complaints)
 
+
 @app.route('/new-connections')
 @login_required
 def new_connections():
@@ -461,6 +498,7 @@ def new_connections():
     connections = c.fetchall()
     conn.close()
     return render_template('connection.html', connections=connections)
+
 
 @app.route('/api/new-connection-request', methods=['POST'])
 @login_required
@@ -480,6 +518,7 @@ def api_new_connection_request():
     conn.close()
     return jsonify({"status": "received"}), 200
 
+
 @app.route('/update-connection-status/<int:connection_id>', methods=['POST'])
 @login_required
 def update_connection_status(connection_id):
@@ -491,6 +530,7 @@ def update_connection_status(connection_id):
     conn.close()
     return redirect(url_for('new_connections'))
 
+
 @app.route('/stock', methods=['GET', 'POST'])
 @login_required
 def stock():
@@ -498,7 +538,6 @@ def stock():
     c = conn.cursor()
 
     if request.method == 'POST':
-        # ✅ Handle Stock Add or Update
         if 'item_type' in request.form and 'quantity' in request.form:
             item_type = request.form.get('item_type', '').strip()
             description = request.form.get('description', '').strip()
@@ -521,7 +560,6 @@ def stock():
                     )
                 conn.commit()
 
-        # ✅ Handle Issued Device Record
         elif 'device' in request.form:
             device = request.form.get('device', '').strip()
             recipient = request.form.get('recipient', '').strip()
@@ -537,7 +575,6 @@ def stock():
                 ''', (device, recipient, date, note, payment_mode, status))
                 conn.commit()
 
-    # ✅ Fetch for display
     c.execute("SELECT item_type, description, quantity, date FROM stock ORDER BY id DESC")
     stock_items = c.fetchall()
 
@@ -547,7 +584,7 @@ def stock():
     conn.close()
     return render_template('stock.html', stock_items=stock_items, issued_items=issued_items)
 
-# HR dashboard
+
 @app.route('/hr', endpoint='hr_dashboard')
 @login_required
 def hr_page():
@@ -573,10 +610,12 @@ def hr_page():
     conn.close()
     return render_template('hr.html', records=records, summary=summary)
 
+
 @app.route('/update_salary', methods=['POST'])
 @login_required
 def update_salary():
     return redirect(url_for('hr_dashboard'))
+
 
 @app.route('/staff-attendance-webhook', methods=['POST'])
 def staff_attendance_webhook():
@@ -610,9 +649,6 @@ def staff_attendance_webhook():
 
     return jsonify({"status": "attendance saved"}), 200
 
-@app.route('/ping')
-def ping():
-    return 'pong', 200
 
 @app.route('/update_whatsapp_bulk', methods=['POST'])
 @login_required
@@ -621,7 +657,7 @@ def update_whatsapp_bulk():
     ids = request.form.getlist('selected_ids[]')
 
     if not ids:
-        return redirect(url_for('dashboard'))  # If no IDs, silently redirect
+        return redirect(url_for('dashboard'))
 
     conn = sqlite3.connect('complaints.db')
     c = conn.cursor()
@@ -633,7 +669,8 @@ def update_whatsapp_bulk():
 
     conn.commit()
     conn.close()
-    return redirect(url_for('dashboard'))  # ✅ Final redirect to dashboard
+    return redirect(url_for('dashboard'))
+
 
 @app.route('/delete_complaint/<int:complaint_id>', methods=['DELETE'])
 @login_required
@@ -644,6 +681,12 @@ def delete_complaint(complaint_id):
     conn.commit()
     conn.close()
     return jsonify({"status": "success"})
+
+
+@app.route('/ping')
+def ping():
+    return 'pong', 200
+
 
 if __name__ == '__main__':
     app.run(debug=True)
