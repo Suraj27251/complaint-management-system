@@ -683,6 +683,7 @@ body.dark-mode .step::after {
     flex-direction: column;
     align-items: center;
     overflow-x: auto;             /* Horizontal scroll only if content overflows */
+    box-sizing: border-box;       /* Ensure padding doesn't shift width */
 }
 
 .recent-complaints-card {
@@ -693,6 +694,12 @@ body.dark-mode .step::after {
 
 .centered-card form {
     width: 100%;
+}
+
+/* Make table wrapper responsive */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
 }
 
 /* ===== BULK BUTTONS ===== */
