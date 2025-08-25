@@ -807,13 +807,32 @@ body.dark-mode .step::after {
 .category-installation { background-color: #2ecc71; }
 .category-other { background-color: #7f8c8d; }
 
-/* ===== CATEGORY FILTER BUTTONS ===== */
+/* ===== RECENT COMPLAINTS HEADER & FILTERS ===== */
+.recent-complaints-header {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    align-items: flex-start;
+}
+@media (min-width: 640px) {
+    .recent-complaints-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+}
 .category-filters {
-    margin-bottom: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 0;
 }
 .category-filters .button {
-    margin-top: 0;
-    margin-right: 5px;
+    margin: 0;
+}
+.recent-complaints-actions {
+    justify-content: flex-end;
 }
 
 /* ===== RESPONSIVE ADJUSTMENTS ===== */

@@ -80,14 +80,16 @@
     </section>
 
     <div class="table-section centered-card recent-complaints-card">
-        <h2 class="section-title text-center w-full">Recent Complaints</h2>
-        <div class="category-filters">
-            <button type="button" class="button filter-btn" data-category="All">All</button>
-            {% for cat in categories %}
-            <button type="button" class="button filter-btn" data-category="{{ cat }}">{{ cat }}</button>
-            {% endfor %}
+        <div class="recent-complaints-header">
+            <h2 class="section-title">Recent Complaints</h2>
+            <div class="category-filters">
+                <button type="button" class="button filter-btn" data-category="All">All</button>
+                {% for cat in categories %}
+                <button type="button" class="button filter-btn" data-category="{{ cat }}">{{ cat }}</button>
+                {% endfor %}
+            </div>
         </div>
-        <form id="bulkActionForm" method="POST">
+        <form id="bulkActionForm" method="POST" class="w-full">
             <div class="bulk-buttons recent-complaints-actions">
                 <button type="submit"
                         class="button bulk animated-button btn-resolve pulse-on-hover"
