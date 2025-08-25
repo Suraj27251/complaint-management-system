@@ -21,6 +21,9 @@
     </a>
 {% endblock %}
 {% block tabs %}
+    <div class="sidebar-chart-container">
+        <canvas id="sidebarChart"></canvas>
+    </div>
     <div class="tab active"><a href="{{ url_for('dashboard') }}"><i class="fas fa-gauge"></i> Dashboard</a></div>
     <div class="tab"><a href="{{ url_for('complaints_page') }}"><i class="fas fa-code-branch"></i> Complaints</a></div>
     <div class="tab"><a href="{{ url_for('new_connections') }}"><i class="fas fa-user-plus"></i> New Connections</a></div>
@@ -251,6 +254,31 @@
             maintainAspectRatio: false
         }
     });
+
+    const sidebarCtx = document.getElementById('sidebarChart');
+    if (sidebarCtx) {
+        new Chart(sidebarCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Pending', 'Resolved'],
+                datasets: [{
+                    data: [{{ pending }}, {{ resolved }}],
+                    backgroundColor: ['#FF6384', '#36A2EB']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                }
+            }
+        });
+    }
 
     const toggle = document.getElementById('themeToggle');
     const body = document.body;
