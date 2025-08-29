@@ -44,14 +44,20 @@ def ping_loop():
             ping_results[ip] = ping_host(ip)
         time.sleep(10)  # refresh every 10s
 
+# Ensure we only launch the ping thread once
+_ping_thread_started = False
 
-# Start ping loop only once (in main process)
-if __name__ == '__main__':
-    threading.Thread(target=ping_loop, daemon=True).start()
-    
 
-# start background thread
-threading.Thread(target=ping_loop, daemon=True).start()
+def _start_ping_thread():
+    global _ping_thread_started
+    if not _ping_thread_started:
+        threading.Thread(target=ping_loop, daemon=True).start()
+        _ping_thread_started = True
+
+
+@app.before_first_request
+def _launch_ping_thread():
+    _start_ping_thread()
 
 
 def _load_or_train_model():
@@ -697,4 +703,5 @@ def ping():
 
 
 if __name__ == '__main__':
+    _start_ping_thread()
     app.run(debug=True)
