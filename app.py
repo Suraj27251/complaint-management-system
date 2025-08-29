@@ -55,7 +55,7 @@ def _start_ping_thread():
         _ping_thread_started = True
 
 
-@app.before_request
+@app.before_request  # Flask 3 dropped before_first_request
 def _launch_ping_thread():
     _start_ping_thread()
 
